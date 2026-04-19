@@ -15,11 +15,11 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      # v5+ / v8+ run on Node 24 (GitHub is deprecating Node 20 for Actions)
+      # setup-uv has no floating `v8` tag — use a full release (see repo tags).
       - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.1.0
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
