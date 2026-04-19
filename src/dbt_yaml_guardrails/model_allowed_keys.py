@@ -38,6 +38,15 @@ def _parse_csv_keys(raw: str) -> set[str]:
     return {part.strip() for part in raw.split(",") if part.strip()}
 
 
+def _parse_strict(value: str) -> bool:
+    v = value.strip().lower()
+    if v in ("true", "1", "yes", "y", "on"):
+        return True
+    if v in ("false", "0", "no", "n", "off"):
+        return False
+    raise typer.BadParameter(f"--strict expects true or false, got {value!r}")
+
+
 def _run(
     files: list[Path],
     required_csv: str,
@@ -61,8 +70,10 @@ def _run(
         extra = allowed - DEFAULT_ALLOWED_KEYS
         if extra:
             typer.echo(
-                "error: --strict was set but --allowed contains keys not in the "
-                "default Fusion set: " + ", ".join(sorted(extra)),
+                "error: with --strict (the default), --allowed may not include keys "
+                "outside the default Fusion set (specs/resource-keys.md § Models): "
+                + ", ".join(sorted(extra))
+                + ". Use --no-strict to allow extra keys.",
                 err=True,
             )
             return 2
@@ -127,10 +138,17 @@ def main(
     files: list[Path] = typer.Argument(default_factory=list),
     required: str = typer.Option("", "--required"),
     allowed: str | None = typer.Option(None, "--allowed"),
-    strict: bool = typer.Option(False, "--strict"),
+    strict: str = typer.Option(
+        "true",
+        "--strict",
+        help=(
+            "If true (default), --allowed must not add keys beyond "
+            "specs/resource-keys.md § Models. Use --strict false to permit extra keys."
+        ),
+    ),
 ) -> None:
     """Validate top-level keys on each model entry."""
-    code = _run(files, required, allowed, strict)
+    code = _run(files, required, allowed, _parse_strict(strict))
     raise typer.Exit(code)
 
 

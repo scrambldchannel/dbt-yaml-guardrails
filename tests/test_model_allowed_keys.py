@@ -57,12 +57,28 @@ def test_cli_rejects_name_in_required() -> None:
     assert "do not list 'name'" in r.stderr
 
 
-def test_cli_strict_unknown_allowed_key() -> None:
+def test_cli_strict_default_rejects_unknown_in_allowlist() -> None:
+    """--strict is on by default; --allowed must not extend beyond resource-keys."""
     r = _invoke(
-        "--strict",
         "--allowed",
         "name,description,extra_bad",
         _f("models_name_only.yml"),
     )
     assert r.returncode == 2
     assert "extra_bad" in r.stderr
+
+
+def test_cli_strict_false_allows_extra_keys_in_allowlist() -> None:
+    allowed = (
+        "name,description,columns,data_tests,versions,latest_version,version,"
+        "constraints,docs,config,tags"
+    )
+    r = _invoke(
+        "--strict",
+        "false",
+        "--allowed",
+        allowed,
+        _f("models_with_tags.yml"),
+    )
+    assert r.returncode == 0
+    assert r.stderr == ""
