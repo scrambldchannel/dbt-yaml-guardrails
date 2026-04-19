@@ -7,6 +7,8 @@ name = "dbt-yaml-guardrails"
 version = "0.1.0"
 description = "Pre-commit hooks for configurable standards on dbt property YAML (Fusion-oriented)."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "ruamel.yaml>=0.18",

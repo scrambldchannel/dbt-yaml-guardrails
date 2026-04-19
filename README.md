@@ -55,3 +55,7 @@ repos:
 ```
 
 Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

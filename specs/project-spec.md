@@ -8,6 +8,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 - **Language:** Python 3.10+
 - **Tooling:** uv, pytest, github
 - **Libraries:** ruamel.yaml, typer
+- **License:** MIT (see repository root **`LICENSE`**; declared in **`pyproject.toml`**)
 
 ### Docstrings
 

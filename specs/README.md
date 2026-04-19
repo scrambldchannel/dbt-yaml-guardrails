@@ -1,5 +1,7 @@
 # Specs index
 
+The **dbt-yaml-guardrails** codebase is released under the **MIT License** (see the repository root **`LICENSE`**).
+
 Read in this order when onboarding or implementing behavior:
 
 1. **[`project-spec.md`](project-spec.md)** — Project constitution: goal, tech stack, workflow rules, and **source/test layout** (mirror **`hook-families/`**).
