@@ -1,4 +1,4 @@
-"""Tests for macro-allowed-keys CLI (specs/hooks.md)."""
+"""Tests for macro-allowed-keys CLI (specs/hook-families/allowed-keys.md)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Shared *-allowed-keys validation (``specs/hooks.md`` § Pattern, ``yaml-handling.md`` § Errors)."""
+"""Shared *-allowed-keys validation (``specs/hook-families/allowed-keys.md`` § Pattern, ``yaml-handling.md`` § Errors)."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def violations_for_entries(
 
     *entries* yields ``(resource_id, mapping)`` (e.g. model name and model dict).
     *legacy_key_messages* maps known legacy keys to actionable messages (see
-    ``specs/resource-keys.md`` § Legacy / deprecated; ``specs/hooks.md`` § Pattern).
+    ``specs/resource-keys.md`` § Legacy / deprecated; ``specs/hook-families/allowed-keys.md`` § Pattern).
     """
     legacy = legacy_key_messages or {}
     rows: list[ViolationRow] = []

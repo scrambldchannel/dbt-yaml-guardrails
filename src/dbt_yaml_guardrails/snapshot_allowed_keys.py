@@ -1,4 +1,4 @@
-"""snapshot-allowed-keys CLI (``specs/hooks.md``; allowlist in ``resource_keys``)."""
+"""snapshot-allowed-keys CLI (``specs/hook-families/allowed-keys.md``; allowlist in ``resource_keys``)."""
 
 from __future__ import annotations
 

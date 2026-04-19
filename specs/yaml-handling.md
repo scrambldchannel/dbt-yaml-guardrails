@@ -2,12 +2,12 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in **`hooks.md`**. Default **allowed-key sets** per resource type are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Product boundaries are in **`scope.md`**.
 
 ## Files
 
 + Use pre-commit's built-in file selection criteria to choose which files to parse and accept `yaml` and `yml` extensions
-+ Concrete **`files`** / **`types`** patterns for each hook belong in **`hooks.md`** next to that hook
++ Concrete **`files`** / **`types`** patterns for each hook belong in that hook’s **family** spec under **`hook-families/`** (see **`hooks.md`** § Hook families)
 
 ## Parsing
 
@@ -34,11 +34,11 @@ Resource types differ in shape (e.g. **`sources:`** with nested **`tables:`** vs
 
 ## Errors
 
-These rules apply to **every** hook’s CLI unless a hook’s spec in **`hooks.md`** explicitly overrides them.
+These rules apply to **every** hook’s CLI unless that hook’s family spec in **`hook-families/`** (or **`hooks.md`**) explicitly overrides them.
 
 + Emit all violations to **stderr**
 + Use a **non-zero** exit code if there is at least one **key violation** or **YAML / parse / shape error** for a file that was not skipped (skipped empty files and files without the hook’s target section do not count as failures). **Zero** only when every processed file passes under that rule
-+ **Numeric exit codes** for `*-allowed-keys` CLIs (e.g. **`0`**, **`1`**, **`2`**) are defined in **`hooks.md`**; this section defines **stderr** and **non-zero vs zero** semantics
++ **Numeric exit codes** for `*-allowed-keys` CLIs (e.g. **`0`**, **`1`**, **`2`**) are defined in **`hook-families/allowed-keys.md`**; this section defines **stderr** and **non-zero vs zero** semantics
 + Print messages in a **stable** order: file path, then resource name (or declared identifier), then key or rule id
 + Show every violation for each resource entry (per model, per source, etc., according to the hook’s target type)
-+ Example line shape for an **unknown** disallowed key (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`. For **legacy** keys (see **`resource-keys.md`** § Legacy / deprecated and **`hooks.md`** § Pattern), messages **SHOULD** point to the replacement name or **`config`** location instead of using only this generic form
++ Example line shape for an **unknown** disallowed key (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`. For **legacy** keys (see **`resource-keys.md`** § Legacy / deprecated and **`hook-families/allowed-keys.md`** § Pattern), messages **SHOULD** point to the replacement name or **`config`** location instead of using only this generic form

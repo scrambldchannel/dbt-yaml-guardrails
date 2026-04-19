@@ -1,8 +1,8 @@
 # Resource key allowlists
 
-Fusion-oriented **fixed allowed keys** **per resource type** for `*-allowed-keys` hooks (see **`hooks.md`**). **`--forbidden`** can additionally ban keys from the default set for stricter projects.
+Fusion-oriented **fixed allowed keys** **per resource type** for `*-allowed-keys` hooks (see **[`hook-families/allowed-keys.md`](hook-families/allowed-keys.md)** and the umbrella **[`hooks.md`](hooks.md)**). **`--forbidden`** can additionally ban keys from the default set for stricter projects.
 
-**Related:** [`yaml-handling.md`](yaml-handling.md) (which YAML nodes hooks validate), [`hooks.md`](hooks.md) (CLI flags, exit codes, pre-commit selection).
+**Related:** [`yaml-handling.md`](yaml-handling.md) (which YAML nodes hooks validate), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (CLI flags, exit codes, pre-commit selection for this family), [`hooks.md`](hooks.md) (packaging and index of families).
 
 Allowlists describe **keys on the resource object** the hook targets (e.g. each dict under `models:`), not wrapper keys like `models` itself.
 
@@ -27,7 +27,7 @@ Default keys allowed on **each model entry** (under `models:`):
 
 ### Legacy / deprecated keys (reference only — not allowlisted)
 
-Top-level keys that **used to appear** in schema YAML or still parse with warnings, but should be **migrated** rather than treated as first-class alongside the Fusion-oriented set above. When a hook sees one of these keys, it **SHOULD** surface the **Suggested violation detail** in stderr (see **`hooks.md`** § Pattern).
+Top-level keys that **used to appear** in schema YAML or still parse with warnings, but should be **migrated** rather than treated as first-class alongside the Fusion-oriented set above. When a hook sees one of these keys, it **SHOULD** surface the **Suggested violation detail** in stderr (see **`hook-families/allowed-keys.md`** § Pattern).
 
 | Key | Notes | Suggested violation detail |
 | --- | --- | --- |

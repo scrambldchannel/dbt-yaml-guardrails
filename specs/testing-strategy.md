@@ -1,6 +1,6 @@
 # Testing strategy
 
-**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (per-hook CLIs, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`resource_keys.py`** is the implementation source for models).
+**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (umbrella; packaging), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (per-hook CLIs for **`*-allowed-keys`**, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`resource_keys.py`** is the implementation source for models).
 
 ## Runner
 
@@ -13,8 +13,8 @@
 
 ## Assertions
 
-+ **Exit code** is the default contract: tests should assert **`0`** on success and **`1`** (or other documented non-zero codes from [`hooks.md`](hooks.md)) when violations, parse errors, or invalid CLI usage are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors and [`hooks.md`](hooks.md) **Exit codes**
-+ When testing **legacy** keys (see [`resource-keys.md`](resource-keys.md) § Legacy / deprecated and [`hooks.md`](hooks.md) § Pattern), assert stderr includes the **Suggested violation detail** (or equivalent wording) once hooks implement that behavior.
++ **Exit code** is the default contract: tests should assert **`0`** on success and **`1`** (or other documented non-zero codes from the hook’s family spec, e.g. [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md)) when violations, parse errors, or invalid CLI usage are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors
++ When testing **legacy** keys (see [`resource-keys.md`](resource-keys.md) § Legacy / deprecated and [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) § Pattern), assert stderr includes the **Suggested violation detail** (or equivalent wording) once hooks implement that behavior.
 + **Coverage** and **pytest markers** are out of scope for now.
 
 ## CI
