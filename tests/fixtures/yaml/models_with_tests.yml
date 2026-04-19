@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: legacy_tests
+    tests:
+      - unique:
+          column_name: id

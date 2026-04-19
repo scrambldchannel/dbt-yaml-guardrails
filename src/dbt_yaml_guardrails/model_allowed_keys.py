@@ -14,7 +14,10 @@ from dbt_yaml_guardrails.allowed_keys_core import (
     message_name_in_required,
     parse_csv_keys,
 )
-from dbt_yaml_guardrails.resource_keys import MODEL_ALLOWED_KEYS
+from dbt_yaml_guardrails.resource_keys import (
+    MODEL_ALLOWED_KEYS,
+    MODEL_LEGACY_KEY_MESSAGES,
+)
 from dbt_yaml_guardrails.yaml_handling import (
     ModelEntriesSkip,
     ParseError,
@@ -55,6 +58,7 @@ def _run(
         required,
         forbidden,
         MODEL_ALLOWED_KEYS,
+        legacy_key_messages=MODEL_LEGACY_KEY_MESSAGES,
         extract_by_name=_extract_model_by_name,
         iter_entries=iter_model_entries,
     )

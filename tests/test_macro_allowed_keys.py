@@ -62,3 +62,10 @@ def test_cli_forbidden_removes_otherwise_allowed_key() -> None:
     assert r.returncode == 1
     assert "forbidden key 'config'" in r.stderr
     assert "macro 'with_config'" in r.stderr
+
+
+def test_cli_meta_legacy_message() -> None:
+    r = _invoke(_f("macros_with_legacy_meta.yml"))
+    assert r.returncode == 1
+    assert "macro 'with_meta'" in r.stderr
+    assert "Use `config.meta` instead of top-level `meta`." in r.stderr

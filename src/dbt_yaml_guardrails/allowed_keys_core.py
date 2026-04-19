@@ -36,11 +36,15 @@ def violations_for_entries(
     allowed: frozenset[str],
     required: set[str],
     forbidden: set[str],
+    legacy_key_messages: Mapping[str, str] | None = None,
 ) -> list[ViolationRow]:
     """Collect violation rows for each resource entry under *path_posix*.
 
     *entries* yields ``(resource_id, mapping)`` (e.g. model name and model dict).
+    *legacy_key_messages* maps known legacy keys to actionable messages (see
+    ``specs/resource-keys.md`` § Legacy / deprecated; ``specs/hooks.md`` § Pattern).
     """
+    legacy = legacy_key_messages or {}
     rows: list[ViolationRow] = []
     for resource_id, entry in entries:
         keys = set(entry.keys())
@@ -53,7 +57,7 @@ def violations_for_entries(
                 detail = f"forbidden key '{key}'"
                 rows.append(((path_posix, resource_id, key, 1), detail))
             elif key not in allowed:
-                detail = f"disallowed key '{key}'"
+                detail = legacy.get(key) or f"disallowed key '{key}'"
                 rows.append(((path_posix, resource_id, key, 2), detail))
     return rows
 
@@ -101,6 +105,7 @@ def collect_violation_rows_for_property_paths(
     forbidden: set[str],
     allowed: frozenset[str],
     *,
+    legacy_key_messages: Mapping[str, str] | None = None,
     extract_by_name: Callable[
         [ParseSuccess],
         ParseError | Mapping[str, Mapping[str, Any]] | None,
@@ -137,6 +142,7 @@ def collect_violation_rows_for_property_paths(
                 allowed=allowed,
                 required=required,
                 forbidden=forbidden,
+                legacy_key_messages=legacy_key_messages,
             )
         )
     return rows

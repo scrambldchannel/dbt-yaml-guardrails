@@ -64,7 +64,15 @@ def test_cli_forbidden_removes_otherwise_allowed_key() -> None:
     assert "model 'with_config'" in r.stderr
 
 
-def test_cli_tags_still_disallowed_not_in_allowlist() -> None:
+def test_cli_tags_legacy_message() -> None:
     r = _invoke(_f("models_with_tags.yml"))
     assert r.returncode == 1
-    assert "disallowed key 'tags'" in r.stderr
+    assert "model 'tagged'" in r.stderr
+    assert "Use `config.tags` instead of top-level `tags`." in r.stderr
+
+
+def test_cli_tests_legacy_message() -> None:
+    r = _invoke(_f("models_with_tests.yml"))
+    assert r.returncode == 1
+    assert "model 'legacy_tests'" in r.stderr
+    assert "Rename to `data_tests` (legacy alias `tests` is deprecated)." in r.stderr
