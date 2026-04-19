@@ -39,7 +39,7 @@ Keys under **`config.meta`** on each resource entry (see [`specs/hook-families/a
 | `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry |
 | `macro-allowed-meta-keys` | Keys under `config.meta` on each `macros:` entry |
 
-There is **no** built-in allowlist in **`resource-keys.md`**—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry:
+There is **no** built-in allowlist in **`resource-keys.md`**—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry.
 
 - **`--required`** — Keys that **must** be present on **`meta`**. If `config` or `meta` is missing, **`meta`** is treated as empty, so required keys are reported missing.
 - **`--forbidden`** — Keys that **must not** appear on **`meta`**. Still enforced when **`--allowed`** is set (**forbidden** wins over the allowlist).
@@ -53,19 +53,25 @@ Pass hook flags as `args` in your pre-commit config (see below).
 
 ## pre-commit
 
-The hooks are **not** published to PyPI—point pre-commit at **this Git repository** (see [`.pre-commit-hooks.yaml`](.pre-commit-hooks.yaml)). pre-commit installs the repo as a Python environment and runs the hook entry points; you do not `pip install` the package yourself for normal use. Release notes: [`CHANGELOG.md`](CHANGELOG.md).
+The hooks are **not** published to PyPI—point pre-commit at **this Git repository** (see [`.pre-commit-hooks.yaml`](.pre-commit-hooks.yaml)).
+
+pre-commit installs the repo as a Python environment and runs the hook entry points; you do not `pip install` the package yourself for normal use. Release notes: [`CHANGELOG.md`](CHANGELOG.md).
 
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
     rev: v0.1.1
     hooks:
+      
+      # allowed top level keys
       - id: model-allowed-keys
         args: ["--required", "description", "--forbidden", "version"]
       - id: macro-allowed-keys
       - id: seed-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
+      
+      # allowed meta keys
       - id: model-allowed-meta-keys
         args: ["--allowed", "owner"]
       - id: seed-allowed-meta-keys
