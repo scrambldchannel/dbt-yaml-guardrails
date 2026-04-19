@@ -31,7 +31,7 @@ Specs group hooks by **family** under **`specs/hook-families/`** (e.g. **`allowe
 This is a **SHOULD**, not a hard gate: older flat modules may remain until refactored; **new** hooks and families **SHOULD** adopt the layout above. See also **`hooks.md`** § **Code layout (implementation)**.
 
 ## 3. Rules & Guidelines for Cursor
-- Read `README.md`, **`CHANGELOG.md`** (when changing user-visible behavior or versioning), `specs/project-spec.md`, and **`specs/README.md`** (for spec reading order and links) before starting any task.
+- Read `README.md`, **`CHANGELOG.md`** (when changing user-visible behavior or versioning), `specs/project-spec.md`, and **`specs/README.md`** (for spec reading order and links) before starting any task. Contributors: **[`CONTRIBUTING.md`](../CONTRIBUTING.md)** (dev setup, tests, spec-driven expectations).
 - Use atomic commits via `git` after each functional component completion.
 
 ## 4. Workflow

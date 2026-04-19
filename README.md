@@ -76,6 +76,10 @@ repos:
 
 The **`rev:`** above tracks the **latest release**; bump it when you release (see **`specs/project-spec.md`** § **Release notes**). For reproducible installs you can also pin a [specific tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA. Use **`main`** only if you intentionally want the tip of the default branch.
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) (spec-driven workflow, dev setup, tests).
+
 ## Author
 
 **Alexander Sutcliffe** — report issues and discuss changes on [GitHub Issues](https://github.com/scrambldchannel/dbt-yaml-guardrails/issues).
