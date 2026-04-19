@@ -11,7 +11,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 - **Structure** Python source layout
 
 ## 3. Rules & Guidelines for Cursor
-- Read `README.md` and `specs/project-spec.md` before starting any task.
+- Read `README.md`, `specs/project-spec.md`, and **`specs/README.md`** (for spec reading order and links) before starting any task.
 - Use atomic commits via `git` after each functional component completion.
 
 ## 4. Workflow
