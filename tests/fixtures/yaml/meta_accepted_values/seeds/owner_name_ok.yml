@@ -1,0 +1,8 @@
+version: 2
+
+seeds:
+  - name: m
+    config:
+      meta:
+        owner:
+          name: alex

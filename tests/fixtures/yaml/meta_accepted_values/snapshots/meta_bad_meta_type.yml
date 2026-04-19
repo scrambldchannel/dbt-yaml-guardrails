@@ -1,0 +1,6 @@
+version: 2
+
+snapshots:
+  - name: m
+    config:
+      meta: not_a_mapping

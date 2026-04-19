@@ -58,6 +58,9 @@ String **leaf** at a **dot path** under **`config.meta`** must be one of the val
 | ID | Validates |
 | --- | --- |
 | `model-meta-accepted-values` | One path on each `models:` entry (`--key`, `--values`, optional `--optional`) |
+| `seed-meta-accepted-values` | One path on each `seeds:` entry |
+| `snapshot-meta-accepted-values` | One path on each `snapshots:` entry |
+| `exposure-meta-accepted-values` | One path on each `exposures:` entry |
 
 ## pre-commit
 
@@ -89,6 +92,12 @@ repos:
 
       # meta accepted values (enum-like string at one dot path)
       - id: model-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: seed-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: snapshot-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: exposure-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
 ```
 

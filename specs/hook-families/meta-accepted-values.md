@@ -2,7 +2,7 @@
 
 Hooks in this family are named **`{resource}-meta-accepted-values`** (e.g. **`model-meta-accepted-values`**). Like **`*-allowed-meta-keys`**, the **`config`** wrapper is **implied**: validation applies to a **single key path** under **`config.meta`** (dot-separated path relative to **`meta`**). This family constrains the **value** at that path to a **fixed set of allowed strings** supplied on the CLI—not **which keys** may exist on **`meta`** (see **`allowed-meta-keys.md`** for key-name policy). **v1 implementations target string leaves only**; other YAML scalar types and comparison rules are **future extensions** (see **§ Leaf value typing**).
 
-**Status:** **`model-meta-accepted-values`** is **shipped**; other resource CLIs below are **planned**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
+**Status:** **`model`**, **`seed`**, **`snapshot`**, and **`exposure`** **`*-meta-accepted-values`** CLIs are **shipped**; **`macro-meta-accepted-values`** is **planned**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
 
 ### Why this family is simpler than nested `*-allowed-meta-keys`
 
@@ -108,9 +108,9 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 | Hook id | Resource list | Status |
 | --- | --- | --- |
 | **`model-meta-accepted-values`** | **`models:`** | **Shipped** |
-| **`seed-meta-accepted-values`** | **`seeds:`** | Planned |
-| **`snapshot-meta-accepted-values`** | **`snapshots:`** | Planned |
-| **`exposure-meta-accepted-values`** | **`exposures:`** | Planned |
+| **`seed-meta-accepted-values`** | **`seeds:`** | **Shipped** |
+| **`snapshot-meta-accepted-values`** | **`snapshots:`** | **Shipped** |
+| **`exposure-meta-accepted-values`** | **`exposures:`** | **Shipped** |
 | **`macro-meta-accepted-values`** | **`macros:`** | Planned |
 
 **Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.
