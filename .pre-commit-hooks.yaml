@@ -70,3 +70,31 @@
   entry: macro-allowed-meta-keys
   language: python
   types: [yaml]
+
+- id: model-meta-accepted-values
+  name: dbt model meta accepted values
+  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: model-meta-accepted-values
+  language: python
+  types: [yaml]
+
+- id: seed-meta-accepted-values
+  name: dbt seed meta accepted values
+  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: seed-meta-accepted-values
+  language: python
+  types: [yaml]
+
+- id: snapshot-meta-accepted-values
+  name: dbt snapshot meta accepted values
+  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: snapshot-meta-accepted-values
+  language: python
+  types: [yaml]
+
+- id: exposure-meta-accepted-values
+  name: dbt exposure meta accepted values
+  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: exposure-meta-accepted-values
+  language: python
+  types: [yaml]

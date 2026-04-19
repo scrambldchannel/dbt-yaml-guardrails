@@ -51,6 +51,17 @@ Full detail: [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/al
 
 Pass hook flags as `args` in your pre-commit config (see below).
 
+### `*-meta-accepted-values`
+
+String **leaf** at a **dot path** under **`config.meta`** must be one of the values in **`--values`** (see [`specs/hook-families/meta-accepted-values.md`](specs/hook-families/meta-accepted-values.md)). **v1:** string leaves only.
+
+| ID | Validates |
+| --- | --- |
+| `model-meta-accepted-values` | One path on each `models:` entry (`--key`, `--values`, optional `--optional`) |
+| `seed-meta-accepted-values` | One path on each `seeds:` entry |
+| `snapshot-meta-accepted-values` | One path on each `snapshots:` entry |
+| `exposure-meta-accepted-values` | One path on each `exposures:` entry |
+
 ## pre-commit
 
 The hooks are **not** published to PyPI—point pre-commit at **this Git repository** (see [`.pre-commit-hooks.yaml`](.pre-commit-hooks.yaml)).
@@ -62,7 +73,7 @@ repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
     rev: v0.1.1
     hooks:
-      
+
       # allowed top level keys
       - id: model-allowed-keys
         args: ["--required", "description", "--forbidden", "version"]
@@ -70,7 +81,7 @@ repos:
       - id: seed-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
-      
+
       # allowed meta keys
       - id: model-allowed-meta-keys
         args: ["--allowed", "owner"]
@@ -78,6 +89,16 @@ repos:
       - id: snapshot-allowed-meta-keys
       - id: exposure-allowed-meta-keys
       - id: macro-allowed-meta-keys
+
+      # meta accepted values (enum-like string at one dot path)
+      - id: model-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: seed-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: snapshot-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: exposure-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
 ```
 
 The **`rev:`** above tracks the **latest release**; bump it when you release (see **`specs/project-spec.md`** § **Release notes**). For reproducible installs you can also pin a [specific tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA. Use **`main`** only if you intentionally want the tip of the default branch.

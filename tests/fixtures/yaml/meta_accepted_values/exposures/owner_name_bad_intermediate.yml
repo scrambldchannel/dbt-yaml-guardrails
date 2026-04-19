@@ -1,0 +1,7 @@
+version: 2
+
+exposures:
+  - name: m
+    config:
+      meta:
+        owner: not_a_mapping

@@ -1,8 +1,16 @@
-# Hook family: `*-meta-key-accepted-values`
+# Hook family: `*-meta-accepted-values`
 
-Hooks in this family are named **`{resource}-meta-key-accepted-values`** (e.g. **`model-meta-key-accepted-values`**). Like **`*-allowed-meta-keys`**, the **`config`** wrapper is **implied**: validation applies to a **single key path** under **`config.meta`** (dot-separated path relative to **`meta`**). This family constrains the **value** at that path to a **fixed set of allowed strings** supplied on the CLI—not **which keys** may exist on **`meta`** (see **`allowed-meta-keys.md`** for key-name policy). **v1 implementations target string leaves only**; other YAML scalar types and comparison rules are **future extensions** (see **§ Leaf value typing**).
+Hooks in this family are named **`{resource}-meta-accepted-values`** (e.g. **`model-meta-accepted-values`**). Like **`*-allowed-meta-keys`**, the **`config`** wrapper is **implied**: validation applies to a **single key path** under **`config.meta`** (dot-separated path relative to **`meta`**). This family constrains the **value** at that path to a **fixed set of allowed strings** supplied on the CLI—not **which keys** may exist on **`meta`** (see **`allowed-meta-keys.md`** for key-name policy). **v1 implementations target string leaves only**; other YAML scalar types and comparison rules are **future extensions** (see **§ Leaf value typing**).
 
-**Status:** **Specified only** — not yet shipped; implementation should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
+**Status:** **`model`**, **`seed`**, **`snapshot`**, and **`exposure`** **`*-meta-accepted-values`** CLIs are **shipped**; **`macro-meta-accepted-values`** is **planned**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
+
+### Why this family is simpler than nested `*-allowed-meta-keys`
+
+Both use **dot paths** under **`meta`**, but this family only checks **one path** per hook run: **presence** (unless **`--optional`**), **leaf type** (string in v1), and **membership** in **`--values`**. It does **not** implement a **global** rule over “what may exist anywhere under **`meta`**.”
+
+By contrast, extending **`*-allowed-meta-keys`** with dot paths—especially with **`--allowed`**—requires defining how **“unknown”** keys work **inside nested mappings** (flattened paths, prefix rules, etc.). That is **spec-heavy** and easy to get wrong.
+
+**Implementation priority (this repository):** Ship **`*-meta-accepted-values`** **first**. Implement **shared dot-path navigation** (and tests) here; reuse or align it when **§ Future: nested key paths** in **`allowed-meta-keys.md`** is fully specified and implemented **later**.
 
 ---
 
@@ -93,19 +101,19 @@ Non-string scalars are **explicitly out of scope for the first shipped implement
 
 ---
 
-## Shipped CLIs (planned)
+## Shipped CLIs
 
 Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 
-| Hook id (planned) | Resource list |
-| --- | --- |
-| **`model-meta-key-accepted-values`** | **`models:`** |
-| **`seed-meta-key-accepted-values`** | **`seeds:`** |
-| **`snapshot-meta-key-accepted-values`** | **`snapshots:`** |
-| **`exposure-meta-key-accepted-values`** | **`exposures:`** |
-| **`macro-meta-key-accepted-values`** | **`macros:`** |
+| Hook id | Resource list | Status |
+| --- | --- | --- |
+| **`model-meta-accepted-values`** | **`models:`** | **Shipped** |
+| **`seed-meta-accepted-values`** | **`seeds:`** | **Shipped** |
+| **`snapshot-meta-accepted-values`** | **`snapshots:`** | **Shipped** |
+| **`exposure-meta-accepted-values`** | **`exposures:`** | **Shipped** |
+| **`macro-meta-accepted-values`** | **`macros:`** | Planned |
 
-**Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — when shipped, align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`**.
+**Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.
 
 ---
 
@@ -114,7 +122,7 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 **Required `domain` ∈ {sales, hr, finance}:**
 
 ```yaml
-- id: model-meta-key-accepted-values
+- id: model-meta-accepted-values
   args:
     - --key
     - domain
@@ -125,7 +133,7 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 **Required `owner.name` ∈ {annemarie, trevor, alex}:**
 
 ```yaml
-- id: model-meta-key-accepted-values
+- id: model-meta-accepted-values
   args:
     - --key
     - owner.name
@@ -136,7 +144,7 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 **Optional `domain` (if present, must be in list):**
 
 ```yaml
-- id: model-meta-key-accepted-values
+- id: model-meta-accepted-values
   args:
     - --key
     - domain
@@ -158,6 +166,6 @@ If anything in this spec conflicts with **`yaml-handling.md`**, **`yaml-handling
 
 ## Related
 
-+ **[`allowed-meta-keys.md`](allowed-meta-keys.md)** — key **names** on **`meta`**.
++ **[`allowed-meta-keys.md`](allowed-meta-keys.md)** — key **names** on **`meta`** (top-level today; nested paths **future**—see that spec).
 + **[`../hooks.md`](../hooks.md)** — packaging index.
 + **[`../yaml-handling.md`](../yaml-handling.md)** — loading and errors.

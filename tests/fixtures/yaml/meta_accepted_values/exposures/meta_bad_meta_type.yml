@@ -1,0 +1,6 @@
+version: 2
+
+exposures:
+  - name: m
+    config:
+      meta: not_a_mapping
