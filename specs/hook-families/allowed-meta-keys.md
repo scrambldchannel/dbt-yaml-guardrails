@@ -26,6 +26,12 @@ Only **`--required`** and **`--forbidden`** apply: there is **no** “unknown ke
 
 **Skipping:** If a resource has no **`config`**, or **`config`** has no **`meta`**, behavior **SHOULD** be specified per hook (e.g. skip vs treat as missing **`meta`** when **`--required`** is non-empty); document that choice when each hook ships.
 
+## Implementation reuse (shared validation core)
+
+The **`*-allowed-keys`** family uses **`violations_for_entries`** in **`allowed_keys_core.py`** with a **fixed allowlist** per resource type. **`config.meta`** rules differ (optional **`--allowed`**, no default allowlist, **forbidden** precedence), so implementations **SHOULD** use a **separate** function—e.g. **`violations_for_meta_keys`**—that encodes the **§ CLI contract** above (including **effective allow** when **`--allowed`** is set). File walking, stderr formatting, and sort order **SHOULD** stay consistent with **`yaml-handling.md`** § Errors and the patterns in **`allowed_keys_core.py`**, but the **key-check loop** for meta is its own entry point.
+
+**Future consolidation:** A single shared abstraction for “key policy on a mapping” might replace parallel **`violations_for_entries`** and **`violations_for_meta_keys`** later; that is **optional** and not required for the first shipped hook.
+
 **Status:** Not yet implemented. Each resource type will get its own hook (e.g. **`model-allowed-meta-keys`**), with implementation-specific wiring for which YAML path is walked.
 
 **Related:** **[`../hooks.md`](../hooks.md)** (umbrella), **[`../yaml-handling.md`](../yaml-handling.md)** (parsing; how **`config`** and **`meta`** are represented after load), **[`allowed-keys.md`](allowed-keys.md)** (reference for flag shape and exit codes).
