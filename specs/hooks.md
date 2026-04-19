@@ -24,3 +24,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | Keys under `config.meta` | **`hook-families/config-meta-keys.md`** | Planned: optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 
 Implementations **SHOULD** keep the **`*-allowed-keys`** family aligned with **`resource-keys.md`** when top-level allowlists change. The **`config` → `meta`** family uses **user-supplied** allowlists only; there is no fixed allowlist table in **`resource-keys.md`** unless we add optional convention docs later.
+
+## Code layout (implementation)
+
+Python **source** and **tests** **SHOULD** be organized by **hook family** in parallel with **`hook-families/*.md`** (subpackage per family, tests mirrored under **`tests/`**). Cross-family shared code stays at the package root or a small shared module. Details and naming guidance: **`project-spec.md`** § **Source and test layout (mirror hook families)**; test layout notes in **`testing-strategy.md`** § **Layout**.

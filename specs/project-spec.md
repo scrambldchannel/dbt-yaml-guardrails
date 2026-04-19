@@ -8,7 +8,15 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 - **Language:** Python 3.10+
 - **Tooling:** uv, pytest, github
 - **Libraries** ruamel.yaml, typer
-- **Structure** Python source layout
+
+### Source and test layout (mirror hook families)
+
+Specs group hooks by **family** under **`specs/hook-families/`** (e.g. **`allowed-keys.md`**, **`config-meta-keys.md`**). The Python package and tests **SHOULD** follow the same grouping so growth stays navigable:
+
++ **`src/dbt_yaml_guardrails/`** — Put code for each family under a subpackage (or clearly named subfolder) that corresponds to that family (e.g. **`hook_families/allowed_keys/`** for the **`*-allowed-keys`** family, **`hook_families/config_meta_keys/`** for **`config` → `meta`** hooks). Keep **cross-family** modules (YAML loading, shared validation cores, shared types) at the package root or under a small **`_internal`** / **`common`** name if needed.
++ **`tests/`** — Mirror the same structure: family-scoped tests under **`tests/hook_families/<family>/`** (or equivalent), with **`tests/fixtures/yaml/`** optionally split into subfolders per family if file volume warrants it.
+
+This is a **SHOULD**, not a hard gate: older flat modules may remain until refactored; **new** hooks and families **SHOULD** adopt the layout above. See also **`hooks.md`** § **Code layout (implementation)**.
 
 ## 3. Rules & Guidelines for Cursor
 - Read `README.md`, `specs/project-spec.md`, and **`specs/README.md`** (for spec reading order and links) before starting any task.

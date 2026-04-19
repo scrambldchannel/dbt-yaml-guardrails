@@ -9,7 +9,8 @@
 ## Layout
 
 + Tests live under **`tests/`**.
-+ Shared YAML snippets live under **`tests/fixtures/yaml/`** — include **good** and **bad** examples **per hook**, plus **basic edge cases** for shared parsing behavior (invalid YAML, encoding/BOM, empty file, `version:`, multi-document streams, etc.) as required by [`yaml-handling.md`](yaml-handling.md).
++ As hook families grow, **family-specific** tests **SHOULD** live under a path that mirrors **`specs/hook-families/`** and the **`src/`** layout (see [`project-spec.md`](project-spec.md) § **Source and test layout (mirror hook families)** and [`hooks.md`](hooks.md) § **Code layout (implementation)**). Shared parsing / core tests may stay at **`tests/`** root or under a **`shared`** / **`core`** name.
++ Shared YAML snippets live under **`tests/fixtures/yaml/`** — include **good** and **bad** examples **per hook**, plus **basic edge cases** for shared parsing behavior (invalid YAML, encoding/BOM, empty file, `version:`, multi-document streams, etc.) as required by [`yaml-handling.md`](yaml-handling.md). Optional subfolders per family are fine when the fixture set gets large.
 
 ## Assertions
 
