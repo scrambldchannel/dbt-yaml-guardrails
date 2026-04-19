@@ -19,6 +19,8 @@ repos:
       - id: check-docstring-first
       - id: check-added-large-files
       - id: debug-statements
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
 
   # Type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
