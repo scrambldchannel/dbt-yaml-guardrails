@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: alpha
+    description: First
+  - name: beta
+    config:
+      materialized: view

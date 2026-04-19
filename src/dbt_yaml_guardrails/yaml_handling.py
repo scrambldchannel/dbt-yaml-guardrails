@@ -1,7 +1,7 @@
 """dbt property YAML loading and shape normalization.
 
-Behavior is specified in ``specs/yaml-handling.md``. Phases 1–3 (document-level)
-implement :func:`load_property_yaml`; model extraction is Phase 4–5.
+Behavior is specified in ``specs/yaml-handling.md``. :func:`load_property_yaml`
+covers document-level parsing; :func:`extract_model_entries` normalizes ``models:``.
 """
 
 from __future__ import annotations
@@ -20,6 +20,7 @@ from ruamel.yaml.error import YAMLError
 # ---------------------------------------------------------------------------
 
 SKIP_EMPTY_OR_WHITESPACE = "empty_or_whitespace"
+SKIP_NO_MODELS_SECTION = "no_models_section"
 
 
 @dataclass(frozen=True)
@@ -59,16 +60,24 @@ ParseFileOutcome: TypeAlias = ParseSuccess | ParseSkip | ParseError
 
 
 @dataclass(frozen=True)
-class ModelEntriesResult:
-    """Normalized model entries under ``models:`` (Phase 5)."""
+class ModelEntriesSkip:
+    """No ``models:`` section — not an error (hook should ignore the file)."""
 
     path: Path
-    """Map ``name`` -> model object (mapping). Order is insertion order."""
+    reason: str
+
+
+@dataclass(frozen=True)
+class ModelEntriesResult:
+    """Normalized model entries under ``models:``."""
+
+    path: Path
+    """Map ``name`` -> model object (mapping). Order is first occurrence in the list."""
 
     by_name: Mapping[str, Mapping[str, Any]]
 
 
-ModelEntriesOutcome: TypeAlias = ModelEntriesResult | ParseError
+ModelEntriesOutcome: TypeAlias = ModelEntriesResult | ModelEntriesSkip | ParseError
 
 
 # ---------------------------------------------------------------------------
@@ -167,13 +176,50 @@ def load_property_yaml(path: Path) -> ParseFileOutcome:
 def extract_model_entries(success: ParseSuccess) -> ModelEntriesOutcome:
     """Normalize ``success.root`` ``models:`` into a map keyed by model ``name``.
 
+    If there is no ``models`` key, returns :class:`ModelEntriesSkip` (per
+    ``specs/yaml-handling.md`` — file ignored for model hooks). Otherwise
+    ``models`` must be a list of mappings, each with a non-empty string ``name``;
+    duplicate ``name`` values are an error.
+
     Callers must pass only a :class:`ParseSuccess` (after handling
     :class:`ParseSkip` / :class:`ParseError` from :func:`load_property_yaml`).
-    See ``specs/yaml-handling.md`` § dbt shape.
-
-    Not implemented (Phases 4–5).
     """
-    raise NotImplementedError("Phase 4–5; see specs/yaml-handling.md § dbt shape")
+    path = success.path
+    root = success.root
+
+    if "models" not in root:
+        return ModelEntriesSkip(path, SKIP_NO_MODELS_SECTION)
+
+    raw_models = root["models"]
+    if raw_models is None:
+        return ParseError(path, "models must be a list, not null")
+    if not isinstance(raw_models, list):
+        return ParseError(
+            path,
+            f"models must be a list, got {type(raw_models).__name__}",
+        )
+
+    by_name: dict[str, dict[str, Any]] = {}
+    for idx, item in enumerate(raw_models):
+        if not isinstance(item, MutableMapping):
+            return ParseError(
+                path,
+                f"models[{idx}] must be a mapping, got {type(item).__name__}",
+            )
+        if "name" not in item:
+            return ParseError(path, f"models[{idx}] is missing required key 'name'")
+        raw_name = item["name"]
+        if not isinstance(raw_name, str) or not raw_name.strip():
+            return ParseError(
+                path,
+                f"models[{idx}].name must be a non-empty string, got {raw_name!r}",
+            )
+        name = raw_name.strip()
+        if name in by_name:
+            return ParseError(path, f"Duplicate model name {name!r}")
+        by_name[name] = dict(item)
+
+    return ModelEntriesResult(path, by_name)
 
 
 def iter_model_entries(

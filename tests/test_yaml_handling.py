@@ -1,4 +1,4 @@
-"""Tests for specs/yaml-handling.md Phases 1–3 (load_property_yaml)."""
+"""Tests for specs/yaml-handling.md (load_property_yaml, extract_model_entries)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,14 @@ from pathlib import Path
 
 from dbt_yaml_guardrails.yaml_handling import (
     SKIP_EMPTY_OR_WHITESPACE,
+    SKIP_NO_MODELS_SECTION,
+    ModelEntriesResult,
+    ModelEntriesSkip,
     ParseError,
     ParseSkip,
     ParseSuccess,
+    extract_model_entries,
+    iter_model_entries,
     load_property_yaml,
 )
 
@@ -17,6 +22,12 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "yaml"
 
 def _f(name: str) -> Path:
     return FIXTURES / name
+
+
+def _success(name: str) -> ParseSuccess:
+    out = load_property_yaml(_f(name))
+    assert isinstance(out, ParseSuccess)
+    return out
 
 
 def test_empty_file_skip() -> None:
@@ -102,3 +113,57 @@ def test_version_float_rejected(tmp_path: Path) -> None:
     out = load_property_yaml(path)
     assert isinstance(out, ParseError)
     assert "version must be" in out.message
+
+
+# --- extract_model_entries (Phase 2 / dbt shape) ---
+
+
+def test_extract_no_models_section_skip() -> None:
+    out = extract_model_entries(_success("sources_only.yml"))
+    assert isinstance(out, ModelEntriesSkip)
+    assert out.reason == SKIP_NO_MODELS_SECTION
+
+
+def test_extract_models_empty_list() -> None:
+    out = extract_model_entries(_success("minimal_version2.yml"))
+    assert isinstance(out, ModelEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_models_two() -> None:
+    out = extract_model_entries(_success("models_two.yml"))
+    assert isinstance(out, ModelEntriesResult)
+    assert set(out.by_name) == {"alpha", "beta"}
+    assert out.by_name["alpha"]["description"] == "First"
+    assert out.by_name["beta"]["config"] == {"materialized": "view"}
+
+
+def test_extract_duplicate_model_name() -> None:
+    out = extract_model_entries(_success("models_duplicate_name.yml"))
+    assert isinstance(out, ParseError)
+    assert "Duplicate model name" in out.message
+
+
+def test_extract_missing_model_name() -> None:
+    out = extract_model_entries(_success("models_missing_name.yml"))
+    assert isinstance(out, ParseError)
+    assert "missing required key 'name'" in out.message
+
+
+def test_extract_models_not_list() -> None:
+    out = extract_model_entries(_success("models_not_list.yml"))
+    assert isinstance(out, ParseError)
+    assert "models must be a list" in out.message
+
+
+def test_extract_models_null() -> None:
+    out = extract_model_entries(_success("models_null.yml"))
+    assert isinstance(out, ParseError)
+    assert "not null" in out.message
+
+
+def test_iter_model_entries_sorted_names() -> None:
+    out = extract_model_entries(_success("models_two.yml"))
+    assert isinstance(out, ModelEntriesResult)
+    names = [n for n, _ in iter_model_entries(out.by_name)]
+    assert names == ["alpha", "beta"]
