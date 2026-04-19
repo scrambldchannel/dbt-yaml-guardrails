@@ -24,6 +24,10 @@ Several hooks validate **top-level keys on each entry** in a dbt property YAML d
 
 **Implementation reuse:** all `*-allowed-keys` hooks **SHOULD** delegate to **one shared validation core** (load YAML per **`yaml-handling.md`**, extract entries for the hook’s target section, apply required / allowlist / forbidden rules, emit violations). Per-hook code **SHOULD** be limited to wiring (Typer/command entry, argument forwarding) plus **resource-specific** pieces: which top-level section and list path to walk (including nesting), and the **default allowlist** (frozen sets in **`src/dbt_yaml_guardrails/resource_keys.py`**, documented in **`resource-keys.md`**). Avoid copying the full check loop for each new resource type.
 
+### Typer CLI entry modules (optional refactor)
+
+Each console script may remain its own small module with duplicated **`main`** / **`cli_main`** / **`typer.run`** wiring. Introducing a **shared factory** (or helper) to register new `*-allowed-keys` hooks with less boilerplate is **optional**—do it only if the number of hooks makes the duplication hard to maintain. Not a spec requirement.
+
 **Pre-commit:** each hook is a separate stanza in **`.pre-commit-hooks.yaml`**; they may share **`language: python`** and the same package install. **`files`** / **`types`** patterns may differ per hook if we need narrower file matching later; until then, align with **`yaml-handling.md`**.
 
 ## 1. `model-allowed-keys`

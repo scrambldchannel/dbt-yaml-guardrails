@@ -16,3 +16,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 
 ## 4. Workflow
 1. Stop and allow human review before proceeding to the next task.
+
+## 5. Deferred / optional implementation notes
+
++ **`*-allowed-keys` Typer boilerplate:** validation is shared (**`allowed_keys_core.py`**); per-hook entry modules may still repeat Typer **`main`** / **`cli_main`**. A factory to reduce that duplication is **optional**—see **`hook-families/allowed-keys.md`** § **Typer CLI entry modules (optional refactor)**.
