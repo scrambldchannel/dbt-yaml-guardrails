@@ -7,6 +7,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 ## 2. Tech Stack & Standards
 - **Language:** Python 3.10+
 - **Tooling:** uv, pytest, github
+- **Libraries** ruamel.yaml
 - **Structure** Python source layout
 
 ## 3. Rules & Guidelines for Cursor
