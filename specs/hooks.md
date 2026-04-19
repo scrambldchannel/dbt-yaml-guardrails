@@ -10,6 +10,12 @@ Keep **`.pre-commit-hooks.yaml`** in sync with the sections below: every shipped
 
 Shared behavior (parser, document shape, when to skip a file, stderr/exit codes, message ordering) is defined in **`yaml-handling.md`**. Default **allowed-key sets** per resource type are in **`resource-keys.md`**. This file defines **per-hook** CLIs, arguments, and how those defaults apply.
 
+**Exit codes** for `*-allowed-keys` CLIs **SHOULD** be:
+
++ **`0`** — every processed file passed (including skipped files with no target section or empty file).
++ **`1`** — at least one key violation, or a YAML/parse/shape error for a file (see **`yaml-handling.md`** § Errors).
++ **`2`** — invalid CLI usage (e.g. redundant **`name`** in **`--required`** for **`model-allowed-keys`**).
+
 ## Pattern: `*-allowed-keys` (shared design)
 
 Several hooks validate **top-level keys on each entry** in a dbt property YAML document: one **target node type** per hook (e.g. each dict under `models:`, each source under `sources:`, each row under `sources: … tables:`, …). Document-level rules, multi-resource files, and parsing are in **`yaml-handling.md`** (especially **§ dbt shape** and **§ Parsing**).
@@ -22,7 +28,7 @@ Several hooks validate **top-level keys on each entry** in a dbt property YAML d
 
 **Hook identity:** each hook has its own **`id`** and **`entry`** (console script name). Name hooks so **`id`** and **`entry`** clearly identify the target (e.g. `model-allowed-keys`, and later `source-allowed-keys`, `seed-allowed-keys`, …). Nested or secondary lists (e.g. tables under a source) get a distinct hook when we validate them, with a distinct **`resource-keys.md`** section and a distinct **`id`** / **`entry`** (e.g. `source-table-allowed-keys`).
 
-**Implementation reuse:** all `*-allowed-keys` hooks **SHOULD** delegate to **one shared validation core** (load YAML per **`yaml-handling.md`**, extract entries for the hook’s target section, apply required / allowlist / forbidden rules, emit violations). Per-hook code **SHOULD** be limited to wiring (Typer/command entry, argument forwarding) plus **resource-specific** pieces: which top-level section and list path to walk (including nesting), and the **default allowlist** (or a reference to the frozen set defined beside **`resource-keys.md`**). Avoid copying the full check loop for each new resource type.
+**Implementation reuse:** all `*-allowed-keys` hooks **SHOULD** delegate to **one shared validation core** (load YAML per **`yaml-handling.md`**, extract entries for the hook’s target section, apply required / allowlist / forbidden rules, emit violations). Per-hook code **SHOULD** be limited to wiring (Typer/command entry, argument forwarding) plus **resource-specific** pieces: which top-level section and list path to walk (including nesting), and the **default allowlist** (frozen sets in **`src/dbt_yaml_guardrails/resource_keys.py`**, documented in **`resource-keys.md`**). Avoid copying the full check loop for each new resource type.
 
 **Pre-commit:** each hook is a separate stanza in **`.pre-commit-hooks.yaml`**; they may share **`language: python`** and the same package install. **`files`** / **`types`** patterns may differ per hook if we need narrower file matching later; until then, align with **`yaml-handling.md`**.
 
@@ -32,7 +38,9 @@ Validates the **top-level keys on each model entry** (each dict under the `model
 
 The CLI entry point and hook **`id`** should be **`model-allowed-keys`**.
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real models in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Models**. **`--forbidden`:** e.g. disallow **`config`** where policy requires config-only in `dbt_project.yml`.
+**Pre-commit (shipped):** **`language: python`**, **`entry: model-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** at the repo root (must match **`[project.scripts]`** in **`pyproject.toml`**).
+
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real models in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Models**, implemented as **`MODEL_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/resource_keys.py`**. **`--forbidden`:** e.g. disallow **`config`** where policy requires config-only in `dbt_project.yml`.
 
 ## 2. Other resource types (same pattern)
 

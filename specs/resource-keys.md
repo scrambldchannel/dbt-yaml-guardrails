@@ -1,12 +1,14 @@
 # Resource key allowlists
 
-Canonical **fixed allowed keys** (Fusion-oriented / dbt property YAML) **per resource type**, for hooks such as **`model-allowed-keys`** in **`hooks.md`**. That hook uses this table as the only allowlist; **`--forbidden`** can additionally ban keys from this set for stricter projects.
+Fusion-oriented **fixed allowed keys** **per resource type** for `*-allowed-keys` hooks (see **`hooks.md`**). **`--forbidden`** can additionally ban keys from the default set for stricter projects.
 
-**Related:** [`yaml-handling.md`](yaml-handling.md) (which YAML nodes hooks validate), [`hooks.md`](hooks.md) (CLI flags and behavior).
+**Related:** [`yaml-handling.md`](yaml-handling.md) (which YAML nodes hooks validate), [`hooks.md`](hooks.md) (CLI flags, exit codes, pre-commit selection).
 
 Allowlists describe **keys on the resource object** the hook targets (e.g. each dict under `models:`), not wrapper keys like `models` itself.
 
 ## Models
+
+**Source of truth (implementation):** `MODEL_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 Default keys allowed on **each model entry** (under `models:`):
 
@@ -36,7 +38,7 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 | `loader` | |
 | `config` | Includes `meta`, `tags`, freshness, `loaded_at_field`, etc. (per [source configs](https://docs.getdbt.com/reference/source-configs)). |
 | `quoting` | |
-| `overrides` | Deprecated in dbt v1.10+; prefer `config`. |
+| `overrides` | Deprecated in dbt v1.10+; prefer `config`. |§
 | `tables` | Nested list; see **Source tables** below. |
 
 ## Source tables (each entry under `sources: [].tables:`)

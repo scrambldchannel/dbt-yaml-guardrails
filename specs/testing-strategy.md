@@ -1,6 +1,6 @@
 # Testing strategy
 
-**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, exit codes, stderr), [`resource-keys.md`](resource-keys.md) (expected default allowlists), [`hooks.md`](hooks.md) (per-hook CLIs and defaults).
+**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (per-hook CLIs, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`resource_keys.py`** is the implementation source for models).
 
 ## Runner
 
@@ -13,7 +13,7 @@
 
 ## Assertions
 
-+ **Exit code** is the default contract: tests should assert **0** on success and **non-zero** when violations or parse errors are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors.
++ **Exit code** is the default contract: tests should assert **`0`** on success and **`1`** (or other documented non-zero codes from [`hooks.md`](hooks.md)) when violations, parse errors, or invalid CLI usage are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors and [`hooks.md`](hooks.md) **Exit codes**
 + **Coverage** and **pytest markers** are out of scope for now.
 
 ## CI

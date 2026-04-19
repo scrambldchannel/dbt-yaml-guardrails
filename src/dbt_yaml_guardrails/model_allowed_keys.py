@@ -1,4 +1,4 @@
-"""model-allowed-keys CLI (``specs/hooks.md``)."""
+"""model-allowed-keys CLI (``specs/hooks.md``; allowlist in ``resource_keys``)."""
 
 from __future__ import annotations
 
@@ -7,6 +7,15 @@ from pathlib import Path
 
 import typer
 
+from dbt_yaml_guardrails.allowed_keys_core import (
+    ViolationRow,
+    parse_csv_keys,
+    print_violation_rows,
+    sort_violation_rows,
+    violation_row_parse_error,
+    violations_for_entries,
+)
+from dbt_yaml_guardrails.resource_keys import MODEL_ALLOWED_KEYS
 from dbt_yaml_guardrails.yaml_handling import (
     ModelEntriesResult,
     ModelEntriesSkip,
@@ -17,35 +26,15 @@ from dbt_yaml_guardrails.yaml_handling import (
     load_property_yaml,
 )
 
-# Fixed allowlist — keep aligned with ``specs/resource-keys.md`` § Models.
-DEFAULT_ALLOWED_KEYS: frozenset[str] = frozenset(
-    (
-        "name",
-        "description",
-        "columns",
-        "data_tests",
-        "versions",
-        "latest_version",
-        "version",
-        "constraints",
-        "docs",
-        "config",
-    )
-)
-
-
-def _parse_csv_keys(raw: str) -> set[str]:
-    return {part.strip() for part in raw.split(",") if part.strip()}
-
 
 def _run(
     files: list[Path],
     required_csv: str,
     forbidden_csv: str,
 ) -> int:
-    required = _parse_csv_keys(required_csv)
-    forbidden = _parse_csv_keys(forbidden_csv)
-    allowed = DEFAULT_ALLOWED_KEYS
+    required = parse_csv_keys(required_csv)
+    forbidden = parse_csv_keys(forbidden_csv)
+    allowed = MODEL_ALLOWED_KEYS
 
     if "name" in required:
         typer.echo(
@@ -57,7 +46,7 @@ def _run(
     if not files:
         return 0
 
-    records: list[tuple[str, str, str]] = []
+    rows: list[ViolationRow] = []
 
     for path in files:
         path = path.expanduser()
@@ -65,56 +54,33 @@ def _run(
         if isinstance(loaded, ParseSkip):
             continue
         if isinstance(loaded, ParseError):
-            records.append((path.as_posix(), "", loaded.message))
+            rows.append(violation_row_parse_error(path.as_posix(), loaded.message))
             continue
         extracted = extract_model_entries(loaded)
         if isinstance(extracted, ModelEntriesSkip):
             continue
         if isinstance(extracted, ParseError):
-            records.append((path.as_posix(), "", extracted.message))
+            rows.append(violation_row_parse_error(path.as_posix(), extracted.message))
             continue
         assert isinstance(extracted, ModelEntriesResult)
 
-        for model_name, entry in iter_model_entries(extracted.by_name):
-            keys = set(entry.keys())
-            for req in sorted(required):
-                if req not in keys:
-                    records.append(
-                        (
-                            path.as_posix(),
-                            model_name,
-                            f"missing required key '{req}'",
-                        )
-                    )
-            for key in sorted(keys):
-                if key in forbidden:
-                    records.append(
-                        (
-                            path.as_posix(),
-                            model_name,
-                            f"forbidden key '{key}'",
-                        )
-                    )
-                elif key not in allowed:
-                    records.append(
-                        (
-                            path.as_posix(),
-                            model_name,
-                            f"disallowed key '{key}'",
-                        )
-                    )
+        rows.extend(
+            violations_for_entries(
+                path.as_posix(),
+                iter_model_entries(extracted.by_name),
+                allowed=allowed,
+                required=required,
+                forbidden=forbidden,
+            )
+        )
 
-    if not records:
+    if not rows:
         return 0
 
-    records.sort(key=lambda r: (r[0], r[1], r[2]))
-    for fspath, model, detail in records:
-        if model:
-            line = f"{fspath}: model '{model}': {detail}"
-        else:
-            line = f"{fspath}: {detail}"
-        typer.echo(line, err=True)
-
+    sort_violation_rows(rows)
+    print_violation_rows(
+        rows, resource_label="model", emit=lambda m: typer.echo(m, err=True)
+    )
     return 1
 
 
