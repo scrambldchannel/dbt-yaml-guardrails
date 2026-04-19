@@ -21,6 +21,7 @@ from ruamel.yaml.error import YAMLError
 
 SKIP_EMPTY_OR_WHITESPACE = "empty_or_whitespace"
 SKIP_NO_MODELS_SECTION = "no_models_section"
+SKIP_NO_MACROS_SECTION = "no_macros_section"
 
 
 @dataclass(frozen=True)
@@ -78,6 +79,27 @@ class ModelEntriesResult:
 
 
 ModelEntriesOutcome: TypeAlias = ModelEntriesResult | ModelEntriesSkip | ParseError
+
+
+@dataclass(frozen=True)
+class MacroEntriesSkip:
+    """No ``macros:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class MacroEntriesResult:
+    """Normalized macro entries under ``macros:``."""
+
+    path: Path
+    """Map ``name`` -> macro object (mapping). Order is first occurrence in the list."""
+
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+MacroEntriesOutcome: TypeAlias = MacroEntriesResult | MacroEntriesSkip | ParseError
 
 
 # ---------------------------------------------------------------------------
@@ -164,8 +186,8 @@ def load_property_yaml(path: Path) -> ParseFileOutcome:
 
     Implements ``specs/yaml-handling.md`` § Parsing (UTF-8, BOM, empty skip,
     ``ruamel.yaml``, single document, duplicate keys, invalid YAML) and
-    top-level ``version:`` validation. Does not inspect ``models:`` shape
-    (see :func:`extract_model_entries`).
+    top-level ``version:`` validation. Does not inspect ``models:`` / ``macros:`` shape
+    (see :func:`extract_model_entries`, :func:`extract_macro_entries`).
     """
     read = _read_text(path)
     if isinstance(read, (ParseSkip, ParseError)):
@@ -230,5 +252,61 @@ def iter_model_entries(
     Hooks should use this when emitting violations so ordering matches
     ``yaml-handling.md`` § Errors (path, then resource name, …).
     """
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def extract_macro_entries(success: ParseSuccess) -> MacroEntriesOutcome:
+    """Normalize ``success.root`` ``macros:`` into a map keyed by macro ``name``.
+
+    If there is no ``macros`` key, returns :class:`MacroEntriesSkip`. Otherwise
+    ``macros`` must be a list of mappings, each with a non-empty string ``name``;
+    duplicate ``name`` values are an error.
+
+    Callers must pass only a :class:`ParseSuccess` (after handling
+    :class:`ParseSkip` / :class:`ParseError` from :func:`load_property_yaml`).
+    """
+    path = success.path
+    root = success.root
+
+    if "macros" not in root:
+        return MacroEntriesSkip(path, SKIP_NO_MACROS_SECTION)
+
+    raw = root["macros"]
+    if raw is None:
+        return ParseError(path, "macros must be a list, not null")
+    if not isinstance(raw, list):
+        return ParseError(
+            path,
+            f"macros must be a list, got {type(raw).__name__}",
+        )
+
+    by_name: dict[str, dict[str, Any]] = {}
+    for idx, item in enumerate(raw):
+        if not isinstance(item, MutableMapping):
+            return ParseError(
+                path,
+                f"macros[{idx}] must be a mapping, got {type(item).__name__}",
+            )
+        if "name" not in item:
+            return ParseError(path, f"macros[{idx}] is missing required key 'name'")
+        raw_name = item["name"]
+        if not isinstance(raw_name, str) or not raw_name.strip():
+            return ParseError(
+                path,
+                f"macros[{idx}].name must be a non-empty string, got {raw_name!r}",
+            )
+        name = raw_name.strip()
+        if name in by_name:
+            return ParseError(path, f"Duplicate macro name {name!r}")
+        by_name[name] = dict(item)
+
+    return MacroEntriesResult(path, by_name)
+
+
+def iter_macro_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in stable key order (sorted by *name*) for reporting."""
     for name in sorted(by_name):
         yield name, by_name[name]

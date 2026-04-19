@@ -7,3 +7,10 @@
   entry: model-allowed-keys
   language: python
   types: [yaml]
+
+- id: macro-allowed-keys
+  name: dbt macro allowed keys
+  description: Validate top-level keys on each macro entry in dbt property YAML
+  entry: macro-allowed-keys
+  language: python
+  types: [yaml]

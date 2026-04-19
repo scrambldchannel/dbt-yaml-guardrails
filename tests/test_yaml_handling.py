@@ -6,13 +6,18 @@ from pathlib import Path
 
 from dbt_yaml_guardrails.yaml_handling import (
     SKIP_EMPTY_OR_WHITESPACE,
+    SKIP_NO_MACROS_SECTION,
     SKIP_NO_MODELS_SECTION,
+    MacroEntriesResult,
+    MacroEntriesSkip,
     ModelEntriesResult,
     ModelEntriesSkip,
     ParseError,
     ParseSkip,
     ParseSuccess,
+    extract_macro_entries,
     extract_model_entries,
+    iter_macro_entries,
     iter_model_entries,
     load_property_yaml,
 )
@@ -167,3 +172,38 @@ def test_iter_model_entries_sorted_names() -> None:
     assert isinstance(out, ModelEntriesResult)
     names = [n for n, _ in iter_model_entries(out.by_name)]
     assert names == ["alpha", "beta"]
+
+
+# --- extract_macro_entries ---
+
+
+def test_extract_no_macros_section_skip() -> None:
+    out = extract_macro_entries(_success("sources_only.yml"))
+    assert isinstance(out, MacroEntriesSkip)
+    assert out.reason == SKIP_NO_MACROS_SECTION
+
+
+def test_extract_macros_empty_list() -> None:
+    out = extract_macro_entries(_success("macros_empty.yml"))
+    assert isinstance(out, MacroEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_macros_two() -> None:
+    out = extract_macro_entries(_success("macros_two.yml"))
+    assert isinstance(out, MacroEntriesResult)
+    assert set(out.by_name) == {"my_macro", "other_macro"}
+    assert out.by_name["my_macro"]["description"] == "Does something"
+
+
+def test_extract_duplicate_macro_name() -> None:
+    out = extract_macro_entries(_success("macros_duplicate_name.yml"))
+    assert isinstance(out, ParseError)
+    assert "Duplicate macro name" in out.message
+
+
+def test_iter_macro_entries_sorted_names() -> None:
+    out = extract_macro_entries(_success("macros_two.yml"))
+    assert isinstance(out, MacroEntriesResult)
+    names = [n for n, _ in iter_macro_entries(out.by_name)]
+    assert names == ["my_macro", "other_macro"]

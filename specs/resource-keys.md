@@ -38,7 +38,7 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 | `loader` | |
 | `config` | Includes `meta`, `tags`, freshness, `loaded_at_field`, etc. (per [source configs](https://docs.getdbt.com/reference/source-configs)). |
 | `quoting` | |
-| `overrides` | Deprecated in dbt v1.10+; prefer `config`. |§
+| `overrides` | Deprecated in dbt v1.10+; prefer `config`. |
 | `tables` | Nested list; see **Source tables** below. |
 
 ## Source tables (each entry under `sources: [].tables:`)
@@ -75,6 +75,8 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 | `columns` | |
 
 ## Macros (each entry under `macros:`)
+
+**Source of truth (implementation):** `MACRO_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 | Key | Notes |
 | --- | --- |

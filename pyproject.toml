@@ -20,6 +20,7 @@ dev = [
 
 [project.scripts]
 model-allowed-keys = "dbt_yaml_guardrails.model_allowed_keys:cli_main"
+macro-allowed-keys = "dbt_yaml_guardrails.macro_allowed_keys:cli_main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dbt_yaml_guardrails"]

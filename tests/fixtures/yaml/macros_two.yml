@@ -1,0 +1,9 @@
+version: 2
+
+macros:
+  - name: my_macro
+    description: Does something
+  - name: other_macro
+    config:
+      docs:
+        show: true

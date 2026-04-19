@@ -18,3 +18,13 @@ MODEL_ALLOWED_KEYS: frozenset[str] = frozenset(
         "config",
     )
 )
+
+# Canonical set for ``macro-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Macros**
+MACRO_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "name",
+        "description",
+        "config",
+        "arguments",
+    )
+)

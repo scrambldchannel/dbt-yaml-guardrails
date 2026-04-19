@@ -1,0 +1,7 @@
+version: 2
+
+macros:
+  - name: with_config
+    config:
+      docs:
+        show: true
