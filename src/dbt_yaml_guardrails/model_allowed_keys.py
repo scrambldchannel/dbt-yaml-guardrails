@@ -73,7 +73,7 @@ def _run(
                 "error: with --strict (the default), --allowed may not include keys "
                 "outside the default Fusion set (specs/resource-keys.md § Models): "
                 + ", ".join(sorted(extra))
-                + ". Use --no-strict to allow extra keys.",
+                + ". Pass --strict false to allow extra keys in --allowed.",
                 err=True,
             )
             return 2
