@@ -21,9 +21,9 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | Family | Spec | What it validates (summary) |
 | --- | --- | --- |
 | Top-level keys on each resource entry | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, … |
-| Keys under `config.meta` | **`hook-families/config-meta-keys.md`** | Planned: optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
+| Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | Planned: **`*-allowed-meta-keys`** (e.g. **`model-allowed-meta-keys`**); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 
-Implementations **SHOULD** keep the **`*-allowed-keys`** family aligned with **`resource-keys.md`** when top-level allowlists change. The **`config` → `meta`** family uses **user-supplied** allowlists only; there is no fixed allowlist table in **`resource-keys.md`** unless we add optional convention docs later.
+Implementations **SHOULD** keep the **`*-allowed-keys`** family aligned with **`resource-keys.md`** when top-level allowlists change. The **`*-allowed-meta-keys`** family uses **user-supplied** allowlists only (keys under **`config.meta`**; **`config`** implied in the hook name); there is no fixed allowlist table in **`resource-keys.md`** unless we add optional convention docs later.
 
 ## Code layout (implementation)
 
