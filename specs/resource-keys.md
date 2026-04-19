@@ -1,6 +1,6 @@
 # Resource key allowlists
 
-Canonical **default allowed keys** (Fusion-oriented / dbt property YAML) **per resource type**, for hooks such as **`model-allowed-keys`** in **`hooks.md`**. Hooks reference these sets when **`--allowed`** is omitted and when **`--strict`** constrains overrides.
+Canonical **fixed allowed keys** (Fusion-oriented / dbt property YAML) **per resource type**, for hooks such as **`model-allowed-keys`** in **`hooks.md`**. That hook uses this table as the only allowlist; **`--forbidden`** can additionally ban keys from this set for stricter projects.
 
 **Related:** [`yaml-handling.md`](yaml-handling.md) (which YAML nodes hooks validate), [`hooks.md`](hooks.md) (CLI flags and behavior).
 

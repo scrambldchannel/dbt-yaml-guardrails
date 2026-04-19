@@ -1,0 +1,6 @@
+version: 2
+
+models:
+  - name: with_config
+    config:
+      materialized: table

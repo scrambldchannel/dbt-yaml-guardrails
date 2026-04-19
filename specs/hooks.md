@@ -19,5 +19,5 @@ The CLI entry point and hook id should be `model-allowed-keys`.
 **Arguments:**
 
 + `--required` — a comma-separated list of key names that must be present. The default is no keys. **`name`** is always present for real models in dbt; do not list it in `--required`.
-+ `--allowed` — a comma-separated list of key names that are allowed. The default is the Fusion-oriented set in **`resource-keys.md`** § **Models** (callers may override by passing `--allowed` explicitly).
-+ `--strict` — when true (the default), `--allowed` may not include keys outside the default set in **`resource-keys.md`** § **Models**. Pass **`--strict false`** (or `0` / `no` / `off`) to allow additional keys in `--allowed` (e.g. team-specific properties).
++ **Allowed keys are fixed** — only the Fusion-oriented set in **`resource-keys.md`** § **Models** may appear on each model entry (no `--allowed` override).
++ `--forbidden` — optional comma-separated list of key names that **must not** appear on a model entry, even when those keys are otherwise in the fixed allowlist (team stricter policy, e.g. disallow `config` on certain projects).

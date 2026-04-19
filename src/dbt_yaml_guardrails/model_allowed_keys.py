@@ -17,7 +17,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     load_property_yaml,
 )
 
-# Default allowlist — keep aligned with ``specs/resource-keys.md`` § Models.
+# Fixed allowlist — keep aligned with ``specs/resource-keys.md`` § Models.
 DEFAULT_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
         "name",
@@ -38,45 +38,21 @@ def _parse_csv_keys(raw: str) -> set[str]:
     return {part.strip() for part in raw.split(",") if part.strip()}
 
 
-def _parse_strict(value: str) -> bool:
-    v = value.strip().lower()
-    if v in ("true", "1", "yes", "y", "on"):
-        return True
-    if v in ("false", "0", "no", "n", "off"):
-        return False
-    raise typer.BadParameter(f"--strict expects true or false, got {value!r}")
-
-
 def _run(
     files: list[Path],
     required_csv: str,
-    allowed_csv: str | None,
-    strict: bool,
+    forbidden_csv: str,
 ) -> int:
     required = _parse_csv_keys(required_csv)
+    forbidden = _parse_csv_keys(forbidden_csv)
+    allowed = DEFAULT_ALLOWED_KEYS
+
     if "name" in required:
         typer.echo(
             "error: do not list 'name' in --required (it is always present on real models)",
             err=True,
         )
         return 2
-
-    if allowed_csv is None:
-        allowed = set(DEFAULT_ALLOWED_KEYS)
-    else:
-        allowed = _parse_csv_keys(allowed_csv)
-
-    if strict and allowed_csv is not None:
-        extra = allowed - DEFAULT_ALLOWED_KEYS
-        if extra:
-            typer.echo(
-                "error: with --strict (the default), --allowed may not include keys "
-                "outside the default Fusion set (specs/resource-keys.md § Models): "
-                + ", ".join(sorted(extra))
-                + ". Pass --strict false to allow extra keys in --allowed.",
-                err=True,
-            )
-            return 2
 
     if not files:
         return 0
@@ -111,7 +87,15 @@ def _run(
                         )
                     )
             for key in sorted(keys):
-                if key not in allowed:
+                if key in forbidden:
+                    records.append(
+                        (
+                            path.as_posix(),
+                            model_name,
+                            f"forbidden key '{key}'",
+                        )
+                    )
+                elif key not in allowed:
                     records.append(
                         (
                             path.as_posix(),
@@ -137,18 +121,17 @@ def _run(
 def main(
     files: list[Path] = typer.Argument(default_factory=list),
     required: str = typer.Option("", "--required"),
-    allowed: str | None = typer.Option(None, "--allowed"),
-    strict: str = typer.Option(
-        "true",
-        "--strict",
+    forbidden: str = typer.Option(
+        "",
+        "--forbidden",
         help=(
-            "If true (default), --allowed must not add keys beyond "
-            "specs/resource-keys.md § Models. Use --strict false to permit extra keys."
+            "Comma-separated keys that must not appear on a model entry "
+            "(stricter than the fixed allowlist in specs/resource-keys.md § Models)."
         ),
     ),
 ) -> None:
     """Validate top-level keys on each model entry."""
-    code = _run(files, required, allowed, _parse_strict(strict))
+    code = _run(files, required, forbidden)
     raise typer.Exit(code)
 
 
