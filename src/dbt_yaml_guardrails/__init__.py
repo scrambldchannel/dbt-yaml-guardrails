@@ -1,6 +1,7 @@
 """Pre-commit hooks and helpers for dbt property YAML guardrails."""
 
 from dbt_yaml_guardrails.yaml_handling import (
+    SKIP_EMPTY_OR_WHITESPACE,
     ModelEntriesOutcome,
     ModelEntriesResult,
     ParseError,
@@ -13,6 +14,7 @@ from dbt_yaml_guardrails.yaml_handling import (
 )
 
 __all__ = [
+    "SKIP_EMPTY_OR_WHITESPACE",
     "ParseError",
     "ParseFileOutcome",
     "ParseSkip",
