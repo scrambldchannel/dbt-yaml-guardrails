@@ -70,3 +70,10 @@
   entry: macro-allowed-meta-keys
   language: python
   types: [yaml]
+
+- id: model-meta-accepted-values
+  name: dbt model meta accepted values
+  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: model-meta-accepted-values
+  language: python
+  types: [yaml]

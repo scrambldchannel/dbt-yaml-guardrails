@@ -61,6 +61,7 @@ seed-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.se
 snapshot-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.snapshot_allowed_meta_keys:cli_main"
 exposure-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.exposure_allowed_meta_keys:cli_main"
 macro-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.macro_allowed_meta_keys:cli_main"
+model-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_values.model_meta_accepted_values:cli_main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dbt_yaml_guardrails"]

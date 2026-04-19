@@ -2,7 +2,7 @@
 
 Hooks in this family are named **`{resource}-meta-accepted-values`** (e.g. **`model-meta-accepted-values`**). Like **`*-allowed-meta-keys`**, the **`config`** wrapper is **implied**: validation applies to a **single key path** under **`config.meta`** (dot-separated path relative to **`meta`**). This family constrains the **value** at that path to a **fixed set of allowed strings** supplied on the CLI—not **which keys** may exist on **`meta`** (see **`allowed-meta-keys.md`** for key-name policy). **v1 implementations target string leaves only**; other YAML scalar types and comparison rules are **future extensions** (see **§ Leaf value typing**).
 
-**Status:** **Specified only** — not yet shipped; implementation should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
+**Status:** **`model-meta-accepted-values`** is **shipped**; other resource CLIs below are **planned**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
 
 ### Why this family is simpler than nested `*-allowed-meta-keys`
 
@@ -101,19 +101,19 @@ Non-string scalars are **explicitly out of scope for the first shipped implement
 
 ---
 
-## Shipped CLIs (planned)
+## Shipped CLIs
 
 Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 
-| Hook id (planned) | Resource list |
-| --- | --- |
-| **`model-meta-accepted-values`** | **`models:`** |
-| **`seed-meta-accepted-values`** | **`seeds:`** |
-| **`snapshot-meta-accepted-values`** | **`snapshots:`** |
-| **`exposure-meta-accepted-values`** | **`exposures:`** |
-| **`macro-meta-accepted-values`** | **`macros:`** |
+| Hook id | Resource list | Status |
+| --- | --- | --- |
+| **`model-meta-accepted-values`** | **`models:`** | **Shipped** |
+| **`seed-meta-accepted-values`** | **`seeds:`** | Planned |
+| **`snapshot-meta-accepted-values`** | **`snapshots:`** | Planned |
+| **`exposure-meta-accepted-values`** | **`exposures:`** | Planned |
+| **`macro-meta-accepted-values`** | **`macros:`** | Planned |
 
-**Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — when shipped, align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`**.
+**Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.
 
 ---
 
