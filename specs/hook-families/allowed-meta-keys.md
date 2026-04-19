@@ -32,6 +32,12 @@ Only **`--required`** and **`--forbidden`** apply: there is **no** “unknown ke
 
 **Not part of the shipped CLI yet**—document here so future work stays aligned with **`meta-keys-accepted-values.md`**.
 
+**Complexity:** Extending **`--required`** / **`--forbidden`** / **`--allowed`** with dots is **harder** than **[`meta-keys-accepted-values.md`](meta-keys-accepted-values.md)** because **`--allowed`** mode compares **every present key** on **`meta`** (today: top-level only) to **effective allow**. With nesting, that becomes a **whole-tree** policy (unknown paths under inner mappings, prefix vs leaf rules, etc.). **`*-meta-key-accepted-values`** only checks **one path** per invocation—**no global allowlist**—so it is **strictly simpler** and is the **preferred first** place to ship **dot paths** under **`meta`**.
+
+**Repository priority:** Implement and ship **`*-meta-key-accepted-values`** before revisiting this section for production use. Reuse shared path-walking code from that family when this extension is ready.
+
+---
+
 A later revision **may** allow each token in **`--required`**, **`--forbidden`**, and **`--allowed`** to be a **dot-separated path** relative to **`meta`**, using the **same path rules** as **`--key`** in **[`meta-keys-accepted-values.md`](meta-keys-accepted-values.md)** § **Key path** (e.g. **`owner.name`**, **`owner.email`**—segments walk nested **mappings** only; no array indices).
 
 Before implementations ship this:

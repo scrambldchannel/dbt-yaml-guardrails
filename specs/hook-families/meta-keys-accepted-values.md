@@ -4,6 +4,14 @@ Hooks in this family are named **`{resource}-meta-key-accepted-values`** (e.g. *
 
 **Status:** **Specified only** — not yet shipped; implementation should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
 
+### Why this family is simpler than nested `*-allowed-meta-keys`
+
+Both use **dot paths** under **`meta`**, but this family only checks **one path** per hook run: **presence** (unless **`--optional`**), **leaf type** (string in v1), and **membership** in **`--values`**. It does **not** implement a **global** rule over “what may exist anywhere under **`meta`**.”
+
+By contrast, extending **`*-allowed-meta-keys`** with dot paths—especially with **`--allowed`**—requires defining how **“unknown”** keys work **inside nested mappings** (flattened paths, prefix rules, etc.). That is **spec-heavy** and easy to get wrong.
+
+**Implementation priority (this repository):** Ship **`*-meta-key-accepted-values`** **first**. Implement **shared dot-path navigation** (and tests) here; reuse or align it when **§ Future: nested key paths** in **`allowed-meta-keys.md`** is fully specified and implemented **later**.
+
 ---
 
 ## Purpose
@@ -158,6 +166,6 @@ If anything in this spec conflicts with **`yaml-handling.md`**, **`yaml-handling
 
 ## Related
 
-+ **[`allowed-meta-keys.md`](allowed-meta-keys.md)** — key **names** on **`meta`**.
++ **[`allowed-meta-keys.md`](allowed-meta-keys.md)** — key **names** on **`meta`** (top-level today; nested paths **future**—see that spec).
 + **[`../hooks.md`](../hooks.md)** — packaging index.
 + **[`../yaml-handling.md`](../yaml-handling.md)** — loading and errors.

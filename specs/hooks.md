@@ -22,7 +22,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | --- | --- | --- |
 | Top-level keys on each resource entry | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, … |
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
-| String at a path under `config.meta` (v1) | **`hook-families/meta-keys-accepted-values.md`** | **`*-meta-key-accepted-values`** (specified, not shipped): **`--key`** dot path, **`--values`** comma-separated allowlist, optional **`--optional`** for presence; other scalar types **future** |
+| String at a path under `config.meta` (v1) | **`hook-families/meta-keys-accepted-values.md`** | **`*-meta-key-accepted-values`** (specified, not shipped): **`--key`** dot path, **`--values`** comma-separated allowlist, optional **`--optional`** for presence; other scalar types **future** — **preferred next implementation** for dot paths under **`meta`** (simpler than nested **`--allowed`** in **`*-allowed-meta-keys`**) |
 
 The repository root **`README.md`** **SHOULD** list shipped hooks **by family** in separate tables or sections (not one flat list that mixes families). See **`project-spec.md`** § **README.md (repository root)**.
 
