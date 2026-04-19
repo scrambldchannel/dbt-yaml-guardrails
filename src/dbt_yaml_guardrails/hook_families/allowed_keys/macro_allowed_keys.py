@@ -1,4 +1,4 @@
-"""model-allowed-keys CLI (``specs/hook-families/allowed-keys.md``; allowlist in ``resource_keys``)."""
+"""macro-allowed-keys CLI (``specs/hook-families/allowed-keys.md``; allowlist in ``resource_keys``)."""
 
 from __future__ import annotations
 
@@ -8,30 +8,31 @@ from typing import Any, Mapping
 
 import typer
 
-from dbt_yaml_guardrails.allowed_keys_core import (
+from dbt_yaml_guardrails.yaml_handling import (
+    MacroEntriesSkip,
+    ParseError,
+    ParseSuccess,
+    extract_macro_entries,
+    iter_macro_entries,
+)
+
+from .allowed_keys_core import (
     collect_violation_rows_for_property_paths,
     finalize_violation_rows,
     message_name_in_required,
     parse_csv_keys,
 )
-from dbt_yaml_guardrails.resource_keys import (
-    MODEL_ALLOWED_KEYS,
-    MODEL_LEGACY_KEY_MESSAGES,
-)
-from dbt_yaml_guardrails.yaml_handling import (
-    ModelEntriesSkip,
-    ParseError,
-    ParseSuccess,
-    extract_model_entries,
-    iter_model_entries,
+from .resource_keys import (
+    MACRO_ALLOWED_KEYS,
+    MACRO_LEGACY_KEY_MESSAGES,
 )
 
 
-def _extract_model_by_name(
+def _extract_macro_by_name(
     success: ParseSuccess,
 ) -> ParseError | Mapping[str, Mapping[str, Any]] | None:
-    r = extract_model_entries(success)
-    if isinstance(r, ModelEntriesSkip):
+    r = extract_macro_entries(success)
+    if isinstance(r, MacroEntriesSkip):
         return None
     if isinstance(r, ParseError):
         return r
@@ -47,7 +48,7 @@ def _run(
     forbidden = parse_csv_keys(forbidden_csv)
 
     if "name" in required:
-        typer.echo(message_name_in_required(resource_plural="models"), err=True)
+        typer.echo(message_name_in_required(resource_plural="macros"), err=True)
         return 2
 
     if not files:
@@ -57,14 +58,14 @@ def _run(
         files,
         required,
         forbidden,
-        MODEL_ALLOWED_KEYS,
-        legacy_key_messages=MODEL_LEGACY_KEY_MESSAGES,
-        extract_by_name=_extract_model_by_name,
-        iter_entries=iter_model_entries,
+        MACRO_ALLOWED_KEYS,
+        legacy_key_messages=MACRO_LEGACY_KEY_MESSAGES,
+        extract_by_name=_extract_macro_by_name,
+        iter_entries=iter_macro_entries,
     )
     return finalize_violation_rows(
         rows,
-        resource_label="model",
+        resource_label="macro",
         emit=lambda m: typer.echo(m, err=True),
     )
 
@@ -76,18 +77,18 @@ def main(
         "",
         "--forbidden",
         help=(
-            "Comma-separated keys that must not appear on a model entry "
-            "(stricter than the fixed allowlist in specs/resource-keys.md § Models)."
+            "Comma-separated keys that must not appear on a macro entry "
+            "(stricter than the fixed allowlist in specs/resource-keys.md § Macros)."
         ),
     ),
 ) -> None:
-    """Validate top-level keys on each model entry."""
+    """Validate top-level keys on each macro entry."""
     code = _run(files, required, forbidden)
     raise typer.Exit(code)
 
 
 def cli_main() -> None:
-    """Entry point for the ``model-allowed-keys`` console script."""
+    """Entry point for the ``macro-allowed-keys`` console script."""
     try:
         typer.run(main)
     except typer.Exit as e:

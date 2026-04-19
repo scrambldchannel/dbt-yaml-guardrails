@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from dbt_yaml_guardrails.allowed_keys_core import violations_for_entries
-from dbt_yaml_guardrails.resource_keys import (
+from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
+    violations_for_entries,
+)
+from dbt_yaml_guardrails.hook_families.allowed_keys.resource_keys import (
     MODEL_ALLOWED_KEYS,
     MODEL_LEGACY_KEY_MESSAGES,
 )

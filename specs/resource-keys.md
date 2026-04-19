@@ -8,7 +8,7 @@ Allowlists describe **keys on the resource object** the hook targets (e.g. each 
 
 ## Models
 
-**Source of truth (implementation):** `MODEL_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
+**Source of truth (implementation):** `MODEL_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 Default keys allowed on **each model entry** (under `models:`):
 
@@ -84,7 +84,7 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 
 ## Seeds (each entry under `seeds:`)
 
-**Source of truth (implementation):** `SEED_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
+**Source of truth (implementation):** `SEED_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 | Key | Notes |
 | --- | --- |
@@ -104,7 +104,7 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 
 ## Snapshots (each entry under `snapshots:`)
 
-**Source of truth (implementation):** `SNAPSHOT_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
+**Source of truth (implementation):** `SNAPSHOT_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 | Key | Notes |
 | --- | --- |
@@ -124,7 +124,7 @@ Fusion-oriented keys on **each source** object (table rows live under `tables`; 
 
 ## Macros (each entry under `macros:`)
 
-**Source of truth (implementation):** `MACRO_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
+**Source of truth (implementation):** `MACRO_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 | Key | Notes |
 | --- | --- |
@@ -161,7 +161,7 @@ Macro property YAML does not use a **`tests`** / **`data_tests`** block at the m
 
 ## Exposures (each entry under `exposures:`)
 
-**Source of truth (implementation):** `EXPOSURE_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
+**Source of truth (implementation):** `EXPOSURE_ALLOWED_KEYS` in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**. The table below **must** mirror that constant; change the constant and this table together.
 
 | Key | Notes |
 | --- | --- |

@@ -8,22 +8,23 @@ from typing import Any, Mapping
 
 import typer
 
-from dbt_yaml_guardrails.allowed_keys_core import (
-    collect_violation_rows_for_property_paths,
-    finalize_violation_rows,
-    message_name_in_required,
-    parse_csv_keys,
-)
-from dbt_yaml_guardrails.resource_keys import (
-    EXPOSURE_ALLOWED_KEYS,
-    EXPOSURE_LEGACY_KEY_MESSAGES,
-)
 from dbt_yaml_guardrails.yaml_handling import (
     ExposureEntriesSkip,
     ParseError,
     ParseSuccess,
     extract_exposure_entries,
     iter_exposure_entries,
+)
+
+from .allowed_keys_core import (
+    collect_violation_rows_for_property_paths,
+    finalize_violation_rows,
+    message_name_in_required,
+    parse_csv_keys,
+)
+from .resource_keys import (
+    EXPOSURE_ALLOWED_KEYS,
+    EXPOSURE_LEGACY_KEY_MESSAGES,
 )
 
 

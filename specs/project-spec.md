@@ -27,4 +27,4 @@ This is a **SHOULD**, not a hard gate: older flat modules may remain until refac
 
 ## 5. Deferred / optional implementation notes
 
-+ **`*-allowed-keys` Typer boilerplate:** validation is shared (**`allowed_keys_core.py`**); per-hook entry modules may still repeat Typer **`main`** / **`cli_main`**. A factory to reduce that duplication is **optional**—see **`hook-families/allowed-keys.md`** § **Typer CLI entry modules (optional refactor)**.
++ **`*-allowed-keys` Typer boilerplate:** validation is shared (**`hook_families/allowed_keys/allowed_keys_core.py`**); per-hook entry modules may still repeat Typer **`main`** / **`cli_main`**. A factory to reduce that duplication is **optional**—see **`hook-families/allowed-keys.md`** § **Typer CLI entry modules (optional refactor)**.

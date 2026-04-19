@@ -1,6 +1,6 @@
 # Testing strategy
 
-**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (umbrella; packaging), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (per-hook CLIs for **`*-allowed-keys`**, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`resource_keys.py`** is the implementation source for models).
+**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (umbrella; packaging), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (per-hook CLIs for **`*-allowed-keys`**, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** is the implementation source for models).
 
 ## Runner
 
@@ -9,7 +9,7 @@
 ## Layout
 
 + Tests live under **`tests/`**.
-+ As hook families grow, **family-specific** tests **SHOULD** live under a path that mirrors **`specs/hook-families/`** and the **`src/`** layout (see [`project-spec.md`](project-spec.md) § **Source and test layout (mirror hook families)** and [`hooks.md`](hooks.md) § **Code layout (implementation)**). Shared parsing / core tests may stay at **`tests/`** root or under a **`shared`** / **`core`** name.
++ **Family-specific** tests live under **`tests/hook_families/<family>/`** (e.g. **`tests/hook_families/allowed_keys/`** for **`*-allowed-keys`**), mirroring **`specs/hook-families/`** and **`src/dbt_yaml_guardrails/hook_families/`** (see [`project-spec.md`](project-spec.md) § **Source and test layout (mirror hook families)** and [`hooks.md`](hooks.md) § **Code layout (implementation)**). Shared parsing tests stay at **`tests/`** root (e.g. **`test_yaml_handling.py`**).
 + Shared YAML snippets live under **`tests/fixtures/yaml/`** — include **good** and **bad** examples **per hook**, plus **basic edge cases** for shared parsing behavior (invalid YAML, encoding/BOM, empty file, `version:`, multi-document streams, etc.) as required by [`yaml-handling.md`](yaml-handling.md). Optional subfolders per family are fine when the fixture set gets large.
 
 ## Assertions

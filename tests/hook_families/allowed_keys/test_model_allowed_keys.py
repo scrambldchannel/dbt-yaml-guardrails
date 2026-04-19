@@ -6,17 +6,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-FIXTURES = Path(__file__).resolve().parent / "fixtures" / "yaml"
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_FIXTURES_YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
 
 
 def _f(name: str) -> str:
-    return str(FIXTURES / name)
+    return str(_FIXTURES_YAML / name)
 
 
 def _invoke(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, "-m", "dbt_yaml_guardrails.model_allowed_keys", *args],
-        cwd=Path(__file__).resolve().parents[1],
+        [
+            sys.executable,
+            "-m",
+            "dbt_yaml_guardrails.hook_families.allowed_keys.model_allowed_keys",
+            *args,
+        ],
+        cwd=_REPO_ROOT,
         capture_output=True,
         text=True,
     )

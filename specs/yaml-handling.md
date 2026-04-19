@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Product boundaries are in **`scope.md`**.
 
 ## Files
 
