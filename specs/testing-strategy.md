@@ -18,4 +18,4 @@
 
 ## CI
 
-+ Add a **GitHub Actions** workflow under **`.github/workflows/`** that runs the **full pytest suite** on **all Python versions the project supports** (same range as **`requires-python`** / [`project-spec.md`](project-spec.md); use a version matrix).
++ **GitHub Actions:** **`.github/workflows/ci.yml`** runs **`uv run pytest`** on a **Python version matrix** aligned with **`requires-python`** in **`pyproject.toml`** (currently **3.10**–**3.14**).
