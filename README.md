@@ -33,7 +33,7 @@ Pass these as `args` in your pre-commit config (see below).
 
 ## pre-commit
 
-pre-commit installs this repo as a Python environment and runs the hook entry points; you do not install the package separately.
+The hooks are **not** published to PyPI—point pre-commit at **this Git repository** (see [`.pre-commit-hooks.yaml`](.pre-commit-hooks.yaml)). pre-commit installs the repo as a Python environment and runs the hook entry points; you do not `pip install` the package yourself for normal use. Release notes: [`CHANGELOG.md`](CHANGELOG.md).
 
 ```yaml
 repos:

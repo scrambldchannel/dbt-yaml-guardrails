@@ -1,6 +1,6 @@
 # Specs index
 
-The **dbt-yaml-guardrails** codebase is released under the **MIT License** (see the repository root **`LICENSE`**).
+The **dbt-yaml-guardrails** codebase is released under the **MIT License** (see the repository root **`LICENSE`**). Distribution is **pre-commit**-first (Git `repo:`), not PyPI—see **`project-spec.md`** § **Tech Stack & Standards**. User-facing changes by version: **[`CHANGELOG.md`](../CHANGELOG.md)** (repository root).
 
 Read in this order when onboarding or implementing behavior:
 
