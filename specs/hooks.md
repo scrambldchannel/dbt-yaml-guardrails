@@ -23,7 +23,7 @@ Several hooks validate **top-level keys on each entry** in a dbt property YAML d
 **CLI contract** (same for every hook in this family):
 
 + `--required` — comma-separated keys that must be present on each validated entry. Default: none. Do not require keys that dbt always supplies for real resources if that would be redundant (e.g. **`name`** on models); each hook’s section calls out exceptions.
-+ **Allowed keys are fixed** for that hook’s target node: only the Fusion-oriented set in **`resource-keys.md`** for the matching **§** (no `--allowed` override).
++ **Allowed keys are fixed** for that hook’s target node: only the Fusion-oriented set in **`resource-keys.md`** for the matching **§**.
 + `--forbidden` — optional comma-separated keys that **must not** appear on an entry, even when otherwise allowlisted (stricter team policy).
 
 **Hook identity:** each hook has its own **`id`** and **`entry`** (console script name). Name hooks so **`id`** and **`entry`** clearly identify the target (e.g. `model-allowed-keys`, and later `source-allowed-keys`, `seed-allowed-keys`, …). Nested or secondary lists (e.g. tables under a source) get a distinct hook when we validate them, with a distinct **`resource-keys.md`** section and a distinct **`id`** / **`entry`** (e.g. `source-table-allowed-keys`).

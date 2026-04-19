@@ -1,3 +1,39 @@
 # dbt-yaml-guardrails
 
-A Fusion first set of pre-commit hooks to keep your dbt project's metadata under control
+Pre-commit hooks that enforce allowed keys on dbt property YAML (Fusion-oriented). Further detail: `specs/`.
+
+## Motivation
+
+These hooks **do not run dbt**—they only parse YAML and check key names. That keeps them **fast** and **easy to wire into pre-commit** while still matching dbt property-file shapes. Use them to keep schema/metadata files consistent without paying for a full `dbt parse` in CI on every commit.
+
+## Hooks
+
+
+| ID                   | Validates                              |
+| -------------------- | -------------------------------------- |
+| `model-allowed-keys` | Top-level keys on each `models:` entry |
+| `macro-allowed-keys` | Top-level keys on each `macros:` entry |
+
+
+Each hook uses a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
+
+- **--required** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
+- **--forbidden** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
+
+Pass these as `args` in your pre-commit config (see below).
+
+## pre-commit
+
+pre-commit installs this repo as a Python environment and runs the hook entry points; you do not install the package separately.
+
+```yaml
+repos:
+  - repo: https://github.com/OWNER/dbt-yaml-guardrails
+    rev: main
+    hooks:
+      - id: model-allowed-keys
+        args: ["--required", "description", "--forbidden", "version"]
+      - id: macro-allowed-keys
+```
+
+Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.
