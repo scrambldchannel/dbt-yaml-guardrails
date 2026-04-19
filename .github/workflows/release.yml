@@ -1,0 +1,53 @@
+# When `version` in pyproject.toml changes on main, create tag vX.Y.Z + GitHub Release
+# if that tag does not already exist (specs/project-spec.md § Distribution).
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read version from pyproject.toml
+        id: meta
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if tag already exists
+        id: skip
+        run: |
+          git fetch --tags --force
+          if git rev-parse "${{ steps.meta.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.meta.outputs.tag }} exists — nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release (and tag)
+        if: steps.skip.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            --target "${{ github.sha }}" \
+            --title "${{ steps.meta.outputs.tag }}" \
+            --generate-notes

@@ -11,6 +11,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 - **License:** MIT — see **`LICENSE`**, **`pyproject.toml`** (`authors`, `[project.urls]` for the GitHub repo and Issues)
 - **Distribution:** The **primary** way to use these hooks is **[pre-commit](https://pre-commit.com/)** with this repository as the **`repo:`** source (see **`.pre-commit-hooks.yaml`**, **`hooks.md`**). **PyPI publication is not** a project goal; **`keywords`**, **`classifiers`**, and other **`[project]`** metadata exist for documentation, IDE tooling, and consistency—not for publishing a package to the index.
 - **Release notes:** Maintain **`CHANGELOG.md`** at the repository root when cutting a version; align the **`version`** field in **`pyproject.toml`** and **git tags** (e.g. **`v0.1.0`**).
+- **Automated GitHub releases:** **`.github/workflows/release.yml`** runs on pushes to **`main`** that touch **`pyproject.toml`**. It reads **`project.version`**, and if **`v<version>`** is not already a tag, it creates that tag on the pushed commit and opens a **GitHub Release** (auto-generated notes). Bump **`version`** and update **`CHANGELOG.md`** in the **same commit** you intend to ship so the release matches your notes.
 
 ### Docstrings
 
