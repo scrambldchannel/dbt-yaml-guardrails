@@ -8,28 +8,48 @@ These hooks **do not run dbt**—they only parse YAML and check key names. That 
 
 ## Hooks
 
+Hooks are grouped by **family** (same idea as [`specs/hooks.md`](specs/hooks.md)). Each family has its own CLI shape and docs under [`specs/hook-families/`](specs/hook-families/).
 
-| ID                         | Validates                                                                 |
-| -------------------------- | ------------------------------------------------------------------------- |
-| `model-allowed-keys`       | Top-level keys on each `models:` entry                                    |
-| `macro-allowed-keys`       | Top-level keys on each `macros:` entry                                    |
-| `seed-allowed-keys`        | Top-level keys on each `seeds:` entry                                     |
-| `snapshot-allowed-keys`    | Top-level keys on each `snapshots:` entry                                 |
-| `exposure-allowed-keys`      | Top-level keys on each `exposures:` entry                                 |
-| `model-allowed-meta-keys`    | Keys under `config.meta` on each `models:` entry ([`allowed-meta-keys`](specs/hook-families/allowed-meta-keys.md)) |
-| `seed-allowed-meta-keys`     | Keys under `config.meta` on each `seeds:` entry                                   |
-| `snapshot-allowed-meta-keys` | Keys under `config.meta` on each `snapshots:` entry                             |
-| `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry                             |
-| `macro-allowed-meta-keys`    | Keys under `config.meta` on each `macros:` entry                                |
+### `*-allowed-keys`
 
-The **`*-allowed-meta-keys`** hooks have **no** fixed allowlist in-repo: use optional **`--allowed`**, plus **`--required`** / **`--forbidden`**, as documented in [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md).
+Top-level keys on each resource entry in property YAML.
 
-The **`*-allowed-keys`** hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
+| ID | Validates |
+| --- | --- |
+| `model-allowed-keys` | Top-level keys on each `models:` entry |
+| `macro-allowed-keys` | Top-level keys on each `macros:` entry |
+| `seed-allowed-keys` | Top-level keys on each `seeds:` entry |
+| `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
+| `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
 
-- **--required** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
-- **--forbidden** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
+These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
-Pass these as `args` in your pre-commit config (see below).
+- **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
+- **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
+
+### `*-allowed-meta-keys`
+
+Keys under **`config.meta`** on each resource entry (see [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md)).
+
+| ID | Validates |
+| --- | --- |
+| `model-allowed-meta-keys` | Keys under `config.meta` on each `models:` entry |
+| `seed-allowed-meta-keys` | Keys under `config.meta` on each `seeds:` entry |
+| `snapshot-allowed-meta-keys` | Keys under `config.meta` on each `snapshots:` entry |
+| `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry |
+| `macro-allowed-meta-keys` | Keys under `config.meta` on each `macros:` entry |
+
+There is **no** built-in allowlist in **`resource-keys.md`**—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry:
+
+- **`--required`** — Keys that **must** be present on **`meta`**. If `config` or `meta` is missing, **`meta`** is treated as empty, so required keys are reported missing.
+- **`--forbidden`** — Keys that **must not** appear on **`meta`**. Still enforced when **`--allowed`** is set (**forbidden** wins over the allowlist).
+- **`--allowed`** (optional) — If **omitted**, only **`--required`** and **`--forbidden`** apply; any other key on **`meta`** is **not** reported (no unknown-key rule). If **present**, allowlist mode: a key that appears on **`meta`** must be in **effective allow** = **`--allowed`** ∪ **`--required`** (you do not need to repeat required keys in **`--allowed`**). Keys not in effective allow are violations.
+
+If **`--allowed`**, **`--required`**, and **`--forbidden`** are all empty/absent, the hook does nothing (exit **`0`**).
+
+Full detail: [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md).
+
+Pass hook flags as `args` in your pre-commit config (see below).
 
 ## pre-commit
 
@@ -38,7 +58,7 @@ The hooks are **not** published to PyPI—point pre-commit at **this Git reposit
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
-    rev: main
+    rev: v0.1.1
     hooks:
       - id: model-allowed-keys
         args: ["--required", "description", "--forbidden", "version"]
@@ -54,7 +74,7 @@ repos:
       - id: macro-allowed-meta-keys
 ```
 
-Pin `rev` to a [release tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA for reproducible installs; `main` is fine while tracking development.
+The **`rev:`** above tracks the **latest release**; bump it when you release (see **`specs/project-spec.md`** § **Release notes**). For reproducible installs you can also pin a [specific tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA. Use **`main`** only if you intentionally want the tip of the default branch.
 
 ## Author
 

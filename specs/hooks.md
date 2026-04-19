@@ -23,6 +23,8 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | Top-level keys on each resource entry | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, … |
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 
+The repository root **`README.md`** **SHOULD** list shipped hooks **by family** in separate tables or sections (not one flat list that mixes families). See **`project-spec.md`** § **README.md (repository root)**.
+
 Implementations **SHOULD** keep the **`*-allowed-keys`** family aligned with **`resource-keys.md`** when top-level allowlists change. The **`*-allowed-meta-keys`** family uses **user-supplied** allowlists only (keys under **`config.meta`**; **`config`** implied in the hook name); there is no fixed allowlist table in **`resource-keys.md`** unless we add optional convention docs later.
 
 ## Code layout (implementation)

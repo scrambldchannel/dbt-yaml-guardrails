@@ -10,12 +10,16 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 - **Libraries:** ruamel.yaml, typer
 - **License:** MIT — see **`LICENSE`**, **`pyproject.toml`** (`authors`, `[project.urls]` for the GitHub repo and Issues)
 - **Distribution:** The **primary** way to use these hooks is **[pre-commit](https://pre-commit.com/)** with this repository as the **`repo:`** source (see **`.pre-commit-hooks.yaml`**, **`hooks.md`**). **PyPI publication is not** a project goal; **`keywords`**, **`classifiers`**, and other **`[project]`** metadata exist for documentation, IDE tooling, and consistency—not for publishing a package to the index.
-- **Release notes:** Maintain **`CHANGELOG.md`** at the repository root when cutting a version; align the **`version`** field in **`pyproject.toml`** and **git tags** (e.g. **`v0.1.0`**).
+- **Release notes:** Maintain **`CHANGELOG.md`** at the repository root when cutting a version; align the **`version`** field in **`pyproject.toml`** and **git tags** (e.g. **`v0.1.1`**). When you ship, update the **`rev:`** in the **pre-commit example** in **[`README.md`](../README.md)** so it matches the **latest release tag** (same as **`v<version>`** from **`pyproject.toml`**), so copy-paste installs stay pinned to what you just released.
 - **Automated GitHub releases:** **`.github/workflows/release.yml`** runs on pushes to **`main`** that touch **`pyproject.toml`**. It reads **`project.version`**, and if **`v<version>`** is not already a tag, it creates that tag on the pushed commit and opens a **GitHub Release** (auto-generated notes). Bump **`version`** and update **`CHANGELOG.md`** in the **same commit** you intend to ship so the release matches your notes.
 
 ### Docstrings
 
 Where a docstring is worth having (public APIs, non-obvious behavior, shared cores), use **Google style** sections (`Args:`, `Returns:`, `Raises:`, …). Skip docstrings that only restate the name of the function.
+
+### README.md (repository root)
+
+When adding or renaming hooks, update **[`README.md`](../README.md)** so it stays accurate for consumers. **Hook families MUST be listed separately** (e.g. one table or section for **`*-allowed-keys`** and another for **`*-allowed-meta-keys`**)—do not merge unrelated families into a single undifferentiated list. Order within a family can follow **`specs/hook-families/`** and **[`pyproject.toml`](../pyproject.toml)** **`[project.scripts]`**. The hook inventory **SHOULD** align with **[`.pre-commit-hooks.yaml`](../.pre-commit-hooks.yaml)** and **`hooks.md`** § **Hook families**; the pre-commit config example should include at least one hook per family or note where families are omitted for brevity. The example’s **`rev:`** **SHOULD** match the **current latest release tag** (see **Release notes** above); avoid leaving **`main`** in the committed example unless documenting a deliberate “bleeding edge” workflow.
 
 ### Source and test layout (mirror hook families)
 
