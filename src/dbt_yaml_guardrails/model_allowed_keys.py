@@ -4,27 +4,35 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any, Mapping
 
 import typer
 
 from dbt_yaml_guardrails.allowed_keys_core import (
-    ViolationRow,
+    collect_violation_rows_for_property_paths,
+    finalize_violation_rows,
+    message_name_in_required,
     parse_csv_keys,
-    print_violation_rows,
-    sort_violation_rows,
-    violation_row_parse_error,
-    violations_for_entries,
 )
 from dbt_yaml_guardrails.resource_keys import MODEL_ALLOWED_KEYS
 from dbt_yaml_guardrails.yaml_handling import (
-    ModelEntriesResult,
     ModelEntriesSkip,
     ParseError,
-    ParseSkip,
+    ParseSuccess,
     extract_model_entries,
     iter_model_entries,
-    load_property_yaml,
 )
+
+
+def _extract_model_by_name(
+    success: ParseSuccess,
+) -> ParseError | Mapping[str, Mapping[str, Any]] | None:
+    r = extract_model_entries(success)
+    if isinstance(r, ModelEntriesSkip):
+        return None
+    if isinstance(r, ParseError):
+        return r
+    return r.by_name
 
 
 def _run(
@@ -34,54 +42,27 @@ def _run(
 ) -> int:
     required = parse_csv_keys(required_csv)
     forbidden = parse_csv_keys(forbidden_csv)
-    allowed = MODEL_ALLOWED_KEYS
 
     if "name" in required:
-        typer.echo(
-            "error: do not list 'name' in --required (it is always present on real models)",
-            err=True,
-        )
+        typer.echo(message_name_in_required(resource_plural="models"), err=True)
         return 2
 
     if not files:
         return 0
 
-    rows: list[ViolationRow] = []
-
-    for path in files:
-        path = path.expanduser()
-        loaded = load_property_yaml(path)
-        if isinstance(loaded, ParseSkip):
-            continue
-        if isinstance(loaded, ParseError):
-            rows.append(violation_row_parse_error(path.as_posix(), loaded.message))
-            continue
-        extracted = extract_model_entries(loaded)
-        if isinstance(extracted, ModelEntriesSkip):
-            continue
-        if isinstance(extracted, ParseError):
-            rows.append(violation_row_parse_error(path.as_posix(), extracted.message))
-            continue
-        assert isinstance(extracted, ModelEntriesResult)
-
-        rows.extend(
-            violations_for_entries(
-                path.as_posix(),
-                iter_model_entries(extracted.by_name),
-                allowed=allowed,
-                required=required,
-                forbidden=forbidden,
-            )
-        )
-
-    if not rows:
-        return 0
-
-    sort_violation_rows(rows)
-    print_violation_rows(
-        rows, resource_label="model", emit=lambda m: typer.echo(m, err=True)
+    rows = collect_violation_rows_for_property_paths(
+        files,
+        required,
+        forbidden,
+        MODEL_ALLOWED_KEYS,
+        extract_by_name=_extract_model_by_name,
+        iter_entries=iter_model_entries,
     )
-    return 1
+    return finalize_violation_rows(
+        rows,
+        resource_label="model",
+        emit=lambda m: typer.echo(m, err=True),
+    )
 
 
 def main(
