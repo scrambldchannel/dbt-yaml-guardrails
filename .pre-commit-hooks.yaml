@@ -1,0 +1,9 @@
+# https://pre-commit.com/#creating-new-hooks — required at repo root when this
+# project is used as a pre-commit `repo:` source (local path, git URL, etc.).
+
+- id: model-allowed-keys
+  name: dbt model allowed keys
+  description: Validate top-level keys on each model entry in dbt property YAML
+  entry: model-allowed-keys
+  language: python
+  types: [yaml]
