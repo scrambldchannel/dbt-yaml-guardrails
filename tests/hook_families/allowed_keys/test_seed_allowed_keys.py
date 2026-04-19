@@ -7,11 +7,17 @@ import sys
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_FIXTURES_YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
+_YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
+_ALLOWED = _YAML / "allowed_keys"
+_SHARED = _YAML / "shared"
 
 
 def _f(name: str) -> str:
-    return str(_FIXTURES_YAML / name)
+    return str(_ALLOWED / "seeds" / name)
+
+
+def _shared(name: str) -> str:
+    return str(_SHARED / name)
 
 
 def _invoke(*args: str) -> subprocess.CompletedProcess[str]:
@@ -48,12 +54,12 @@ def test_cli_missing_required() -> None:
 
 
 def test_cli_skips_no_seeds_section() -> None:
-    r = _invoke(_f("sources_only.yml"))
+    r = _invoke(_shared("sources_only.yml"))
     assert r.returncode == 0
 
 
 def test_cli_skips_empty_file() -> None:
-    r = _invoke(_f("empty.yml"))
+    r = _invoke(_shared("empty.yml"))
     assert r.returncode == 0
 
 

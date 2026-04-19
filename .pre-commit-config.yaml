@@ -13,9 +13,9 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^tests/fixtures/yaml/whitespace_only\.yml$
+        exclude: ^tests/fixtures/yaml/shared/whitespace_only\.yml$
       - id: end-of-file-fixer
-        exclude: ^tests/fixtures/yaml/whitespace_only\.yml$
+        exclude: ^tests/fixtures/yaml/shared/whitespace_only\.yml$
       - id: check-docstring-first
       - id: check-added-large-files
       - id: debug-statements

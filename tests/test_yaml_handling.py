@@ -40,8 +40,9 @@ from dbt_yaml_guardrails.yaml_handling import (
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "yaml"
 
 
-def _f(name: str) -> Path:
-    return FIXTURES / name
+def _f(rel: str) -> Path:
+    """*rel* is under ``fixtures/yaml/`` (e.g. ``shared/empty.yml``)."""
+    return FIXTURES / rel
 
 
 def _success(name: str) -> ParseSuccess:
@@ -51,13 +52,13 @@ def _success(name: str) -> ParseSuccess:
 
 
 def test_empty_file_skip() -> None:
-    out = load_property_yaml(_f("empty.yml"))
+    out = load_property_yaml(_f("shared/empty.yml"))
     assert isinstance(out, ParseSkip)
     assert out.reason == SKIP_EMPTY_OR_WHITESPACE
 
 
 def test_whitespace_only_skip() -> None:
-    out = load_property_yaml(_f("whitespace_only.yml"))
+    out = load_property_yaml(_f("shared/whitespace_only.yml"))
     assert isinstance(out, ParseSkip)
     assert out.reason == SKIP_EMPTY_OR_WHITESPACE
 
@@ -80,49 +81,49 @@ def test_bom_and_minimal_yaml_success(tmp_path: Path) -> None:
 
 
 def test_minimal_version2_success() -> None:
-    out = load_property_yaml(_f("minimal_version2.yml"))
+    out = load_property_yaml(_f("shared/minimal_version2.yml"))
     assert isinstance(out, ParseSuccess)
     assert out.root == {"version": 2, "models": []}
 
 
 def test_no_version_success() -> None:
-    out = load_property_yaml(_f("no_version.yml"))
+    out = load_property_yaml(_f("shared/no_version.yml"))
     assert isinstance(out, ParseSuccess)
     assert out.root == {"models": []}
 
 
 def test_invalid_syntax_error() -> None:
-    out = load_property_yaml(_f("invalid_syntax.yml"))
+    out = load_property_yaml(_f("shared/invalid_syntax.yml"))
     assert isinstance(out, ParseError)
     assert "Invalid YAML" in out.message
 
 
 def test_multi_document_error() -> None:
-    out = load_property_yaml(_f("multi_document.yml"))
+    out = load_property_yaml(_f("shared/multi_document.yml"))
     assert isinstance(out, ParseError)
     assert "exactly one YAML document" in out.message
 
 
 def test_duplicate_keys_error() -> None:
-    out = load_property_yaml(_f("duplicate_keys.yml"))
+    out = load_property_yaml(_f("shared/duplicate_keys.yml"))
     assert isinstance(out, ParseError)
     assert "Invalid YAML" in out.message
 
 
 def test_root_scalar_error() -> None:
-    out = load_property_yaml(_f("root_scalar.yml"))
+    out = load_property_yaml(_f("shared/root_scalar.yml"))
     assert isinstance(out, ParseError)
     assert "mapping at the document root" in out.message
 
 
 def test_bad_version_error() -> None:
-    out = load_property_yaml(_f("bad_version.yml"))
+    out = load_property_yaml(_f("shared/bad_version.yml"))
     assert isinstance(out, ParseError)
     assert "version must be" in out.message
 
 
 def test_version_string_two_ok() -> None:
-    out = load_property_yaml(_f("version_string_two.yml"))
+    out = load_property_yaml(_f("shared/version_string_two.yml"))
     assert isinstance(out, ParseSuccess)
     assert out.root["version"] == "2"
 
@@ -139,19 +140,19 @@ def test_version_float_rejected(tmp_path: Path) -> None:
 
 
 def test_extract_no_models_section_skip() -> None:
-    out = extract_model_entries(_success("sources_only.yml"))
+    out = extract_model_entries(_success("shared/sources_only.yml"))
     assert isinstance(out, ModelEntriesSkip)
     assert out.reason == SKIP_NO_MODELS_SECTION
 
 
 def test_extract_models_empty_list() -> None:
-    out = extract_model_entries(_success("minimal_version2.yml"))
+    out = extract_model_entries(_success("shared/minimal_version2.yml"))
     assert isinstance(out, ModelEntriesResult)
     assert out.by_name == {}
 
 
 def test_extract_models_two() -> None:
-    out = extract_model_entries(_success("models_two.yml"))
+    out = extract_model_entries(_success("allowed_keys/models/models_two.yml"))
     assert isinstance(out, ModelEntriesResult)
     assert set(out.by_name) == {"alpha", "beta"}
     assert out.by_name["alpha"]["description"] == "First"
@@ -159,31 +160,33 @@ def test_extract_models_two() -> None:
 
 
 def test_extract_duplicate_model_name() -> None:
-    out = extract_model_entries(_success("models_duplicate_name.yml"))
+    out = extract_model_entries(
+        _success("allowed_keys/models/models_duplicate_name.yml")
+    )
     assert isinstance(out, ParseError)
     assert "Duplicate model name" in out.message
 
 
 def test_extract_missing_model_name() -> None:
-    out = extract_model_entries(_success("models_missing_name.yml"))
+    out = extract_model_entries(_success("allowed_keys/models/models_missing_name.yml"))
     assert isinstance(out, ParseError)
     assert "missing required key 'name'" in out.message
 
 
 def test_extract_models_not_list() -> None:
-    out = extract_model_entries(_success("models_not_list.yml"))
+    out = extract_model_entries(_success("allowed_keys/models/models_not_list.yml"))
     assert isinstance(out, ParseError)
     assert "models must be a list" in out.message
 
 
 def test_extract_models_null() -> None:
-    out = extract_model_entries(_success("models_null.yml"))
+    out = extract_model_entries(_success("allowed_keys/models/models_null.yml"))
     assert isinstance(out, ParseError)
     assert "not null" in out.message
 
 
 def test_iter_model_entries_sorted_names() -> None:
-    out = extract_model_entries(_success("models_two.yml"))
+    out = extract_model_entries(_success("allowed_keys/models/models_two.yml"))
     assert isinstance(out, ModelEntriesResult)
     names = [n for n, _ in iter_model_entries(out.by_name)]
     assert names == ["alpha", "beta"]
@@ -193,32 +196,34 @@ def test_iter_model_entries_sorted_names() -> None:
 
 
 def test_extract_no_macros_section_skip() -> None:
-    out = extract_macro_entries(_success("sources_only.yml"))
+    out = extract_macro_entries(_success("shared/sources_only.yml"))
     assert isinstance(out, MacroEntriesSkip)
     assert out.reason == SKIP_NO_MACROS_SECTION
 
 
 def test_extract_macros_empty_list() -> None:
-    out = extract_macro_entries(_success("macros_empty.yml"))
+    out = extract_macro_entries(_success("allowed_keys/macros/macros_empty.yml"))
     assert isinstance(out, MacroEntriesResult)
     assert out.by_name == {}
 
 
 def test_extract_macros_two() -> None:
-    out = extract_macro_entries(_success("macros_two.yml"))
+    out = extract_macro_entries(_success("allowed_keys/macros/macros_two.yml"))
     assert isinstance(out, MacroEntriesResult)
     assert set(out.by_name) == {"my_macro", "other_macro"}
     assert out.by_name["my_macro"]["description"] == "Does something"
 
 
 def test_extract_duplicate_macro_name() -> None:
-    out = extract_macro_entries(_success("macros_duplicate_name.yml"))
+    out = extract_macro_entries(
+        _success("allowed_keys/macros/macros_duplicate_name.yml")
+    )
     assert isinstance(out, ParseError)
     assert "Duplicate macro name" in out.message
 
 
 def test_iter_macro_entries_sorted_names() -> None:
-    out = extract_macro_entries(_success("macros_two.yml"))
+    out = extract_macro_entries(_success("allowed_keys/macros/macros_two.yml"))
     assert isinstance(out, MacroEntriesResult)
     names = [n for n, _ in iter_macro_entries(out.by_name)]
     assert names == ["my_macro", "other_macro"]
@@ -228,32 +233,32 @@ def test_iter_macro_entries_sorted_names() -> None:
 
 
 def test_extract_no_seeds_section_skip() -> None:
-    out = extract_seed_entries(_success("sources_only.yml"))
+    out = extract_seed_entries(_success("shared/sources_only.yml"))
     assert isinstance(out, SeedEntriesSkip)
     assert out.reason == SKIP_NO_SEEDS_SECTION
 
 
 def test_extract_seeds_empty_list() -> None:
-    out = extract_seed_entries(_success("seeds_empty.yml"))
+    out = extract_seed_entries(_success("allowed_keys/seeds/seeds_empty.yml"))
     assert isinstance(out, SeedEntriesResult)
     assert out.by_name == {}
 
 
 def test_extract_seeds_two() -> None:
-    out = extract_seed_entries(_success("seeds_two.yml"))
+    out = extract_seed_entries(_success("allowed_keys/seeds/seeds_two.yml"))
     assert isinstance(out, SeedEntriesResult)
     assert set(out.by_name) == {"my_seed", "other_seed"}
     assert out.by_name["my_seed"]["description"] == "Raw data"
 
 
 def test_extract_duplicate_seed_name() -> None:
-    out = extract_seed_entries(_success("seeds_duplicate_name.yml"))
+    out = extract_seed_entries(_success("allowed_keys/seeds/seeds_duplicate_name.yml"))
     assert isinstance(out, ParseError)
     assert "Duplicate seed name" in out.message
 
 
 def test_iter_seed_entries_sorted_names() -> None:
-    out = extract_seed_entries(_success("seeds_two.yml"))
+    out = extract_seed_entries(_success("allowed_keys/seeds/seeds_two.yml"))
     assert isinstance(out, SeedEntriesResult)
     names = [n for n, _ in iter_seed_entries(out.by_name)]
     assert names == ["my_seed", "other_seed"]
@@ -263,25 +268,27 @@ def test_iter_seed_entries_sorted_names() -> None:
 
 
 def test_extract_no_snapshots_section_skip() -> None:
-    out = extract_snapshot_entries(_success("sources_only.yml"))
+    out = extract_snapshot_entries(_success("shared/sources_only.yml"))
     assert isinstance(out, SnapshotEntriesSkip)
     assert out.reason == SKIP_NO_SNAPSHOTS_SECTION
 
 
 def test_extract_snapshots_empty_list() -> None:
-    out = extract_snapshot_entries(_success("snapshots_empty.yml"))
+    out = extract_snapshot_entries(
+        _success("allowed_keys/snapshots/snapshots_empty.yml")
+    )
     assert isinstance(out, SnapshotEntriesResult)
     assert out.by_name == {}
 
 
 def test_extract_snapshots_two() -> None:
-    out = extract_snapshot_entries(_success("snapshots_two.yml"))
+    out = extract_snapshot_entries(_success("allowed_keys/snapshots/snapshots_two.yml"))
     assert isinstance(out, SnapshotEntriesResult)
     assert set(out.by_name) == {"my_snapshot", "other_snapshot"}
 
 
 def test_iter_snapshot_entries_sorted_names() -> None:
-    out = extract_snapshot_entries(_success("snapshots_two.yml"))
+    out = extract_snapshot_entries(_success("allowed_keys/snapshots/snapshots_two.yml"))
     assert isinstance(out, SnapshotEntriesResult)
     names = [n for n, _ in iter_snapshot_entries(out.by_name)]
     assert names == ["my_snapshot", "other_snapshot"]
@@ -291,26 +298,28 @@ def test_iter_snapshot_entries_sorted_names() -> None:
 
 
 def test_extract_no_exposures_section_skip() -> None:
-    out = extract_exposure_entries(_success("sources_only.yml"))
+    out = extract_exposure_entries(_success("shared/sources_only.yml"))
     assert isinstance(out, ExposureEntriesSkip)
     assert out.reason == SKIP_NO_EXPOSURES_SECTION
 
 
 def test_extract_exposures_empty_list() -> None:
-    out = extract_exposure_entries(_success("exposures_empty.yml"))
+    out = extract_exposure_entries(
+        _success("allowed_keys/exposures/exposures_empty.yml")
+    )
     assert isinstance(out, ExposureEntriesResult)
     assert out.by_name == {}
 
 
 def test_extract_exposures_two() -> None:
-    out = extract_exposure_entries(_success("exposures_two.yml"))
+    out = extract_exposure_entries(_success("allowed_keys/exposures/exposures_two.yml"))
     assert isinstance(out, ExposureEntriesResult)
     assert set(out.by_name) == {"dash_a", "app_b"}
     assert out.by_name["dash_a"]["type"] == "dashboard"
 
 
 def test_iter_exposure_entries_sorted_names() -> None:
-    out = extract_exposure_entries(_success("exposures_two.yml"))
+    out = extract_exposure_entries(_success("allowed_keys/exposures/exposures_two.yml"))
     assert isinstance(out, ExposureEntriesResult)
     names = [n for n, _ in iter_exposure_entries(out.by_name)]
     assert names == ["app_b", "dash_a"]
