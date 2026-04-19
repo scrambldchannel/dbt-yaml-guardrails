@@ -1,0 +1,9 @@
+version: 2
+
+snapshots:
+  - name: my_snapshot
+    description: SCD2
+  - name: other_snapshot
+    config:
+      strategy: timestamp
+      updated_at: updated_at

@@ -1,0 +1,12 @@
+version: 2
+
+exposures:
+  - name: dash_a
+    type: dashboard
+    description: KPIs
+  - name: app_b
+    type: application
+    url: https://example.com
+    owner:
+      name: Team
+      email: team@example.com

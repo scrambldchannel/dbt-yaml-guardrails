@@ -10,7 +10,7 @@ from collections.abc import Iterator, Mapping, MutableMapping
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
@@ -22,6 +22,9 @@ from ruamel.yaml.error import YAMLError
 SKIP_EMPTY_OR_WHITESPACE = "empty_or_whitespace"
 SKIP_NO_MODELS_SECTION = "no_models_section"
 SKIP_NO_MACROS_SECTION = "no_macros_section"
+SKIP_NO_SEEDS_SECTION = "no_seeds_section"
+SKIP_NO_SNAPSHOTS_SECTION = "no_snapshots_section"
+SKIP_NO_EXPOSURES_SECTION = "no_exposures_section"
 
 
 @dataclass(frozen=True)
@@ -100,6 +103,67 @@ class MacroEntriesResult:
 
 
 MacroEntriesOutcome: TypeAlias = MacroEntriesResult | MacroEntriesSkip | ParseError
+
+
+@dataclass(frozen=True)
+class SeedEntriesSkip:
+    """No ``seeds:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class SeedEntriesResult:
+    """Normalized seed entries under ``seeds:``."""
+
+    path: Path
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+SeedEntriesOutcome: TypeAlias = SeedEntriesResult | SeedEntriesSkip | ParseError
+
+
+@dataclass(frozen=True)
+class SnapshotEntriesSkip:
+    """No ``snapshots:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class SnapshotEntriesResult:
+    """Normalized snapshot entries under ``snapshots:``."""
+
+    path: Path
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+SnapshotEntriesOutcome: TypeAlias = (
+    SnapshotEntriesResult | SnapshotEntriesSkip | ParseError
+)
+
+
+@dataclass(frozen=True)
+class ExposureEntriesSkip:
+    """No ``exposures:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class ExposureEntriesResult:
+    """Normalized exposure entries under ``exposures:``."""
+
+    path: Path
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+ExposureEntriesOutcome: TypeAlias = (
+    ExposureEntriesResult | ExposureEntriesSkip | ParseError
+)
 
 
 # ---------------------------------------------------------------------------
@@ -308,5 +372,112 @@ def iter_macro_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
     """Yield ``(name, entry)`` in stable key order (sorted by *name*) for reporting."""
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def _extract_named_list_by_name(
+    success: ParseSuccess,
+    *,
+    section_key: str,
+    label: str,
+) -> ParseError | Literal["skip"] | dict[str, dict[str, Any]]:
+    """Parse ``root[section_key]`` as a list of mappings with ``name``; return ``by_name`` or outcome."""
+    path = success.path
+    root = success.root
+    if section_key not in root:
+        return "skip"
+
+    raw = root[section_key]
+    if raw is None:
+        return ParseError(path, f"{section_key} must be a list, not null")
+    if not isinstance(raw, list):
+        return ParseError(
+            path,
+            f"{section_key} must be a list, got {type(raw).__name__}",
+        )
+
+    by_name: dict[str, dict[str, Any]] = {}
+    for idx, item in enumerate(raw):
+        if not isinstance(item, MutableMapping):
+            return ParseError(
+                path,
+                f"{label}[{idx}] must be a mapping, got {type(item).__name__}",
+            )
+        if "name" not in item:
+            return ParseError(path, f"{label}[{idx}] is missing required key 'name'")
+        raw_name = item["name"]
+        if not isinstance(raw_name, str) or not raw_name.strip():
+            return ParseError(
+                path,
+                f"{label}[{idx}].name must be a non-empty string, got {raw_name!r}",
+            )
+        name = raw_name.strip()
+        if name in by_name:
+            return ParseError(path, f"Duplicate {label[:-1]} name {name!r}")
+        by_name[name] = dict(item)
+
+    return by_name
+
+
+def extract_seed_entries(success: ParseSuccess) -> SeedEntriesOutcome:
+    """Normalize ``success.root`` ``seeds:`` into a map keyed by seed ``name``."""
+    r = _extract_named_list_by_name(
+        success,
+        section_key="seeds",
+        label="seeds",
+    )
+    if r == "skip":
+        return SeedEntriesSkip(success.path, SKIP_NO_SEEDS_SECTION)
+    if isinstance(r, ParseError):
+        return r
+    return SeedEntriesResult(success.path, r)
+
+
+def iter_seed_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def extract_snapshot_entries(success: ParseSuccess) -> SnapshotEntriesOutcome:
+    """Normalize ``success.root`` ``snapshots:`` into a map keyed by snapshot ``name``."""
+    r = _extract_named_list_by_name(
+        success,
+        section_key="snapshots",
+        label="snapshots",
+    )
+    if r == "skip":
+        return SnapshotEntriesSkip(success.path, SKIP_NO_SNAPSHOTS_SECTION)
+    if isinstance(r, ParseError):
+        return r
+    return SnapshotEntriesResult(success.path, r)
+
+
+def iter_snapshot_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def extract_exposure_entries(success: ParseSuccess) -> ExposureEntriesOutcome:
+    """Normalize ``success.root`` ``exposures:`` into a map keyed by exposure ``name``."""
+    r = _extract_named_list_by_name(
+        success,
+        section_key="exposures",
+        label="exposures",
+    )
+    if r == "skip":
+        return ExposureEntriesSkip(success.path, SKIP_NO_EXPOSURES_SECTION)
+    if isinstance(r, ParseError):
+        return r
+    return ExposureEntriesResult(success.path, r)
+
+
+def iter_exposure_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
     for name in sorted(by_name):
         yield name, by_name[name]

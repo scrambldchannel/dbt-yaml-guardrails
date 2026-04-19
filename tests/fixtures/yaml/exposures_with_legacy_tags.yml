@@ -1,0 +1,6 @@
+version: 2
+
+exposures:
+  - name: with_tags
+    type: dashboard
+    tags: ["deprecated_top_level"]

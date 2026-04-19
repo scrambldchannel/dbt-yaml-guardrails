@@ -14,7 +14,7 @@ Shared behavior (parser, document shape, when to skip a file, stderr/exit codes,
 
 + **`0`** — every processed file passed (including skipped files with no target section or empty file).
 + **`1`** — at least one key violation, or a YAML/parse/shape error for a file (see **`yaml-handling.md`** § Errors).
-+ **`2`** — invalid CLI usage (e.g. redundant **`name`** in **`--required`** for **`model-allowed-keys`** or **`macro-allowed-keys`**).
++ **`2`** — invalid CLI usage (e.g. redundant **`name`** in **`--required`** for any **`*-allowed-keys`** hook that validates named resources: **`model-allowed-keys`**, **`macro-allowed-keys`**, **`seed-allowed-keys`**, **`snapshot-allowed-keys`**, **`exposure-allowed-keys`**, …).
 
 ## Pattern: `*-allowed-keys` (shared design)
 
@@ -54,19 +54,45 @@ The CLI entry point and hook **`id`** should be **`macro-allowed-keys`**.
 
 **Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real macros in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Macros**, implemented as **`MACRO_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/resource_keys.py`**.
 
-## 3. Other resource types (same pattern)
+## 3. `seed-allowed-keys`
 
-Additional hooks **`SHOULD`** follow **§ Pattern: `*-allowed-keys`**, with **`resource-keys.md`** as the allowlist source for each target:
+Validates the **top-level keys on each seed entry** (each dict under the `seeds:` list).
+
+The CLI entry point and hook **`id`** should be **`seed-allowed-keys`**.
+
+**Pre-commit (shipped):** **`language: python`**, **`entry: seed-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
+
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real seeds in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Seeds**, implemented as **`SEED_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/resource_keys.py`**.
+
+## 4. `snapshot-allowed-keys`
+
+Validates the **top-level keys on each snapshot entry** (each dict under the `snapshots:` list).
+
+The CLI entry point and hook **`id`** should be **`snapshot-allowed-keys`**.
+
+**Pre-commit (shipped):** **`language: python`**, **`entry: snapshot-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
+
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real snapshots in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Snapshots**, implemented as **`SNAPSHOT_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/resource_keys.py`**.
+
+## 5. `exposure-allowed-keys`
+
+Validates the **top-level keys on each exposure entry** (each dict under the `exposures:` list).
+
+The CLI entry point and hook **`id`** should be **`exposure-allowed-keys`**.
+
+**Pre-commit (shipped):** **`language: python`**, **`entry: exposure-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
+
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real exposures in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Exposures**, implemented as **`EXPOSURE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/resource_keys.py`**.
+
+## 6. Other resource types (later version)
+
+Hooks for **sources**, **source tables**, **analyses**, **unit tests**, and any other targets described in **`resource-keys.md`** but not listed in **§§ 1–5** above are **planned for a later version**. They **`SHOULD`** follow **§ Pattern: `*-allowed-keys`** when implemented, with **`resource-keys.md`** as the allowlist source for each target:
 
 | Target (conceptual) | `resource-keys.md` section | Notes |
 | --- | --- | --- |
 | Each source | § **Sources** | Top-level list under `sources:` |
 | Each source table | § **Source tables** | Nested list under `sources: … tables:`; distinct hook from source-level keys |
-| Each seed | § **Seeds** | Under `seeds:` |
-| Each snapshot | § **Snapshots** | Under `snapshots:` |
-| Each macro | § **Macros** | Under `macros:` |
-| Each exposure | § **Exposures** | Under `exposures:` |
 | Each analysis | § **Analyses** | Under `analyses:` |
 | Each unit test | § **Unit tests** | Under `unit_tests:` |
 
-Concrete **`id`**, **`entry`**, and **`[project.scripts]`** names are chosen when each hook is implemented; they **SHOULD** stay predictable (e.g. `source-allowed-keys`, `source-table-allowed-keys`, …).
+Concrete **`id`**, **`entry`**, and **`[project.scripts]`** names **`SHOULD`** stay predictable (e.g. `source-allowed-keys`, `source-table-allowed-keys`, …).

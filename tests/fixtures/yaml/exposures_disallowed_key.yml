@@ -1,0 +1,6 @@
+version: 2
+
+exposures:
+  - name: x
+    type: dashboard
+    not_in_allowlist: true

@@ -1,0 +1,9 @@
+version: 2
+
+seeds:
+  - name: my_seed
+    description: Raw data
+  - name: other_seed
+    config:
+      docs:
+        show: true

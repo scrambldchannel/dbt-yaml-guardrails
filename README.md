@@ -9,10 +9,13 @@ These hooks **do not run dbt**—they only parse YAML and check key names. That 
 ## Hooks
 
 
-| ID                   | Validates                              |
-| -------------------- | -------------------------------------- |
-| `model-allowed-keys` | Top-level keys on each `models:` entry |
-| `macro-allowed-keys` | Top-level keys on each `macros:` entry |
+| ID                      | Validates                                 |
+| ----------------------- | ----------------------------------------- |
+| `model-allowed-keys`    | Top-level keys on each `models:` entry    |
+| `macro-allowed-keys`    | Top-level keys on each `macros:` entry    |
+| `seed-allowed-keys`     | Top-level keys on each `seeds:` entry      |
+| `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
+| `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
 
 
 Each hook uses a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
@@ -34,6 +37,9 @@ repos:
       - id: model-allowed-keys
         args: ["--required", "description", "--forbidden", "version"]
       - id: macro-allowed-keys
+      - id: seed-allowed-keys
+      - id: snapshot-allowed-keys
+      - id: exposure-allowed-keys
 ```
 
 Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.

@@ -1,0 +1,7 @@
+version: 2
+
+seeds:
+  - name: with_config
+    config:
+      docs:
+        show: true

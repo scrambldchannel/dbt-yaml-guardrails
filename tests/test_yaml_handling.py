@@ -6,8 +6,13 @@ from pathlib import Path
 
 from dbt_yaml_guardrails.yaml_handling import (
     SKIP_EMPTY_OR_WHITESPACE,
+    SKIP_NO_EXPOSURES_SECTION,
     SKIP_NO_MACROS_SECTION,
     SKIP_NO_MODELS_SECTION,
+    SKIP_NO_SEEDS_SECTION,
+    SKIP_NO_SNAPSHOTS_SECTION,
+    ExposureEntriesResult,
+    ExposureEntriesSkip,
     MacroEntriesResult,
     MacroEntriesSkip,
     ModelEntriesResult,
@@ -15,10 +20,20 @@ from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
     ParseSkip,
     ParseSuccess,
+    SeedEntriesResult,
+    SeedEntriesSkip,
+    SnapshotEntriesResult,
+    SnapshotEntriesSkip,
+    extract_exposure_entries,
     extract_macro_entries,
     extract_model_entries,
+    extract_seed_entries,
+    extract_snapshot_entries,
+    iter_exposure_entries,
     iter_macro_entries,
     iter_model_entries,
+    iter_seed_entries,
+    iter_snapshot_entries,
     load_property_yaml,
 )
 
@@ -207,3 +222,95 @@ def test_iter_macro_entries_sorted_names() -> None:
     assert isinstance(out, MacroEntriesResult)
     names = [n for n, _ in iter_macro_entries(out.by_name)]
     assert names == ["my_macro", "other_macro"]
+
+
+# --- extract_seed_entries ---
+
+
+def test_extract_no_seeds_section_skip() -> None:
+    out = extract_seed_entries(_success("sources_only.yml"))
+    assert isinstance(out, SeedEntriesSkip)
+    assert out.reason == SKIP_NO_SEEDS_SECTION
+
+
+def test_extract_seeds_empty_list() -> None:
+    out = extract_seed_entries(_success("seeds_empty.yml"))
+    assert isinstance(out, SeedEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_seeds_two() -> None:
+    out = extract_seed_entries(_success("seeds_two.yml"))
+    assert isinstance(out, SeedEntriesResult)
+    assert set(out.by_name) == {"my_seed", "other_seed"}
+    assert out.by_name["my_seed"]["description"] == "Raw data"
+
+
+def test_extract_duplicate_seed_name() -> None:
+    out = extract_seed_entries(_success("seeds_duplicate_name.yml"))
+    assert isinstance(out, ParseError)
+    assert "Duplicate seed name" in out.message
+
+
+def test_iter_seed_entries_sorted_names() -> None:
+    out = extract_seed_entries(_success("seeds_two.yml"))
+    assert isinstance(out, SeedEntriesResult)
+    names = [n for n, _ in iter_seed_entries(out.by_name)]
+    assert names == ["my_seed", "other_seed"]
+
+
+# --- extract_snapshot_entries ---
+
+
+def test_extract_no_snapshots_section_skip() -> None:
+    out = extract_snapshot_entries(_success("sources_only.yml"))
+    assert isinstance(out, SnapshotEntriesSkip)
+    assert out.reason == SKIP_NO_SNAPSHOTS_SECTION
+
+
+def test_extract_snapshots_empty_list() -> None:
+    out = extract_snapshot_entries(_success("snapshots_empty.yml"))
+    assert isinstance(out, SnapshotEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_snapshots_two() -> None:
+    out = extract_snapshot_entries(_success("snapshots_two.yml"))
+    assert isinstance(out, SnapshotEntriesResult)
+    assert set(out.by_name) == {"my_snapshot", "other_snapshot"}
+
+
+def test_iter_snapshot_entries_sorted_names() -> None:
+    out = extract_snapshot_entries(_success("snapshots_two.yml"))
+    assert isinstance(out, SnapshotEntriesResult)
+    names = [n for n, _ in iter_snapshot_entries(out.by_name)]
+    assert names == ["my_snapshot", "other_snapshot"]
+
+
+# --- extract_exposure_entries ---
+
+
+def test_extract_no_exposures_section_skip() -> None:
+    out = extract_exposure_entries(_success("sources_only.yml"))
+    assert isinstance(out, ExposureEntriesSkip)
+    assert out.reason == SKIP_NO_EXPOSURES_SECTION
+
+
+def test_extract_exposures_empty_list() -> None:
+    out = extract_exposure_entries(_success("exposures_empty.yml"))
+    assert isinstance(out, ExposureEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_exposures_two() -> None:
+    out = extract_exposure_entries(_success("exposures_two.yml"))
+    assert isinstance(out, ExposureEntriesResult)
+    assert set(out.by_name) == {"dash_a", "app_b"}
+    assert out.by_name["dash_a"]["type"] == "dashboard"
+
+
+def test_iter_exposure_entries_sorted_names() -> None:
+    out = extract_exposure_entries(_success("exposures_two.yml"))
+    assert isinstance(out, ExposureEntriesResult)
+    names = [n for n, _ in iter_exposure_entries(out.by_name)]
+    assert names == ["app_b", "dash_a"]

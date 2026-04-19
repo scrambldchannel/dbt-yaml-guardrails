@@ -1,0 +1,7 @@
+version: 2
+
+exposures:
+  - name: with_config
+    type: dashboard
+    config:
+      tags: ["finance"]

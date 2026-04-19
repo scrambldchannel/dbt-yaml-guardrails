@@ -1,0 +1,5 @@
+version: 2
+
+seeds:
+  - name: x
+    not_in_allowlist: true

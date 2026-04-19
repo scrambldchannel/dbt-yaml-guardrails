@@ -1,0 +1,5 @@
+version: 2
+
+exposures:
+  - name: only_name
+    type: dashboard

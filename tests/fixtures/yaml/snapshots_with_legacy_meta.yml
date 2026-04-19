@@ -1,0 +1,6 @@
+version: 2
+
+snapshots:
+  - name: with_meta
+    meta:
+      owner: analytics

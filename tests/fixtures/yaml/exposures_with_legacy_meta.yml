@@ -1,0 +1,7 @@
+version: 2
+
+exposures:
+  - name: with_meta
+    type: dashboard
+    meta:
+      owner: analytics

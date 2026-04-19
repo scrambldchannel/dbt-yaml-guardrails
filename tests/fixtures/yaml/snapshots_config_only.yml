@@ -1,0 +1,7 @@
+version: 2
+
+snapshots:
+  - name: with_config
+    config:
+      strategy: check
+      check_cols: ["id"]

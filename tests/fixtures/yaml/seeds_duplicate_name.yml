@@ -1,0 +1,7 @@
+version: 2
+
+seeds:
+  - name: dup
+    description: First
+  - name: dup
+    description: Second

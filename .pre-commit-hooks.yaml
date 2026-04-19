@@ -14,3 +14,24 @@
   entry: macro-allowed-keys
   language: python
   types: [yaml]
+
+- id: seed-allowed-keys
+  name: dbt seed allowed keys
+  description: Validate top-level keys on each seed entry in dbt property YAML
+  entry: seed-allowed-keys
+  language: python
+  types: [yaml]
+
+- id: snapshot-allowed-keys
+  name: dbt snapshot allowed keys
+  description: Validate top-level keys on each snapshot entry in dbt property YAML
+  entry: snapshot-allowed-keys
+  language: python
+  types: [yaml]
+
+- id: exposure-allowed-keys
+  name: dbt exposure allowed keys
+  description: Validate top-level keys on each exposure entry in dbt property YAML
+  entry: exposure-allowed-keys
+  language: python
+  types: [yaml]
