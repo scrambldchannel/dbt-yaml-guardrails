@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dbt-yaml-guardrails"
+version = "0.1.0"
+description = "Pre-commit hooks for configurable standards on dbt property YAML (Fusion-oriented)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ruamel.yaml>=0.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[project.scripts]
+model-allowed-keys = "dbt_yaml_guardrails.model_allowed_keys:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dbt_yaml_guardrails"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
