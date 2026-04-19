@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: x
+    not_in_allowlist: true
