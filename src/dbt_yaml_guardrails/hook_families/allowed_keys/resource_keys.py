@@ -1,4 +1,9 @@
-"""Fusion-oriented default allowlists for dbt property YAML (see ``specs/resource-keys.md``)."""
+"""Fusion-oriented default allowlists for dbt property YAML.
+
+The ``*_ALLOWED_KEYS`` and ``*_LEGACY_KEY_MESSAGES`` values are the implementation
+source for the **`*-allowed-keys`** family; they **must** stay aligned with
+``specs/resource-keys.md`` (change the spec and this module together).
+"""
 
 from __future__ import annotations
 

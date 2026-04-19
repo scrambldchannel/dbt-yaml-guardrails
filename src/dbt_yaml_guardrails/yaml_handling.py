@@ -246,12 +246,20 @@ def _validate_top_level_version(
 
 
 def load_property_yaml(path: Path) -> ParseFileOutcome:
-    """Read *path* and return a parsed top-level mapping or skip/error.
+    """Read a dbt property YAML file and return a parse outcome.
 
     Implements ``specs/yaml-handling.md`` § Parsing (UTF-8, BOM, empty skip,
     ``ruamel.yaml``, single document, duplicate keys, invalid YAML) and
-    top-level ``version:`` validation. Does not inspect ``models:`` / ``macros:`` shape
-    (see :func:`extract_model_entries`, :func:`extract_macro_entries`).
+    top-level ``version:`` validation. Does not inspect resource list shape
+    (``models:``, ``macros:``, …); use the ``extract_*_entries`` functions.
+
+    Args:
+        path: Path to the YAML file.
+
+    Returns:
+        :class:`ParseSuccess` with the document root mapping, :class:`ParseSkip`
+        for empty/whitespace-only input, or :class:`ParseError` on I/O or
+        parse failure.
     """
     read = _read_text(path)
     if isinstance(read, (ParseSkip, ParseError)):
@@ -260,15 +268,20 @@ def load_property_yaml(path: Path) -> ParseFileOutcome:
 
 
 def extract_model_entries(success: ParseSuccess) -> ModelEntriesOutcome:
-    """Normalize ``success.root`` ``models:`` into a map keyed by model ``name``.
+    """Normalize ``success.root["models"]`` into a map keyed by model ``name``.
 
     If there is no ``models`` key, returns :class:`ModelEntriesSkip` (per
     ``specs/yaml-handling.md`` — file ignored for model hooks). Otherwise
     ``models`` must be a list of mappings, each with a non-empty string ``name``;
     duplicate ``name`` values are an error.
 
-    Callers must pass only a :class:`ParseSuccess` (after handling
-    :class:`ParseSkip` / :class:`ParseError` from :func:`load_property_yaml`).
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`ModelEntriesResult` with ``by_name``, :class:`ModelEntriesSkip`
+        if there is no ``models:`` section, or :class:`ParseError` on bad shape.
     """
     path = success.path
     root = success.root
@@ -311,24 +324,35 @@ def extract_model_entries(success: ParseSuccess) -> ModelEntriesOutcome:
 def iter_model_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
-    """Yield ``(name, entry)`` in stable key order (sorted by *name*) for reporting.
+    """Yield ``(name, entry)`` in stable key order (sorted by name) for reporting.
 
     Hooks should use this when emitting violations so ordering matches
     ``yaml-handling.md`` § Errors (path, then resource name, …).
+
+    Args:
+        by_name: Map from model name to model entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
     """
     for name in sorted(by_name):
         yield name, by_name[name]
 
 
 def extract_macro_entries(success: ParseSuccess) -> MacroEntriesOutcome:
-    """Normalize ``success.root`` ``macros:`` into a map keyed by macro ``name``.
+    """Normalize ``success.root["macros"]`` into a map keyed by macro ``name``.
 
     If there is no ``macros`` key, returns :class:`MacroEntriesSkip`. Otherwise
     ``macros`` must be a list of mappings, each with a non-empty string ``name``;
     duplicate ``name`` values are an error.
 
-    Callers must pass only a :class:`ParseSuccess` (after handling
-    :class:`ParseSkip` / :class:`ParseError` from :func:`load_property_yaml`).
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`MacroEntriesResult` with ``by_name``, :class:`MacroEntriesSkip`
+        if there is no ``macros:`` section, or :class:`ParseError` on bad shape.
     """
     path = success.path
     root = success.root
@@ -371,7 +395,14 @@ def extract_macro_entries(success: ParseSuccess) -> MacroEntriesOutcome:
 def iter_macro_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
-    """Yield ``(name, entry)`` in stable key order (sorted by *name*) for reporting."""
+    """Yield ``(name, entry)`` in stable key order (sorted by name) for reporting.
+
+    Args:
+        by_name: Map from macro name to macro entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
     for name in sorted(by_name):
         yield name, by_name[name]
 
@@ -382,7 +413,17 @@ def _extract_named_list_by_name(
     section_key: str,
     label: str,
 ) -> ParseError | Literal["skip"] | dict[str, dict[str, Any]]:
-    """Parse ``root[section_key]`` as a list of mappings with ``name``; return ``by_name`` or outcome."""
+    """Parse ``root[section_key]`` as a list of mappings with a string ``name``.
+
+    Args:
+        success: Loaded YAML document.
+        section_key: Top-level key (e.g. ``\"seeds\"``).
+        label: Human-readable plural for error messages (e.g. ``\"seeds\"``).
+
+    Returns:
+        ``\"skip\"`` if *section_key* is absent, a :class:`ParseError` on bad
+        shape, or a ``by_name`` dict on success.
+    """
     path = success.path
     root = success.root
     if section_key not in root:
@@ -421,7 +462,16 @@ def _extract_named_list_by_name(
 
 
 def extract_seed_entries(success: ParseSuccess) -> SeedEntriesOutcome:
-    """Normalize ``success.root`` ``seeds:`` into a map keyed by seed ``name``."""
+    """Normalize ``success.root["seeds"]`` into a map keyed by seed ``name``.
+
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`SeedEntriesResult`, :class:`SeedEntriesSkip` if there is no
+        ``seeds:`` section, or :class:`ParseError` on bad shape.
+    """
     r = _extract_named_list_by_name(
         success,
         section_key="seeds",
@@ -437,12 +487,29 @@ def extract_seed_entries(success: ParseSuccess) -> SeedEntriesOutcome:
 def iter_seed_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in sorted name order (see :func:`iter_model_entries`).
+
+    Args:
+        by_name: Map from seed name to seed entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
     for name in sorted(by_name):
         yield name, by_name[name]
 
 
 def extract_snapshot_entries(success: ParseSuccess) -> SnapshotEntriesOutcome:
-    """Normalize ``success.root`` ``snapshots:`` into a map keyed by snapshot ``name``."""
+    """Normalize ``success.root["snapshots"]`` into a map keyed by snapshot ``name``.
+
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`SnapshotEntriesResult`, :class:`SnapshotEntriesSkip` if there
+        is no ``snapshots:`` section, or :class:`ParseError` on bad shape.
+    """
     r = _extract_named_list_by_name(
         success,
         section_key="snapshots",
@@ -458,12 +525,29 @@ def extract_snapshot_entries(success: ParseSuccess) -> SnapshotEntriesOutcome:
 def iter_snapshot_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in sorted name order (see :func:`iter_model_entries`).
+
+    Args:
+        by_name: Map from snapshot name to snapshot entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
     for name in sorted(by_name):
         yield name, by_name[name]
 
 
 def extract_exposure_entries(success: ParseSuccess) -> ExposureEntriesOutcome:
-    """Normalize ``success.root`` ``exposures:`` into a map keyed by exposure ``name``."""
+    """Normalize ``success.root["exposures"]`` into a map keyed by exposure ``name``.
+
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`ExposureEntriesResult`, :class:`ExposureEntriesSkip` if there
+        is no ``exposures:`` section, or :class:`ParseError` on bad shape.
+    """
     r = _extract_named_list_by_name(
         success,
         section_key="exposures",
@@ -479,5 +563,13 @@ def extract_exposure_entries(success: ParseSuccess) -> ExposureEntriesOutcome:
 def iter_exposure_entries(
     by_name: Mapping[str, Mapping[str, Any]],
 ) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in sorted name order (see :func:`iter_model_entries`).
+
+    Args:
+        by_name: Map from exposure name to exposure entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
     for name in sorted(by_name):
         yield name, by_name[name]

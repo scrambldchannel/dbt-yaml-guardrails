@@ -7,7 +7,11 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 ## 2. Tech Stack & Standards
 - **Language:** Python 3.10+
 - **Tooling:** uv, pytest, github
-- **Libraries** ruamel.yaml, typer
+- **Libraries:** ruamel.yaml, typer
+
+### Docstrings
+
+Where a docstring is worth having (public APIs, non-obvious behavior, shared cores), use **Google style** sections (`Args:`, `Returns:`, `Raises:`, …). Skip docstrings that only restate the name of the function.
 
 ### Source and test layout (mirror hook families)
 

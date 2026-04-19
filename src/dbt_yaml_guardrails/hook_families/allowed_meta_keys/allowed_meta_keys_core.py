@@ -29,11 +29,24 @@ def violations_for_meta_keys(
     forbidden: set[str],
     allowed: frozenset[str] | None,
 ) -> list[ViolationRow]:
-    """Validate *meta_keys* against *required*, *forbidden*, and optional allowlist.
+    """Validate key names under ``config.meta`` for one resource.
 
-    * *allowed* is ``None`` — only *required* and *forbidden* apply (no unknown-key rule).
-    * *allowed* is a ``frozenset`` — allowlist mode: effective allow = *allowed* ∪ *required*;
-      *forbidden* still wins for keys present on *meta*.
+    If ``allowed`` is ``None``, only *required* and *forbidden* apply (unknown
+    keys are not reported). If ``allowed`` is set, allowlist mode applies:
+    effective allow is ``allowed | required``, and *forbidden* still wins for
+    keys present on *meta*.
+
+    Args:
+        path_posix: File path (POSIX) for stable ordering.
+        resource_id: Resource name (e.g. model name).
+        meta_keys: Keys present on ``config.meta`` (empty if ``meta`` absent).
+        required: Meta keys that must be present.
+        forbidden: Meta keys that must not be present.
+        allowed: If ``None``, no unknown-key rule; if set, enable allowlist mode.
+
+    Returns:
+        Unsorted violation rows for
+        :func:`dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core.finalize_violation_rows`.
     """
     rows: list[ViolationRow] = []
     for req in sorted(required):
@@ -65,9 +78,19 @@ def meta_keys_from_resource_entry(
     resource_name: str,
     entry: Mapping[str, Any],
 ) -> ParseError | set[str]:
-    """Return top-level keys on ``config.meta`` for a resource entry, or :class:`ParseError`.
+    """Return the set of keys on ``config.meta`` for one resource entry.
 
-    *resource_kind* is the singular label in messages (e.g. ``\"model\"``, ``\"seed\"``).
+    Missing ``config`` or ``meta`` yields an empty set. Invalid shapes return
+    :class:`~dbt_yaml_guardrails.yaml_handling.ParseError`.
+
+    Args:
+        path: Source file (for error messages).
+        resource_kind: Singular label in messages (e.g. ``\"model\"``, ``\"seed\"``).
+        resource_name: Resource ``name`` field.
+        entry: Full resource mapping from YAML.
+
+    Returns:
+        Key names under ``meta``, or :class:`~dbt_yaml_guardrails.yaml_handling.ParseError`.
     """
     if "config" not in entry:
         return set()
@@ -111,7 +134,20 @@ def collect_violation_rows_for_resource_meta_paths(
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
 ) -> list[ViolationRow]:
-    """Walk *files*, extract resource entries, validate ``config.meta`` keys per entry."""
+    """Walk *files* and validate ``config.meta`` keys for each entry of *resource_kind*.
+
+    Args:
+        files: Property YAML paths from the CLI.
+        required: Meta keys that must be present.
+        forbidden: Meta keys that must not be present.
+        allowed: Optional allowlist (``None`` disables unknown-key enforcement).
+        resource_kind: Singular noun for messages and stderr (e.g. ``\"model\"``).
+        extract_by_name: Parse success to ``by_name`` map, skip, or parse error.
+        iter_entries: Stable iteration over resource entries.
+
+    Returns:
+        Unsorted violation rows.
+    """
     rows: list[ViolationRow] = []
     for path in files:
         path = path.expanduser()
@@ -162,7 +198,23 @@ def run_allowed_meta_keys_cli(
     ],
     emit: Callable[[str], None],
 ) -> int:
-    """Parse CLI flags, collect violations, emit; return ``0`` or ``1``."""
+    """Run a ``*-allowed-meta-keys`` hook: parse flags, validate, print.
+
+    Args:
+        files: Positional YAML paths.
+        required_csv: ``--required`` value (comma-separated).
+        forbidden_csv: ``--forbidden`` value (comma-separated).
+        allowed_option: ``--allowed`` if passed, else ``None`` (absent vs empty
+            string follows Typer; see ``specs/hook-families/allowed-meta-keys.md``).
+        resource_kind: Singular resource label (e.g. ``\"seed\"``).
+        extract_by_name: Same contract as :func:`collect_violation_rows_for_resource_meta_paths`.
+        iter_entries: Same contract as :func:`collect_violation_rows_for_resource_meta_paths`.
+        emit: Line sink for violations (typically ``typer.echo(..., err=True)``).
+
+    Returns:
+        ``0`` on success or no-op (no policy, or no files), ``1`` if violations
+        were printed.
+    """
     required = parse_csv_keys(required_csv)
     forbidden = parse_csv_keys(forbidden_csv)
     if allowed_option is None:

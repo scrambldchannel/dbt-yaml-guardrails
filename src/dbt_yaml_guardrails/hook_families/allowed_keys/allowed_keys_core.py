@@ -20,12 +20,27 @@ ViolationRow: TypeAlias = tuple[SortKey, str]
 
 
 def parse_csv_keys(raw: str) -> set[str]:
-    """Split a comma-separated key list (whitespace trimmed, empty parts dropped)."""
+    """Split a comma-separated key list from CLI flags.
+
+    Args:
+        raw: String from ``--required`` / ``--forbidden`` / similar (comma-separated).
+
+    Returns:
+        Non-empty key strings, whitespace-stripped, with empty segments removed.
+    """
     return {part.strip() for part in raw.split(",") if part.strip()}
 
 
 def violation_row_parse_error(path_posix: str, message: str) -> ViolationRow:
-    """One sortable row for YAML / extract failure on *path_posix*."""
+    """Build one sortable violation row for a file-level parse or shape error.
+
+    Args:
+        path_posix: File path (POSIX) for stable ordering.
+        message: Error text shown on stderr.
+
+    Returns:
+        A :data:`ViolationRow` with empty resource id and kind ``3`` (parse).
+    """
     return ((path_posix, "", message, 3), message)
 
 
@@ -38,11 +53,21 @@ def violations_for_entries(
     forbidden: set[str],
     legacy_key_messages: Mapping[str, str] | None = None,
 ) -> list[ViolationRow]:
-    """Collect violation rows for each resource entry under *path_posix*.
+    """Collect violation rows for top-level keys on each resource entry.
 
-    *entries* yields ``(resource_id, mapping)`` (e.g. model name and model dict).
-    *legacy_key_messages* maps known legacy keys to actionable messages (see
-    ``specs/resource-keys.md`` § Legacy / deprecated; ``specs/hook-families/allowed-keys.md`` § Pattern).
+    Args:
+        path_posix: File path (POSIX) for this batch of entries.
+        entries: ``(resource_id, mapping)`` pairs (e.g. model name and model dict).
+        allowed: Keys permitted on each entry (family allowlist from
+            ``resource_keys``).
+        required: Keys that must appear on every entry.
+        forbidden: Keys that must not appear (deny wins over allowlist).
+        legacy_key_messages: Optional map from legacy key to stderr detail
+            (``specs/resource-keys.md`` § Legacy / deprecated).
+
+    Returns:
+        Unsorted :data:`ViolationRow` list; use :func:`finalize_violation_rows` to
+        sort and print.
     """
     legacy = legacy_key_messages or {}
     rows: list[ViolationRow] = []
@@ -63,7 +88,12 @@ def violations_for_entries(
 
 
 def sort_violation_rows(rows: list[ViolationRow]) -> None:
-    """Stable sort: path, resource id, key / message, kind (``yaml-handling.md`` § Errors)."""
+    """Sort *rows* in place by sort key (``yaml-handling.md`` § Errors).
+
+    Args:
+        rows: Violation rows produced by :func:`violations_for_entries` or
+            :func:`collect_violation_rows_for_property_paths`.
+    """
     rows.sort(key=lambda item: item[0])
 
 
@@ -73,7 +103,16 @@ def format_violation_line(
     *,
     resource_label: str,
 ) -> str:
-    """Format one line for stderr (``resource_label`` e.g. ``\"model\"``, ``\"source\"``)."""
+    """Format one stderr line for a single violation.
+
+    Args:
+        sort_key: Tuple carrying path, resource id, key/message, and kind.
+        detail: Human-readable violation text.
+        resource_label: Singular resource noun (e.g. ``\"model\"``, ``\"seed\"``).
+
+    Returns:
+        Line suitable for printing (no trailing newline).
+    """
     fspath, resource_id, _, _ = sort_key
     if resource_id:
         return f"{fspath}: {resource_label} '{resource_id}': {detail}"
@@ -86,13 +125,26 @@ def print_violation_rows(
     resource_label: str,
     emit: Callable[[str], None],
 ) -> None:
-    """Emit each line with *emit* (e.g. ``lambda m: typer.echo(m, err=True)``)."""
+    """Print each violation using *emit* (e.g. Typer to stderr).
+
+    Args:
+        rows: Sorted rows from :func:`sort_violation_rows`.
+        resource_label: Singular resource noun for lines that include a resource id.
+        emit: Callable that prints one line (typically ``typer.echo(..., err=True)``).
+    """
     for sort_key, detail in rows:
         emit(format_violation_line(sort_key, detail, resource_label=resource_label))
 
 
 def message_name_in_required(*, resource_plural: str) -> str:
-    """CLI error when ``name`` is in ``--required`` (``--required`` is redundant for real resources)."""
+    """Message for exit code 2 when ``name`` appears in ``--required``.
+
+    Args:
+        resource_plural: Plural resource noun for the error text (e.g. ``\"models\"``).
+
+    Returns:
+        Single-line message suitable for stderr.
+    """
     return (
         f"error: do not list 'name' in --required "
         f"(it is always present on real {resource_plural})"
@@ -115,10 +167,22 @@ def collect_violation_rows_for_property_paths(
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
 ) -> list[ViolationRow]:
-    """Walk *files* with :func:`load_property_yaml`, then validate keys per resource.
+    """Walk *files*, load YAML, and validate top-level keys on each resource entry.
 
-    *extract_by_name* returns ``None`` if the file has no hook target section (skip),
-    :class:`ParseError` for shape errors, or ``by_name`` mapping on success.
+    Args:
+        files: Property YAML paths from the CLI.
+        required: Keys that must appear on every entry.
+        forbidden: Keys that must not appear.
+        allowed: Fixed allowlist for the hook family (from ``resource_keys``).
+        legacy_key_messages: Optional legacy-key detail strings.
+        extract_by_name: From a :class:`~dbt_yaml_guardrails.yaml_handling.ParseSuccess`,
+            return ``None`` if the file has no target section (skip),
+            :class:`~dbt_yaml_guardrails.yaml_handling.ParseError` for shape errors,
+            or a ``name -> entry`` map on success.
+        iter_entries: Stable iteration over that map (e.g. :func:`~dbt_yaml_guardrails.yaml_handling.iter_model_entries`).
+
+    Returns:
+        Unsorted violation rows.
     """
     rows: list[ViolationRow] = []
     for path in files:
@@ -154,7 +218,16 @@ def finalize_violation_rows(
     resource_label: str,
     emit: Callable[[str], None],
 ) -> int:
-    """Return ``0`` if *rows* is empty; otherwise sort, print, return ``1``."""
+    """Sort, print violations, and return an exit code.
+
+    Args:
+        rows: Violation rows for the run (may be empty).
+        resource_label: Singular resource noun for formatting.
+        emit: Line sink (typically Typer stderr).
+
+    Returns:
+        ``0`` if *rows* is empty, else ``1``.
+    """
     if not rows:
         return 0
     sort_violation_rows(rows)
