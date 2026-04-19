@@ -41,4 +41,4 @@ These rules apply to **every** hook’s CLI unless a hook’s spec in **`hooks.m
 + **Numeric exit codes** for `*-allowed-keys` CLIs (e.g. **`0`**, **`1`**, **`2`**) are defined in **`hooks.md`**; this section defines **stderr** and **non-zero vs zero** semantics
 + Print messages in a **stable** order: file path, then resource name (or declared identifier), then key or rule id
 + Show every violation for each resource entry (per model, per source, etc., according to the hook’s target type)
-+ Example line shape (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`
++ Example line shape for an **unknown** disallowed key (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`. For **legacy** keys (see **`resource-keys.md`** § Legacy / deprecated and **`hooks.md`** § Pattern), messages **SHOULD** point to the replacement name or **`config`** location instead of using only this generic form

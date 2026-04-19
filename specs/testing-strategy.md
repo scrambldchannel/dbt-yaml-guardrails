@@ -14,6 +14,7 @@
 ## Assertions
 
 + **Exit code** is the default contract: tests should assert **`0`** on success and **`1`** (or other documented non-zero codes from [`hooks.md`](hooks.md)) when violations, parse errors, or invalid CLI usage are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors and [`hooks.md`](hooks.md) **Exit codes**
++ When testing **legacy** keys (see [`resource-keys.md`](resource-keys.md) § Legacy / deprecated and [`hooks.md`](hooks.md) § Pattern), assert stderr includes the **Suggested violation detail** (or equivalent wording) once hooks implement that behavior.
 + **Coverage** and **pytest markers** are out of scope for now.
 
 ## CI
