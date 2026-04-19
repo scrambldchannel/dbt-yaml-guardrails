@@ -35,3 +35,10 @@
   entry: exposure-allowed-keys
   language: python
   types: [yaml]
+
+- id: model-allowed-meta-keys
+  name: dbt model allowed meta keys
+  description: Validate keys on config.meta for each model entry in dbt property YAML
+  entry: model-allowed-meta-keys
+  language: python
+  types: [yaml]

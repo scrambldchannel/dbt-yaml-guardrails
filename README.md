@@ -9,16 +9,18 @@ These hooks **do not run dbt**—they only parse YAML and check key names. That 
 ## Hooks
 
 
-| ID                      | Validates                                 |
-| ----------------------- | ----------------------------------------- |
-| `model-allowed-keys`    | Top-level keys on each `models:` entry    |
-| `macro-allowed-keys`    | Top-level keys on each `macros:` entry    |
-| `seed-allowed-keys`     | Top-level keys on each `seeds:` entry      |
-| `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
-| `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
+| ID                         | Validates                                                                 |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `model-allowed-keys`       | Top-level keys on each `models:` entry                                    |
+| `macro-allowed-keys`       | Top-level keys on each `macros:` entry                                    |
+| `seed-allowed-keys`        | Top-level keys on each `seeds:` entry                                     |
+| `snapshot-allowed-keys`    | Top-level keys on each `snapshots:` entry                                 |
+| `exposure-allowed-keys`      | Top-level keys on each `exposures:` entry                                 |
+| `model-allowed-meta-keys`    | Keys under `config.meta` on each `models:` entry ([`allowed-meta-keys`](specs/hook-families/allowed-meta-keys.md)) |
 
+The **`model-allowed-meta-keys`** hook has **no** fixed allowlist in-repo: use optional **`--allowed`**, plus **`--required`** / **`--forbidden`**, as documented in [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md).
 
-Each hook uses a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
+The **`*-allowed-keys`** hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
 - **--required** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
 - **--forbidden** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
@@ -40,6 +42,8 @@ repos:
       - id: seed-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
+      - id: model-allowed-meta-keys
+        args: ["--allowed", "owner"]
 ```
 
 Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.

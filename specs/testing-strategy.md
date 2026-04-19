@@ -1,6 +1,6 @@
 # Testing strategy
 
-**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (umbrella; packaging), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (per-hook CLIs for **`*-allowed-keys`**, **numeric exit codes**, defaults), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** is the implementation source for models).
+**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, stderr, non-zero semantics), [`hooks.md`](hooks.md) (umbrella; packaging), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) (per-hook CLIs for **`*-allowed-keys`**, **numeric exit codes**, defaults), [`hook-families/allowed-meta-keys.md`](hook-families/allowed-meta-keys.md) (**`*-allowed-meta-keys`**; **`config.meta`** key policy), [`resource-keys.md`](resource-keys.md) (documented allowlists; **`MODEL_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** is the implementation source for models).
 
 ## Runner
 
