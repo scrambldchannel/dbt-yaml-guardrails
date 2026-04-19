@@ -4,15 +4,17 @@ Hooks in this family are named **`{resource}-allowed-meta-keys`** (e.g. **`model
 
 dbt Core treats **`meta`** as an **arbitrary** key–value dictionary—there is **no Fusion-style built-in allowlist** in Core. This family lets **projects supply their own optional allowlist** via the CLI; there is **no** default allowlist in **`resource-keys.md`** (unlike **`*-allowed-keys`**).
 
+**Shipped behavior today:** **`--required`**, **`--forbidden`**, and **`--allowed`** each list **top-level key names** on **`meta`** only (single segment per token, no **`.`**). **Nested paths** are a **future extension**—see **§ Future: nested key paths (dot notation)**.
+
 ## CLI contract (aligned with **`allowed-keys.md`** where applicable)
 
 Hooks **SHOULD** use the same comma-separated parsing and trimming for flags as **`allowed-keys.md`**, and the same **exit code** pattern (**`0`** / **`1`** / **`2`**).
 
-+ **`--required`** — comma-separated keys that **must** be present on **`meta`** (under **`config`**) for each resource entry the hook targets. If **`config`** or **`meta`** is missing or **`meta`** is not a mapping, treat per **`yaml-handling.md`** § Errors. Default: none.
++ **`--required`** — comma-separated **top-level key names** that **must** be present on **`meta`** (under **`config`**) for each resource entry the hook targets. If **`config`** or **`meta`** is missing or **`meta`** is not a mapping, treat per **`yaml-handling.md`** § Errors. Default: none.
 
-+ **`--forbidden`** — comma-separated keys that **must not** appear under **`meta`** (checked in addition to any allowlist rule below).
++ **`--forbidden`** — comma-separated **top-level key names** that **must not** appear under **`meta`** (checked in addition to any allowlist rule below).
 
-+ **`--allowed`** (optional) — comma-separated keys that **may** appear under **`meta`**.
++ **`--allowed`** (optional) — comma-separated **top-level key names** that **may** appear under **`meta`**.
 
 ### When **`--allowed` is omitted**
 
@@ -25,6 +27,20 @@ Only **`--required`** and **`--forbidden`** apply: there is **no** “unknown ke
 3. Apply **`--forbidden`** as well: a key in **`--forbidden`** is a violation **even if** it appears in **`--allowed`** or **`--required`** (explicit deny wins), so teams can block mistakes without reshaping the allowlist.
 
 **Skipping:** If a resource has no **`config`**, or **`config`** has no **`meta`**, treat **`meta`** as an **empty** key set for validation (so **`--required`** keys are reported missing; **`--forbidden`** / allowlist rules see no keys present). Shipped hooks in this family follow this behavior.
+
+### Future: nested key paths (dot notation)
+
+**Not part of the shipped CLI yet**—document here so future work stays aligned with **`meta-keys-accepted-values.md`**.
+
+A later revision **may** allow each token in **`--required`**, **`--forbidden`**, and **`--allowed`** to be a **dot-separated path** relative to **`meta`**, using the **same path rules** as **`--key`** in **[`meta-keys-accepted-values.md`](meta-keys-accepted-values.md)** § **Key path** (e.g. **`owner.name`**, **`owner.email`**—segments walk nested **mappings** only; no array indices).
+
+Before implementations ship this:
+
+1. Extend **§ When `--allowed` is provided** for **nested** keys: how **“unknown key”** applies to inner mappings (flattened paths vs only top-level keys on **`meta`**).
+2. Define **required** / **forbidden** at a path when intermediate mappings are missing or wrong type.
+3. Align **stderr** / **sort keys** with **`yaml-handling.md`** § Errors.
+
+Until then, parsers and docs **MUST** treat tokens as **single-segment** top-level keys only.
 
 ## 1. Shipped CLIs (same contract)
 
@@ -52,4 +68,4 @@ The **`*-allowed-keys`** family uses **`violations_for_entries`** in **`allowed_
 
 **Status:** **`model-allowed-meta-keys`**, **`seed-allowed-meta-keys`**, **`snapshot-allowed-meta-keys`**, **`exposure-allowed-meta-keys`**, and **`macro-allowed-meta-keys`** are shipped with the same CLI shape and per-resource wiring.
 
-**Related:** **[`../hooks.md`](../hooks.md)** (umbrella), **[`../yaml-handling.md`](../yaml-handling.md)** (parsing; how **`config`** and **`meta`** are represented after load), **[`allowed-keys.md`](allowed-keys.md)** (reference for flag shape and exit codes).
+**Related:** **[`../hooks.md`](../hooks.md)** (umbrella), **[`../yaml-handling.md`](../yaml-handling.md)** (parsing; how **`config`** and **`meta`** are represented after load), **[`allowed-keys.md`](allowed-keys.md)** (reference for flag shape and exit codes), **[`meta-keys-accepted-values.md`](meta-keys-accepted-values.md)** (dot paths under **`meta`**; value allowlists).
