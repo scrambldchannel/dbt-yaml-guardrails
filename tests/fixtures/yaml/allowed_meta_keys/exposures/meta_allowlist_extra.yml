@@ -1,0 +1,8 @@
+version: 2
+
+exposures:
+  - name: m
+    config:
+      meta:
+        owner: analytics
+        extra: 1

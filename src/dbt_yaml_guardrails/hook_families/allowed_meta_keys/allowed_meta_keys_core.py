@@ -8,6 +8,8 @@ from typing import Any
 
 from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
     ViolationRow,
+    finalize_violation_rows,
+    parse_csv_keys,
     violation_row_parse_error,
 )
 from dbt_yaml_guardrails.yaml_handling import (
@@ -57,22 +59,28 @@ def violations_for_meta_keys(
     return rows
 
 
-def meta_keys_from_model_entry(
-    path: Path, model_name: str, entry: Mapping[str, Any]
+def meta_keys_from_resource_entry(
+    path: Path,
+    resource_kind: str,
+    resource_name: str,
+    entry: Mapping[str, Any],
 ) -> ParseError | set[str]:
-    """Return the set of top-level keys on ``config.meta`` for a model entry, or :class:`ParseError`."""
+    """Return top-level keys on ``config.meta`` for a resource entry, or :class:`ParseError`.
+
+    *resource_kind* is the singular label in messages (e.g. ``\"model\"``, ``\"seed\"``).
+    """
     if "config" not in entry:
         return set()
     cfg = entry["config"]
     if cfg is None:
         return ParseError(
             path,
-            f"model '{model_name}': config must be a mapping, not null",
+            f"{resource_kind} '{resource_name}': config must be a mapping, not null",
         )
     if not isinstance(cfg, MutableMapping):
         return ParseError(
             path,
-            f"model '{model_name}': config must be a mapping, got {type(cfg).__name__}",
+            f"{resource_kind} '{resource_name}': config must be a mapping, got {type(cfg).__name__}",
         )
     if "meta" not in cfg:
         return set()
@@ -82,17 +90,18 @@ def meta_keys_from_model_entry(
     if not isinstance(raw, MutableMapping):
         return ParseError(
             path,
-            f"model '{model_name}': config.meta must be a mapping, got {type(raw).__name__}",
+            f"{resource_kind} '{resource_name}': config.meta must be a mapping, got {type(raw).__name__}",
         )
     return set(raw.keys())
 
 
-def collect_violation_rows_for_model_meta_paths(
+def collect_violation_rows_for_resource_meta_paths(
     files: list[Path],
     required: set[str],
     forbidden: set[str],
     allowed: frozenset[str] | None,
     *,
+    resource_kind: str,
     extract_by_name: Callable[
         [ParseSuccess],
         ParseError | Mapping[str, Mapping[str, Any]] | None,
@@ -102,7 +111,7 @@ def collect_violation_rows_for_model_meta_paths(
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
 ) -> list[ViolationRow]:
-    """Walk *files*, extract model entries, validate ``config.meta`` keys per model."""
+    """Walk *files*, extract resource entries, validate ``config.meta`` keys per entry."""
     rows: list[ViolationRow] = []
     for path in files:
         path = path.expanduser()
@@ -119,7 +128,7 @@ def collect_violation_rows_for_model_meta_paths(
             rows.append(violation_row_parse_error(path.as_posix(), inner.message))
             continue
         for name, entry in iter_entries(inner):
-            mk = meta_keys_from_model_entry(path, name, entry)
+            mk = meta_keys_from_resource_entry(path, resource_kind, name, entry)
             if isinstance(mk, ParseError):
                 rows.append(violation_row_parse_error(path.as_posix(), mk.message))
                 continue
@@ -134,3 +143,50 @@ def collect_violation_rows_for_model_meta_paths(
                 )
             )
     return rows
+
+
+def run_allowed_meta_keys_cli(
+    files: list[Path],
+    required_csv: str,
+    forbidden_csv: str,
+    allowed_option: str | None,
+    *,
+    resource_kind: str,
+    extract_by_name: Callable[
+        [ParseSuccess],
+        ParseError | Mapping[str, Mapping[str, Any]] | None,
+    ],
+    iter_entries: Callable[
+        [Mapping[str, Mapping[str, Any]]],
+        Iterable[tuple[str, Mapping[str, Any]]],
+    ],
+    emit: Callable[[str], None],
+) -> int:
+    """Parse CLI flags, collect violations, emit; return ``0`` or ``1``."""
+    required = parse_csv_keys(required_csv)
+    forbidden = parse_csv_keys(forbidden_csv)
+    if allowed_option is None:
+        allowed: frozenset[str] | None = None
+    else:
+        allowed = frozenset(parse_csv_keys(allowed_option))
+
+    if allowed is None and not required and not forbidden:
+        return 0
+
+    if not files:
+        return 0
+
+    rows = collect_violation_rows_for_resource_meta_paths(
+        files,
+        required,
+        forbidden,
+        allowed,
+        resource_kind=resource_kind,
+        extract_by_name=extract_by_name,
+        iter_entries=iter_entries,
+    )
+    return finalize_violation_rows(
+        rows,
+        resource_label=resource_kind,
+        emit=emit,
+    )

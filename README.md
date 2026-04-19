@@ -17,8 +17,12 @@ These hooks **do not run dbt**—they only parse YAML and check key names. That 
 | `snapshot-allowed-keys`    | Top-level keys on each `snapshots:` entry                                 |
 | `exposure-allowed-keys`      | Top-level keys on each `exposures:` entry                                 |
 | `model-allowed-meta-keys`    | Keys under `config.meta` on each `models:` entry ([`allowed-meta-keys`](specs/hook-families/allowed-meta-keys.md)) |
+| `seed-allowed-meta-keys`     | Keys under `config.meta` on each `seeds:` entry                                   |
+| `snapshot-allowed-meta-keys` | Keys under `config.meta` on each `snapshots:` entry                             |
+| `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry                             |
+| `macro-allowed-meta-keys`    | Keys under `config.meta` on each `macros:` entry                                |
 
-The **`model-allowed-meta-keys`** hook has **no** fixed allowlist in-repo: use optional **`--allowed`**, plus **`--required`** / **`--forbidden`**, as documented in [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md).
+The **`*-allowed-meta-keys`** hooks have **no** fixed allowlist in-repo: use optional **`--allowed`**, plus **`--required`** / **`--forbidden`**, as documented in [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md).
 
 The **`*-allowed-keys`** hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
@@ -44,6 +48,10 @@ repos:
       - id: exposure-allowed-keys
       - id: model-allowed-meta-keys
         args: ["--allowed", "owner"]
+      - id: seed-allowed-meta-keys
+      - id: snapshot-allowed-meta-keys
+      - id: exposure-allowed-meta-keys
+      - id: macro-allowed-meta-keys
 ```
 
 Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.

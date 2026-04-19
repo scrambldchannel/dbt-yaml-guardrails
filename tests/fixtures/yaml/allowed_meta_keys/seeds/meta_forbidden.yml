@@ -1,0 +1,7 @@
+version: 2
+
+seeds:
+  - name: m
+    config:
+      meta:
+        bad_key: true

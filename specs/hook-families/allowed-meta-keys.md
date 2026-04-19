@@ -24,19 +24,25 @@ Only **`--required`** and **`--forbidden`** apply: there is **no** “unknown ke
 2. Any key **present** on **`meta`** that is **not** in **effective allow** is a violation (**forbidden** in the sense of “not permitted”).
 3. Apply **`--forbidden`** as well: a key in **`--forbidden`** is a violation **even if** it appears in **`--allowed`** or **`--required`** (explicit deny wins), so teams can block mistakes without reshaping the allowlist.
 
-**Skipping:** If a resource has no **`config`**, or **`config`** has no **`meta`**, treat **`meta`** as an **empty** key set for validation (so **`--required`** keys are reported missing; **`--forbidden`** / allowlist rules see no keys present). **`model-allowed-meta-keys`** follows this behavior.
+**Skipping:** If a resource has no **`config`**, or **`config`** has no **`meta`**, treat **`meta`** as an **empty** key set for validation (so **`--required`** keys are reported missing; **`--forbidden`** / allowlist rules see no keys present). Shipped hooks in this family follow this behavior.
 
-## 1. `model-allowed-meta-keys` (shipped)
+## 1. Shipped CLIs (same contract)
 
-Validates **keys on `config.meta`** for each model entry (each dict under the `models:` list).
+Each hook validates **keys on `config.meta`** for entries under one top-level list (`models:`, `seeds:`, `snapshots:`, `exposures:`, or `macros:`). The CLI **`id`** / console script name matches the hook id (e.g. **`model-allowed-meta-keys`**).
 
-The CLI entry point and hook **`id`** are **`model-allowed-meta-keys`**.
+| Hook id | Resource list |
+| --- | --- |
+| **`model-allowed-meta-keys`** | **`models:`** |
+| **`seed-allowed-meta-keys`** | **`seeds:`** |
+| **`snapshot-allowed-meta-keys`** | **`snapshots:`** |
+| **`exposure-allowed-meta-keys`** | **`exposures:`** |
+| **`macro-allowed-meta-keys`** | **`macros:`** |
 
-**Pre-commit (shipped):** **`language: python`**, **`entry: model-allowed-meta-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
+**Pre-commit (shipped):** **`language: python`**, **`entry:`** matches the hook id, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
 **Arguments:** **`--required`**, **`--forbidden`**, and optional **`--allowed`** as in **§ CLI contract** above. **`--allowed`**: omit the flag for “no allowlist mode”; pass **`--allowed`** (with a comma-separated list, possibly empty) to enable allowlist mode (**`--allowed` absent** vs **present** is distinct in Typer).
 
-**Implementation:** **`violations_for_meta_keys`** and **`collect_violation_rows_for_model_meta_paths`** in **`src/dbt_yaml_guardrails/hook_families/allowed_meta_keys/allowed_meta_keys_core.py`**.
+**Implementation:** **`violations_for_meta_keys`**, **`collect_violation_rows_for_resource_meta_paths`**, and **`run_allowed_meta_keys_cli`** in **`src/dbt_yaml_guardrails/hook_families/allowed_meta_keys/allowed_meta_keys_core.py`**, with thin per-resource modules under the same package.
 
 ## Implementation reuse (shared validation core)
 
@@ -44,6 +50,6 @@ The **`*-allowed-keys`** family uses **`violations_for_entries`** in **`allowed_
 
 **Future consolidation:** A single shared abstraction for “key policy on a mapping” might replace parallel **`violations_for_entries`** and **`violations_for_meta_keys`** later; that is **optional** and not required for the first shipped hook.
 
-**Status:** **`model-allowed-meta-keys`** is shipped; additional resource types (macros, seeds, …) are **planned** with the same CLI shape and per-resource wiring.
+**Status:** **`model-allowed-meta-keys`**, **`seed-allowed-meta-keys`**, **`snapshot-allowed-meta-keys`**, **`exposure-allowed-meta-keys`**, and **`macro-allowed-meta-keys`** are shipped with the same CLI shape and per-resource wiring.
 
 **Related:** **[`../hooks.md`](../hooks.md)** (umbrella), **[`../yaml-handling.md`](../yaml-handling.md)** (parsing; how **`config`** and **`meta`** are represented after load), **[`allowed-keys.md`](allowed-keys.md)** (reference for flag shape and exit codes).

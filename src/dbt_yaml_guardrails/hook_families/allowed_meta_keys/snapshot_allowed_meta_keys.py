@@ -1,4 +1,4 @@
-"""model-allowed-meta-keys CLI (``specs/hook-families/allowed-meta-keys.md``)."""
+"""snapshot-allowed-meta-keys CLI (``specs/hook-families/allowed-meta-keys.md``)."""
 
 from __future__ import annotations
 
@@ -12,19 +12,19 @@ from dbt_yaml_guardrails.hook_families.allowed_meta_keys.allowed_meta_keys_core 
     run_allowed_meta_keys_cli,
 )
 from dbt_yaml_guardrails.yaml_handling import (
-    ModelEntriesSkip,
     ParseError,
     ParseSuccess,
-    extract_model_entries,
-    iter_model_entries,
+    SnapshotEntriesSkip,
+    extract_snapshot_entries,
+    iter_snapshot_entries,
 )
 
 
-def _extract_models_by_name(
+def _extract_snapshots_by_name(
     success: ParseSuccess,
 ) -> ParseError | Mapping[str, Mapping[str, Any]] | None:
-    r = extract_model_entries(success)
-    if isinstance(r, ModelEntriesSkip):
+    r = extract_snapshot_entries(success)
+    if isinstance(r, SnapshotEntriesSkip):
         return None
     if isinstance(r, ParseError):
         return r
@@ -42,9 +42,9 @@ def _run(
         required_csv,
         forbidden_csv,
         allowed_option,
-        resource_kind="model",
-        extract_by_name=_extract_models_by_name,
-        iter_entries=iter_model_entries,
+        resource_kind="snapshot",
+        extract_by_name=_extract_snapshots_by_name,
+        iter_entries=iter_snapshot_entries,
         emit=lambda m: typer.echo(m, err=True),
     )
 
@@ -62,13 +62,13 @@ def main(
         ),
     ),
 ) -> None:
-    """Validate keys on config.meta for each model entry."""
+    """Validate keys on config.meta for each snapshot entry."""
     code = _run(files, required, forbidden, allowed)
     raise typer.Exit(code)
 
 
 def cli_main() -> None:
-    """Entry point for the ``model-allowed-meta-keys`` console script."""
+    """Entry point for the ``snapshot-allowed-meta-keys`` console script."""
     try:
         typer.run(main)
     except typer.Exit as e:

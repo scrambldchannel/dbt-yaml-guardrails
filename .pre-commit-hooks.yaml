@@ -42,3 +42,31 @@
   entry: model-allowed-meta-keys
   language: python
   types: [yaml]
+
+- id: seed-allowed-meta-keys
+  name: dbt seed allowed meta keys
+  description: Validate keys on config.meta for each seed entry in dbt property YAML
+  entry: seed-allowed-meta-keys
+  language: python
+  types: [yaml]
+
+- id: snapshot-allowed-meta-keys
+  name: dbt snapshot allowed meta keys
+  description: Validate keys on config.meta for each snapshot entry in dbt property YAML
+  entry: snapshot-allowed-meta-keys
+  language: python
+  types: [yaml]
+
+- id: exposure-allowed-meta-keys
+  name: dbt exposure allowed meta keys
+  description: Validate keys on config.meta for each exposure entry in dbt property YAML
+  entry: exposure-allowed-meta-keys
+  language: python
+  types: [yaml]
+
+- id: macro-allowed-meta-keys
+  name: dbt macro allowed meta keys
+  description: Validate keys on config.meta for each macro entry in dbt property YAML
+  entry: macro-allowed-meta-keys
+  language: python
+  types: [yaml]
