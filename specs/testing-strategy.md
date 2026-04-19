@@ -1,6 +1,6 @@
 # Testing strategy
 
-**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, exit codes, stderr), [`hooks.md`](hooks.md) (per-hook CLIs and defaults).
+**Related specs:** [`README.md`](README.md) (index), [`project-spec.md`](project-spec.md) (pytest / Python baseline), [`scope.md`](scope.md) (what the tool does not test), [`yaml-handling.md`](yaml-handling.md) (parsing rules, skip vs error, exit codes, stderr), [`resource-keys.md`](resource-keys.md) (expected default allowlists), [`hooks.md`](hooks.md) (per-hook CLIs and defaults).
 
 ## Runner
 

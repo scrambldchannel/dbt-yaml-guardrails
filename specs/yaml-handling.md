@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs, flags, and default key tables live in **`hooks.md`**. Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in **`hooks.md`**. Default **allowed-key sets** per resource type are in **`resource-keys.md`**. Product boundaries are in **`scope.md`**.
 
 ## Files
 
