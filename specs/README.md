@@ -6,7 +6,7 @@ Read in this order when onboarding or implementing behavior:
 2. **[`scope.md`](scope.md)** — What is in and out of scope, and the Fusion-first product angle.
 3. **[`yaml-handling.md`](yaml-handling.md)** — Shared contract for parsing dbt property YAML, document shape, and CLI error/exit behavior for all hooks.
 4. **[`resource-keys.md`](resource-keys.md)** — Default allowed keys per resource type (Fusion-oriented); extend as new resource types are supported.
-5. **[`hooks.md`](hooks.md)** — Catalog of hooks: CLI names, arguments, defaults, and (as they are defined) pre-commit integration details per hook.
+5. **[`hooks.md`](hooks.md)** — Catalog of hooks: CLI names, arguments, defaults, **`.pre-commit-hooks.yaml`** packaging, and pre-commit integration per hook.
 6. **[`testing-strategy.md`](testing-strategy.md)** — Where tests and YAML fixtures live, what to assert, and CI expectations.
 
 For a single hook implementation, read **`yaml-handling.md`** first, then **`resource-keys.md`** for defaults, then the relevant section in **`hooks.md`**. When adding or changing behavior, align tests with **`testing-strategy.md`**.

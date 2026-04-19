@@ -2,6 +2,12 @@
 
 All hooks should follow the conventions for hooks defined for [pre-commit](https://pre-commit.com/#creating-new-hooks).
 
+## Packaging (required for consumers)
+
+When this repository is used as a pre-commit **`repo:`** (local path, git URL, etc.), pre-commit **requires** a **`.pre-commit-hooks.yaml`** file at the **repository root** listing each hook’s `id`, `entry`, `language`, and selection (`types` / `files` / `types_or`, …). Without that file, pre-commit fails with *`.pre-commit-hooks.yaml` is not a file*. See [Creating new hooks](https://pre-commit.com/#creating-new-hooks).
+
+Keep **`.pre-commit-hooks.yaml`** in sync with the sections below: every shipped hook gets an entry there, with **`entry`** matching the console script from **`pyproject.toml`** (`[project.scripts]`), and file selection aligned with **`yaml-handling.md`** § Files and each hook’s notes.
+
 Shared behavior (parser, document shape, when to skip a file, stderr/exit codes, message ordering) is defined in **`yaml-handling.md`**. Default **allowed-key sets** per resource type are in **`resource-keys.md`**. This file defines **per-hook** CLIs, arguments, and how those defaults apply.
 
 ## 1. model-allowed-keys
