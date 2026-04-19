@@ -37,7 +37,7 @@ pre-commit installs this repo as a Python environment and runs the hook entry po
 
 ```yaml
 repos:
-  - repo: https://github.com/OWNER/dbt-yaml-guardrails
+  - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
     rev: main
     hooks:
       - id: model-allowed-keys
@@ -54,7 +54,11 @@ repos:
       - id: macro-allowed-meta-keys
 ```
 
-Replace `OWNER` / `rev` with your fork and a tag or SHA as needed.
+Pin `rev` to a [release tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA for reproducible installs; `main` is fine while tracking development.
+
+## Author
+
+**Alexander Sutcliffe** — report issues and discuss changes on [GitHub Issues](https://github.com/scrambldchannel/dbt-yaml-guardrails/issues).
 
 ## License
 

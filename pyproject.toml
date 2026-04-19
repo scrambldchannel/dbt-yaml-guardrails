@@ -7,6 +7,9 @@ name = "dbt-yaml-guardrails"
 version = "0.1.0"
 description = "Pre-commit hooks for configurable standards on dbt property YAML (Fusion-oriented)."
 readme = "README.md"
+authors = [
+    { name = "Alexander Sutcliffe" },
+]
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
@@ -19,6 +22,11 @@ dependencies = [
 dev = [
     "pytest>=8",
 ]
+
+[project.urls]
+Homepage = "https://github.com/scrambldchannel/dbt-yaml-guardrails"
+Repository = "https://github.com/scrambldchannel/dbt-yaml-guardrails"
+Issues = "https://github.com/scrambldchannel/dbt-yaml-guardrails/issues"
 
 [project.scripts]
 model-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.model_allowed_keys:cli_main"
