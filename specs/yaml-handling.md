@@ -2,9 +2,12 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
+Hook-specific CLIs, flags, and default key tables live in **`hooks.md`**. Product boundaries are in **`scope.md`**.
+
 ## Files
 
 + Use pre-commit's built-in file selection criteria to choose which files to parse and accept `yaml` and `yml` extensions
++ Concrete **`files`** / **`types`** patterns for each hook belong in **`hooks.md`** next to that hook
 
 ## Parsing
 
@@ -30,6 +33,8 @@ Resource types differ in shape (e.g. **`sources:`** with nested **`tables:`** vs
 + If a hook is only checking one resource type, ignore entries for other resource types when parsing
 
 ## Errors
+
+These rules apply to **every** hook’s CLI unless a hook’s spec in **`hooks.md`** explicitly overrides them.
 
 + Emit all violations to **stderr**
 + Use a **non-zero** exit code if there is at least one violation; **zero** only when every processed file passes

@@ -1,5 +1,7 @@
 # Project Scope
 
+See **`README.md`** in this folder for how this fits with the other specs (`project-spec.md`, `yaml-handling.md`, `hooks.md`).
+
 ## **In scope**
 
 These items should be considered in scope:
