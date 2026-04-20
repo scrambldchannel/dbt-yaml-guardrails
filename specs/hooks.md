@@ -24,7 +24,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 | String at a path under `config.meta` (v1) | **`hook-families/meta-accepted-values.md`** | **`*-meta-accepted-values`**: **`model`**, **`seed`**, **`snapshot`**, **`exposure`** shipped; **`macro`** planned; **`--key`** dot path, **`--values`** allowlist, optional **`--optional`**; non-string scalars **future** |
 
-The repository root **`README.md`** **SHOULD** list shipped hooks **by family** in separate tables or sections (not one flat list that mixes families). See **`project-spec.md`** § **README.md (repository root)**.
+The repository root **`HOOKS.md`** **SHOULD** list shipped hooks **by family** in separate tables or sections (not one flat list that mixes families), and include the canonical **`repos:`** / **`rev:`** / **`hooks:`** copy-paste block; **`rev:`** tracks **`v`** + **`pyproject.toml`** **`project.version`**. See **`project-spec.md`** § **README.md and HOOKS.md (repository root)**.
 
 Implementations **SHOULD** keep the **`*-allowed-keys`** family aligned with **`resource-keys.md`** when top-level allowlists change. The **`*-allowed-meta-keys`** family uses **user-supplied** allowlists only (keys under **`config.meta`**; **`config`** implied in the hook name); there is no fixed allowlist table in **`resource-keys.md`** unless we add optional convention docs later.
 

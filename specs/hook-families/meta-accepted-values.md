@@ -119,6 +119,8 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 
 ## Example `pre-commit` snippets
 
+The snippets below are **`hooks:`** stanzas only. A full **`repos:`** / **`rev:`** example for this repository is in **[`HOOKS.md`](../../HOOKS.md)**; **`rev:`** must be **`v`** plus **`[project] version`** in **`pyproject.toml`** (currently **`v0.1.2`**).
+
 **Required `domain` ∈ {sales, hr, finance}:**
 
 ```yaml
