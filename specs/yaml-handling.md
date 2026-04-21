@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Default **keys under `config`** for **`*-allowed-config-keys`** (specified; not yet shipped) are in **`resource-config-keys.md`**. Product boundaries are in **`scope.md`**.
 
 ## Files
 
@@ -41,4 +41,4 @@ These rules apply to **every** hook’s CLI unless that hook’s family spec in 
 + **Numeric exit codes** for `*-allowed-keys` CLIs (e.g. **`0`**, **`1`**, **`2`**) are defined in **`hook-families/allowed-keys.md`**; this section defines **stderr** and **non-zero vs zero** semantics
 + Print messages in a **stable** order: file path, then resource name (or declared identifier), then key or rule id
 + Show every violation for each resource entry (per model, per source, etc., according to the hook’s target type)
-+ Example line shape for an **unknown** disallowed key (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`. For **legacy** keys (see **`resource-keys.md`** § Legacy / deprecated and **`hook-families/allowed-keys.md`** § Pattern), messages **SHOULD** point to the replacement name or **`config`** location instead of using only this generic form
++ Example line shape for an **unknown** disallowed key (exact wording may vary): `path/to/schema.yml: model 'my_model': disallowed key 'foo'`. For **legacy** keys (see **`resource-keys.md`** § Legacy / deprecated for top-level keys; **`resource-config-keys.md`** for keys under **`config`**; **`hook-families/allowed-keys.md`** / **`hook-families/allowed-config-keys.md`** § Pattern), messages **SHOULD** point to the replacement name or **`config`** location instead of using only this generic form

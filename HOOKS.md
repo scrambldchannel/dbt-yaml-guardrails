@@ -21,6 +21,10 @@ These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/reso
 - **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
 - **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
 
+## `*-allowed-config-keys` (specified, not shipped)
+
+Default keys under each entry’s **`config:`** mapping are specified in [`specs/resource-config-keys.md`](specs/resource-config-keys.md). Behavior and CLI mirror **`*-allowed-keys`**; see [`specs/hook-families/allowed-config-keys.md`](specs/hook-families/allowed-config-keys.md).
+
 ## `*-allowed-meta-keys`
 
 Keys under **`config.meta`** on each resource entry (see [`specs/hook-families/allowed-meta-keys.md`](specs/hook-families/allowed-meta-keys.md)).
@@ -33,7 +37,7 @@ Keys under **`config.meta`** on each resource entry (see [`specs/hook-families/a
 | `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry |
 | `macro-allowed-meta-keys` | Keys under `config.meta` on each `macros:` entry |
 
-There is **no** built-in allowlist in **`resource-keys.md`**—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry.
+There is **no** built-in allowlist in **`resource-keys.md`** or **`resource-config-keys.md`** for **`meta`** key names—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry.
 
 - **`--required`** — Keys that **must** be present on **`meta`**. If `config` or `meta` is missing, **`meta`** is treated as empty, so required keys are reported missing.
 - **`--forbidden`** — Keys that **must not** appear on **`meta`**. Still enforced when **`--allowed`** is set (**forbidden** wins over the allowlist).

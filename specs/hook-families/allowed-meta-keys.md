@@ -2,7 +2,7 @@
 
 Hooks in this family are named **`{resource}-allowed-meta-keys`** (e.g. **`model-allowed-meta-keys`**). The **`config`** wrapper is **implied** by the family name: each hook validates **keys on the `meta` mapping** nested under that resource entry’s **`config`** (i.e. **`config.meta`** in property YAML—do not repeat **`config`** in the hook id).
 
-dbt Core treats **`meta`** as an **arbitrary** key–value dictionary—there is **no Fusion-style built-in allowlist** in Core. This family lets **projects supply their own optional allowlist** via the CLI; there is **no** default allowlist in **`resource-keys.md`** (unlike **`*-allowed-keys`**).
+dbt Core treats **`meta`** as an **arbitrary** key–value dictionary—there is **no Fusion-style built-in allowlist** in Core. This family lets **projects supply their own optional allowlist** via the CLI; there is **no** default allowlist for **`meta`** key names in **`resource-keys.md`** or **`resource-config-keys.md`** (unlike **`*-allowed-keys`**, which uses **`resource-keys.md`** for top-level keys, and **`*-allowed-config-keys`**, which uses **`resource-config-keys.md`** for keys under **`config`**).
 
 **Shipped behavior today:** **`--required`**, **`--forbidden`**, and **`--allowed`** each list **top-level key names** on **`meta`** only (single segment per token, no **`.`**). **Nested paths** are a **future extension**—see **§ Future: nested key paths (dot notation)**.
 
