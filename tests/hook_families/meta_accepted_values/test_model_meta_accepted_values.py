@@ -93,6 +93,44 @@ def test_cli_leaf_not_string() -> None:
         _m("domain_wrong_type.yml"),
     )
     assert r.returncode == 1
+    assert "must be a string or a sequence of strings" in r.stderr
+
+
+def test_cli_list_of_strings_ok() -> None:
+    r = _invoke(
+        "--key",
+        "domain",
+        "--values",
+        "sales,hr,finance",
+        _m("domain_list_ok.yml"),
+    )
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_list_rejects_disallowed_member() -> None:
+    r = _invoke(
+        "--key",
+        "domain",
+        "--values",
+        "sales,hr,finance",
+        _m("domain_list_wrong_member.yml"),
+    )
+    assert r.returncode == 1
+    assert "at index 1" in r.stderr
+    assert "not an allowed value" in r.stderr
+
+
+def test_cli_list_rejects_non_string_element() -> None:
+    r = _invoke(
+        "--key",
+        "domain",
+        "--values",
+        "sales",
+        _m("domain_list_bad_element.yml"),
+    )
+    assert r.returncode == 1
+    assert "at index 1" in r.stderr
     assert "must be a string" in r.stderr
 
 

@@ -108,7 +108,7 @@
 
 - id: model-meta-accepted-values
   name: dbt model meta accepted values
-  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  description: Validate a string or string list under config.meta against a comma-separated allowlist (dot path via --key)
   entry: model-meta-accepted-values
   language: python
   types: [yaml]
@@ -122,14 +122,14 @@
 
 - id: snapshot-meta-accepted-values
   name: dbt snapshot meta accepted values
-  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  description: Validate a string or string list under config.meta against a comma-separated allowlist (dot path via --key)
   entry: snapshot-meta-accepted-values
   language: python
   types: [yaml]
 
 - id: exposure-meta-accepted-values
   name: dbt exposure meta accepted values
-  description: Validate a string leaf under config.meta against a comma-separated allowlist (dot path via --key)
+  description: Validate a string or string list under config.meta against a comma-separated allowlist (dot path via --key)
   entry: exposure-meta-accepted-values
   language: python
   types: [yaml]

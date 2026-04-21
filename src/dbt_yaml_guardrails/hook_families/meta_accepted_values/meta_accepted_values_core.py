@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping, MutableMapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -68,6 +68,48 @@ def _meta_mapping_from_entry(
     return dict(raw)
 
 
+def _leaf_value_violations(
+    path_posix: str,
+    resource_id: str,
+    key_path: str,
+    leaf: Any,
+    allowed: frozenset[str],
+) -> list[ViolationRow]:
+    """Check leaf is a string or sequence of strings; each string must be in *allowed*."""
+    rows: list[ViolationRow] = []
+    if isinstance(leaf, str):
+        val = leaf.strip()
+        if val not in allowed:
+            detail = f"meta path '{key_path}': value {val!r} is not an allowed value"
+            rows.append(((path_posix, resource_id, key_path, 2), detail))
+        return rows
+
+    if isinstance(leaf, Sequence) and not isinstance(leaf, (str, bytes)):
+        for i, item in enumerate(leaf):
+            if not isinstance(item, str):
+                detail = (
+                    f"meta path '{key_path}': sequence element at index {i} must be a "
+                    f"string, got {type(item).__name__}"
+                )
+                rows.append(((path_posix, resource_id, key_path, 1), detail))
+                continue
+            val = item.strip()
+            if val not in allowed:
+                detail = (
+                    f"meta path '{key_path}': value {val!r} at index {i} is not an "
+                    f"allowed value"
+                )
+                rows.append(((path_posix, resource_id, key_path, 2), detail))
+        return rows
+
+    detail = (
+        f"meta path '{key_path}' must be a string or a sequence of strings, "
+        f"got {type(leaf).__name__}"
+    )
+    rows.append(((path_posix, resource_id, key_path, 1), detail))
+    return rows
+
+
 def violations_for_meta_accepted_value(
     path_posix: str,
     resource_id: str,
@@ -77,7 +119,7 @@ def violations_for_meta_accepted_value(
     optional: bool,
     allowed: frozenset[str],
 ) -> list[ViolationRow]:
-    """Validate one dot path under ``meta`` for string leaf ∈ *allowed*."""
+    """Validate one dot path under ``meta`` for string or string-sequence leaf ∈ *allowed*."""
     rows: list[ViolationRow] = []
     key_path = ".".join(segments)
     cur: Any = meta
@@ -115,15 +157,9 @@ def violations_for_meta_accepted_value(
         return rows
 
     leaf = cur[last]
-    if not isinstance(leaf, str):
-        detail = f"meta path '{key_path}' must be a string, got {type(leaf).__name__}"
-        rows.append(((path_posix, resource_id, key_path, 1), detail))
-        return rows
-
-    val = leaf.strip()
-    if val not in allowed:
-        detail = f"meta path '{key_path}': value {val!r} is not an allowed value"
-        rows.append(((path_posix, resource_id, key_path, 2), detail))
+    rows.extend(
+        _leaf_value_violations(path_posix, resource_id, key_path, leaf, allowed)
+    )
     return rows
 
 
@@ -143,7 +179,7 @@ def collect_violation_rows_for_meta_accepted_values(
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
 ) -> list[ViolationRow]:
-    """Walk *files* and validate ``config.meta`` path + allowed string values per entry."""
+    """Walk *files* and validate ``config.meta`` path + allowed values per entry."""
     rows: list[ViolationRow] = []
     for path in files:
         path = path.expanduser()

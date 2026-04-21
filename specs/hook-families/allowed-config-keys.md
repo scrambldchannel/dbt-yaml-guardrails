@@ -21,7 +21,7 @@ Projects want to enforce which **direct children** of **`config:`** may appear o
 | **`*-allowed-keys`** | Top-level keys on the **resource entry** (e.g. `models: [].`… keys like `name`, `config`, `columns`). |
 | **`*-allowed-config-keys`** (this spec) | Keys **inside** the **`config`** mapping when it is present and is a mapping. |
 | **`*-allowed-meta-keys`** | Key **names** on **`config.meta`** (when **`meta`** is a mapping). |
-| **`*-meta-accepted-values`** | A **value** at one dot path under **`meta`** (string leaf in v1). |
+| **`*-meta-accepted-values`** | A **value** at one dot path under **`meta`** (string or list of strings). |
 
 The **`config`** allowlist **SHOULD** include **`meta`** if your project allows metadata on the node; **`*-allowed-meta-keys`** then constrains **which keys exist under** **`meta`**. If **`meta`** is forbidden at the **`config`** level, treat that as a **`*-allowed-config-keys`** / **`--forbidden`** policy.
 

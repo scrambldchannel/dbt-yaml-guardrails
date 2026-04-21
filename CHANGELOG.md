@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and **`version`** in **`pyproject.toml`**). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [Unreleased]
+
+### Changed
+
+- **`*-meta-accepted-values`**: the value at **`--key`** may be a **YAML list of strings** (e.g. `ruamel.yaml` **`CommentedSeq`**); **each** element must appear in **`--values`** after trim. Single-string leaves unchanged. See **`specs/hook-families/meta-accepted-values.md`**.
+
 ## [0.2.0] — 2026-04-20
 
 ### Added

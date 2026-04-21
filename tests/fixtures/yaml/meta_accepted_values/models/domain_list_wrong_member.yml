@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: m
+    config:
+      meta:
+        domain:
+          - sales
+          - invalid_domain

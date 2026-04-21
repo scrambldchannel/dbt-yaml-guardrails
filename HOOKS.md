@@ -61,7 +61,7 @@ Pass hook flags as `args` in your pre-commit config (see below).
 
 ## `*-meta-accepted-values`
 
-String **leaf** at a **dot path** under **`config.meta`** must be one of the values in **`--values`** (see [`specs/hook-families/meta-accepted-values.md`](specs/hook-families/meta-accepted-values.md)). **v1:** string leaves only.
+The value at a **dot path** under **`config.meta`** must be a **string** or **list of strings**; each string must be one of the values in **`--values`** (see [`specs/hook-families/meta-accepted-values.md`](specs/hook-families/meta-accepted-values.md)).
 
 | ID | Validates |
 | --- | --- |

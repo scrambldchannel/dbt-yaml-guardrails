@@ -59,7 +59,7 @@ def main(
     values: str = typer.Option(
         ...,
         "--values",
-        help="Comma-separated allowed string values for the leaf.",
+        help="Comma-separated allowed values; leaf may be a string or list of strings.",
     ),
     optional: bool = typer.Option(
         False,
@@ -67,7 +67,7 @@ def main(
         help="If set, missing path is OK; if present, value must match --values.",
     ),
 ) -> None:
-    """Validate a string leaf at --key under config.meta against --values."""
+    """Validate a string or string list at --key under config.meta against --values."""
     code = _run(files, key, values, optional)
     raise typer.Exit(code)
 
