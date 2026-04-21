@@ -70,6 +70,18 @@ The value at a **dot path** under **`config.meta`** must be a **string** or **li
 | `snapshot-meta-accepted-values` | One path on each `snapshots:` entry |
 | `exposure-meta-accepted-values` | One path on each `exposures:` entry |
 
+## `*-tags-accepted-values`
+
+**`config.tags`** on each resource entry must use only strings from **`--values`** (string or list of strings; missing **`config`** or **`tags`** passes). See [`specs/hook-families/tags-accepted-values.md`](specs/hook-families/tags-accepted-values.md).
+
+| ID | Validates |
+| --- | --- |
+| `model-tags-accepted-values` | `config.tags` on each `models:` entry |
+| `seed-tags-accepted-values` | `config.tags` on each `seeds:` entry |
+| `snapshot-tags-accepted-values` | `config.tags` on each `snapshots:` entry |
+| `exposure-tags-accepted-values` | `config.tags` on each `exposures:` entry |
+| `macro-tags-accepted-values` | `config.tags` on each `macros:` entry |
+
 ## pre-commit
 
 The hooks are **not** published to PyPI—point pre-commit at **this Git repository** (see [`.pre-commit-hooks.yaml`](.pre-commit-hooks.yaml)).
@@ -114,6 +126,18 @@ repos:
         args: ["--key", "domain", "--values", "sales,hr,finance"]
       - id: exposure-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
+
+      # config.tags allowlist (when tags are declared in YAML)
+      - id: model-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
+      - id: seed-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
+      - id: snapshot-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
+      - id: exposure-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
+      - id: macro-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
 ```
 
 The **`rev:`** above tracks the **latest release**; bump it when you release (see **`specs/project-spec.md`** § **Release notes**). For reproducible installs you can also pin a [specific tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA. Use **`main`** only if you intentionally want the tip of the default branch.

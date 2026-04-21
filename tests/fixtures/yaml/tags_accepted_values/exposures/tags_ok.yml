@@ -1,0 +1,9 @@
+version: 2
+
+exposures:
+  - name: exp_x
+    type: dashboard
+    owner:
+      email: team@example.com
+    config:
+      tags: published

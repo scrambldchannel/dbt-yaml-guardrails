@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: m
+    description: no config block

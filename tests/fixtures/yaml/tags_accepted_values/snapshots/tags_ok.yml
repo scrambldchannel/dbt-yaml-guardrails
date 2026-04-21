@@ -1,0 +1,6 @@
+version: 2
+
+snapshots:
+  - name: snap_m
+    config:
+      tags: daily

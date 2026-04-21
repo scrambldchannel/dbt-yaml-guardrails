@@ -133,3 +133,38 @@
   entry: exposure-meta-accepted-values
   language: python
   types: [yaml]
+
+- id: model-tags-accepted-values
+  name: dbt model tags accepted values
+  description: Validate config.tags values against a comma-separated allowlist (--values)
+  entry: model-tags-accepted-values
+  language: python
+  types: [yaml]
+
+- id: seed-tags-accepted-values
+  name: dbt seed tags accepted values
+  description: Validate config.tags values against a comma-separated allowlist (--values)
+  entry: seed-tags-accepted-values
+  language: python
+  types: [yaml]
+
+- id: snapshot-tags-accepted-values
+  name: dbt snapshot tags accepted values
+  description: Validate config.tags values against a comma-separated allowlist (--values)
+  entry: snapshot-tags-accepted-values
+  language: python
+  types: [yaml]
+
+- id: exposure-tags-accepted-values
+  name: dbt exposure tags accepted values
+  description: Validate config.tags values against a comma-separated allowlist (--values)
+  entry: exposure-tags-accepted-values
+  language: python
+  types: [yaml]
+
+- id: macro-tags-accepted-values
+  name: dbt macro tags accepted values
+  description: Validate config.tags values against a comma-separated allowlist (--values)
+  entry: macro-tags-accepted-values
+  language: python
+  types: [yaml]

@@ -4,7 +4,7 @@ Hooks are named **`{resource}-tags-accepted-values`** (e.g. **`model-tags-accept
 
 **User story:** restrict tags to a **project-defined vocabulary**—not to require tags on every resource. If **`config`** or **`tags`** is absent, the hook **passes**. This family intentionally has **no** “required tags” or “optional tags” flags: **`--values`** is the only behavioral flag besides entry-point arguments.
 
-**Status:** **Spec only** — implementation, **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, and **`HOOKS.md`** entries ship in a later change once the open questions below are resolved.
+**Status:** **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** **`*-tags-accepted-values`** CLIs are **shipped** (**`hook_families/tags_accepted_values/`**, **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, **`HOOKS.md`**).
 
 ---
 
@@ -20,7 +20,7 @@ Teams often want **only** tags from a fixed vocabulary (e.g. **`pii`**, **`finan
 + Resolve **`config`** on each entry like other **`config*`** hooks (see **`yaml-handling.md`**). If **`config`** is missing, treat as **no **`config`** object** (see **§ Missing `config` and `tags`**).
 + Read **`tags`** from **`config["tags"]`** when **`config`** is a mapping.
 
-**Rationale:** Fusion-oriented config key allowlists already list **`tags`** under **`config`** per resource type in **`resource-config-keys.md`**. Top-level **`tags`** on a resource entry (if it appears in some projects) is **out of scope for v1** unless we explicitly extend this spec—see **§ Open questions**.
+**Rationale:** Fusion-oriented config key allowlists already list **`tags`** under **`config`** per resource type in **`resource-config-keys.md`**. **v1** validates **`config.tags`** only; legacy **top-level** **`tags`** (e.g. some exposures) is **out of scope**—see **§ Future**.
 
 ---
 
@@ -61,17 +61,17 @@ If there is nothing to validate, the hook **passes**:
 
 ---
 
-## Resource coverage (planned)
-
-Mirror other config-facing families unless scoped down:
+## Shipped CLIs
 
 | Hook id | Resource list | Status |
 | --- | --- | --- |
-| **`model-tags-accepted-values`** | **`models:`** | Spec only |
-| **`seed-tags-accepted-values`** | **`seeds:`** | Spec only |
-| **`snapshot-tags-accepted-values`** | **`snapshots:`** | Spec only |
-| **`exposure-tags-accepted-values`** | **`exposures:`** | Spec only |
-| **`macro-tags-accepted-values`** | **`macros:`** | Spec only |
+| **`model-tags-accepted-values`** | **`models:`** | **Shipped** |
+| **`seed-tags-accepted-values`** | **`seeds:`** | **Shipped** |
+| **`snapshot-tags-accepted-values`** | **`snapshots:`** | **Shipped** |
+| **`exposure-tags-accepted-values`** | **`exposures:`** | **Shipped** |
+| **`macro-tags-accepted-values`** | **`macros:`** | **Shipped** |
+
+**Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.
 
 ---
 
@@ -85,10 +85,9 @@ Mirror other config-facing families unless scoped down:
 
 ---
 
-## Open questions (need maintainer / contributor decisions)
+## Future
 
-1. **Top-level `tags`** — Some dbt property examples use **`tags`** beside **`name`** (not only under **`config`**). Should v1 also validate **top-level** **`tags`** on each entry, **`config.tags`**, **or** both? (Validating both could **double-count** if teams duplicate—need a rule.)
-2. **Macro parity** — Ship **`macro-tags-accepted-values`** in the **same** milestone as **`model`**–**`exposure`**, or defer like **`macro-meta-accepted-values`**?
++ **Top-level `tags`** (legacy dbt) — Extend this family or document merge rules if validation of **`tags`** beside **`name`** is required alongside **`config.tags`**.
 
 ---
 

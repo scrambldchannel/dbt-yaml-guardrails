@@ -1,0 +1,6 @@
+version: 2
+
+macros:
+  - name: my_macro
+    config:
+      tags: utils

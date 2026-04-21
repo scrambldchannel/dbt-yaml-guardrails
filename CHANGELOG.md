@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and **`version`** in **`pyproject.toml`**). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [Unreleased]
+
+### Added
+
+- **`*-tags-accepted-values`** hooks (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`**): validate **`config.tags`** (string or list of strings) against **`--values`** when **`tags`** is declared; missing **`config`** or **`tags`** passes (see **`specs/hook-families/tags-accepted-values.md`**). Implementation: **`src/dbt_yaml_guardrails/hook_families/tags_accepted_values/`**.
+
 ## [0.2.1] — 2026-04-21
 
 ### Changed
