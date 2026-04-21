@@ -2,11 +2,15 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and **`version`** in **`pyproject.toml`**). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
-## [Unreleased]
+## [0.3.0] — 2026-04-21
 
 ### Added
 
-- **`*-tags-accepted-values`** hooks (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`**): validate **`config.tags`** (string or list of strings) against **`--values`** when **`tags`** is declared; missing **`config`** or **`tags`** passes (see **`specs/hook-families/tags-accepted-values.md`**). Implementation: **`src/dbt_yaml_guardrails/hook_families/tags_accepted_values/`**.
+- **`*-tags-accepted-values`** hooks (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`**): validate **`config.tags`** (string or list of strings) against **`--values`** when **`tags`** is declared; missing **`config`** or **`tags`** passes (see **`specs/hook-families/tags-accepted-values.md`**). Implementation: **`src/dbt_yaml_guardrails/hook_families/tags_accepted_values/`**; **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, **`HOOKS.md`** example block, and **`specs/`** index updated.
+
+### Changed
+
+- **Tests**: **`tests/hook_families/tags_accepted_values/`** and **`tests/fixtures/yaml/tags_accepted_values/`** cover the new CLIs.
 
 ## [0.2.1] — 2026-04-21
 
@@ -54,6 +58,7 @@ All notable changes to this project are documented here. Versions match **git ta
 - Shared YAML loading and parsing (**`yaml_handling`**) per **`specs/yaml-handling.md`**.
 - MIT license; **`pyproject.toml`** metadata (authors, URLs, keywords, classifiers) for tooling and documentation.
 
+[0.3.0]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.2.1]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.2.0]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.2]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases

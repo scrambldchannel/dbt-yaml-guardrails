@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dbt-yaml-guardrails"
-version = "0.2.1"
+version = "0.3.0"
 description = "Pre-commit hooks for configurable standards on dbt property YAML (Fusion-oriented)."
 readme = "README.md"
 keywords = [
