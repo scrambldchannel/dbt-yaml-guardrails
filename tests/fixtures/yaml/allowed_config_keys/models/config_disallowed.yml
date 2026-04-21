@@ -1,0 +1,5 @@
+version: 2
+models:
+  - name: bad
+    config:
+      not_a_real_dbt_config_key: true

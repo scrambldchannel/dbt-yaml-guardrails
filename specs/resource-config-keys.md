@@ -4,7 +4,7 @@ Fusion-oriented **default allowed keys** **under each resource’s `config:` map
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`resource-keys.md`](resource-keys.md) (top-level keys on each resource entry), [`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md).
 
-**Source of truth (implementation):** frozen sets such as **`MODEL_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (or a sibling module)—**TBD** until code mirrors these tables (cross-adapter rows **plus** the **Adapter-specific** union for models).
+**Source of truth (implementation):** **`MODEL_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (cross-adapter model rows **plus** the **Adapter-specific** union for models). Other resource types **TBD**.
 
 **Sources:** [Model configs](https://docs.getdbt.com/reference/model-configs), [Seed configs](https://docs.getdbt.com/reference/seed-configs), [Snapshot configs](https://docs.getdbt.com/reference/snapshot-configs), [Macro properties](https://docs.getdbt.com/reference/macro-properties), [Exposure properties](https://docs.getdbt.com/reference/exposure-properties), [access](https://docs.getdbt.com/reference/resource-configs/access), [group](https://docs.getdbt.com/reference/resource-configs/group), [static_analysis](https://docs.getdbt.com/reference/resource-configs/static-analysis) (Fusion). Default tables list **cross-adapter** keys from those pages; **Fusion** adds **`static_analysis`** on models, seeds, and snapshots per [Fusion docs](https://docs.getdbt.com/docs/fusion/new-concepts).
 

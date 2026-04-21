@@ -21,9 +21,15 @@ These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/reso
 - **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
 - **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
 
-## `*-allowed-config-keys` (specified, not shipped)
+## `*-allowed-config-keys`
 
-Default keys under each entry’s **`config:`** mapping are specified in [`specs/resource-config-keys.md`](specs/resource-config-keys.md). Behavior and CLI mirror **`*-allowed-keys`**; see [`specs/hook-families/allowed-config-keys.md`](specs/hook-families/allowed-config-keys.md).
+Top-level keys under each entry’s **`config:`** mapping in property YAML.
+
+| ID | Validates |
+| --- | --- |
+| `model-allowed-config-keys` | Keys under `config` on each `models:` entry |
+
+Allowlists are in [`specs/resource-config-keys.md`](specs/resource-config-keys.md) (implementation: `MODEL_CONFIG_ALLOWED_KEYS` in `resource_config_keys.py`). CLI mirrors **`*-allowed-keys`**: **`--required`**, **`--forbidden`**. See [`specs/hook-families/allowed-config-keys.md`](specs/hook-families/allowed-config-keys.md).
 
 ## `*-allowed-meta-keys`
 
@@ -79,6 +85,9 @@ repos:
       - id: seed-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
+
+      # allowed config keys (under config:)
+      - id: model-allowed-config-keys
 
       # allowed meta keys
       - id: model-allowed-meta-keys

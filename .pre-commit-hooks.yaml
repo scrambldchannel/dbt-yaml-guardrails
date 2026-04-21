@@ -8,6 +8,13 @@
   language: python
   types: [yaml]
 
+- id: model-allowed-config-keys
+  name: dbt model allowed config keys
+  description: Validate top-level keys under config on each model entry in dbt property YAML
+  entry: model-allowed-config-keys
+  language: python
+  types: [yaml]
+
 - id: macro-allowed-keys
   name: dbt macro allowed keys
   description: Validate top-level keys on each macro entry in dbt property YAML
