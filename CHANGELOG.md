@@ -2,11 +2,12 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and **`version`** in **`pyproject.toml`**). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
-## [Unreleased]
+## [0.2.1] — 2026-04-21
 
 ### Changed
 
-- **`*-meta-accepted-values`**: the value at **`--key`** may be a **YAML list of strings** (e.g. `ruamel.yaml` **`CommentedSeq`**); **each** element must appear in **`--values`** after trim. Single-string leaves unchanged. See **`specs/hook-families/meta-accepted-values.md`**.
+- **`*-meta-accepted-values`**: the value at **`--key`** may be a **YAML list of strings** (flow or block list); **each** element must appear in **`--values`** after trim. Single-string leaves unchanged.
+- **Spec**: **`specs/hook-families/meta-accepted-values.md`** — **`--values`** applies to **leaf** paths only (extend **`--key`** to reach a string field, e.g. **`owner.name`**); docs and hook descriptions updated accordingly.
 
 ## [0.2.0] — 2026-04-20
 
@@ -47,6 +48,7 @@ All notable changes to this project are documented here. Versions match **git ta
 - Shared YAML loading and parsing (**`yaml_handling`**) per **`specs/yaml-handling.md`**.
 - MIT license; **`pyproject.toml`** metadata (authors, URLs, keywords, classifiers) for tooling and documentation.
 
+[0.2.1]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.2.0]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.2]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.1]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases

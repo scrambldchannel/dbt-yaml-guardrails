@@ -79,7 +79,7 @@ pre-commit installs the repo as a Python environment and runs the hook entry poi
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
-    rev: v0.2.0
+    rev: v0.2.1
     hooks:
 
       # allowed top level keys
