@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and **`version`** in **`pyproject.toml`**). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [0.2.0] — 2026-04-20
+
+### Added
+
+- **`*-allowed-config-keys`** hooks (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**): validate **top-level keys under each entry’s `config:`** mapping against Fusion-oriented allowlists in **`specs/resource-config-keys.md`**, with **`--required`** / **`--forbidden`** (see **`specs/hook-families/allowed-config-keys.md`**). Implementation: **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/`** and **`resource_config_keys.py`**.
+- **Specs & docs**: **`specs/resource-config-keys.md`** (config-key allowlists; split from top-level **`resource-keys.md`**), plus updates to **`HOOKS.md`**, **`specs/hooks.md`**, **`specs/README.md`**, and related hook-family specs so **`rev:`** and shipped hooks stay aligned.
+
+### Changed
+
+- **Tests**: **`tests/hook_families/allowed_config_keys/`** and **`tests/fixtures/yaml/allowed_config_keys/`** cover the new CLIs.
+
 ## [0.1.2] — 2026-04-19
 
 ### Added
@@ -30,6 +41,7 @@ All notable changes to this project are documented here. Versions match **git ta
 - Shared YAML loading and parsing (**`yaml_handling`**) per **`specs/yaml-handling.md`**.
 - MIT license; **`pyproject.toml`** metadata (authors, URLs, keywords, classifiers) for tooling and documentation.
 
+[0.2.0]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.2]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.1]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
 [0.1.0]: https://github.com/scrambldchannel/dbt-yaml-guardrails/releases
