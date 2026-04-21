@@ -1,0 +1,6 @@
+version: 2
+seeds:
+  - name: s
+    config:
+      schema: analytics
+      meta: {}

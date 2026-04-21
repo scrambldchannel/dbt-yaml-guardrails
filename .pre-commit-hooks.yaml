@@ -15,6 +15,34 @@
   language: python
   types: [yaml]
 
+- id: macro-allowed-config-keys
+  name: dbt macro allowed config keys
+  description: Validate top-level keys under config on each macro entry in dbt property YAML
+  entry: macro-allowed-config-keys
+  language: python
+  types: [yaml]
+
+- id: seed-allowed-config-keys
+  name: dbt seed allowed config keys
+  description: Validate top-level keys under config on each seed entry in dbt property YAML
+  entry: seed-allowed-config-keys
+  language: python
+  types: [yaml]
+
+- id: snapshot-allowed-config-keys
+  name: dbt snapshot allowed config keys
+  description: Validate top-level keys under config on each snapshot entry in dbt property YAML
+  entry: snapshot-allowed-config-keys
+  language: python
+  types: [yaml]
+
+- id: exposure-allowed-config-keys
+  name: dbt exposure allowed config keys
+  description: Validate top-level keys under config on each exposure entry in dbt property YAML
+  entry: exposure-allowed-config-keys
+  language: python
+  types: [yaml]
+
 - id: macro-allowed-keys
   name: dbt macro allowed keys
   description: Validate top-level keys on each macro entry in dbt property YAML

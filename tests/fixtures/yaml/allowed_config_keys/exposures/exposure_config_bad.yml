@@ -1,0 +1,6 @@
+version: 2
+exposures:
+  - name: e
+    type: dashboard
+    config:
+      database: analytics

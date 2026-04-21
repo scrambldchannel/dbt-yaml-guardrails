@@ -2,7 +2,7 @@
 
 **Top-level keys of the `config` mapping** on each resource entry in dbt property YAML (Fusion-oriented). This is **not** the same as **`*-allowed-keys`** (keys on the resource object itself, e.g. `name`, `description`, `config` as a key name) or **`*-allowed-meta-keys`** (key **names** under `config.meta`). Umbrella packaging and the family index live in **[`../hooks.md`](../hooks.md)**.
 
-**Status:** **`model-allowed-config-keys`** is **shipped**; other resource hooks **TBD**. Default allowlist tables are in **`resource-config-keys.md`**; **`MODEL_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** **must** mirror those tables (same policy as **`*-allowed-keys`**: default allowlist is **Fusion-supported / documented cross-adapter keys** plus the **documented adapter-specific union** in **`resource-config-keys.md`**—detecting which adapter a project uses is **not** required).
+**Status:** **Shipped** for **`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**. Default allowlist tables are in **`resource-config-keys.md`**; **`*_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** **must** mirror those tables (same policy as **`*-allowed-keys`**: default allowlist is **Fusion-supported / documented cross-adapter keys** plus the **documented adapter-specific union** in **`resource-config-keys.md`**—detecting which adapter a project uses is **not** required).
 
 ---
 
@@ -86,20 +86,15 @@ Each row in the default allowlist **SHOULD** be justified with links to Fusion /
 
 ## Shipped CLIs
 
+Same resource list as the **`*-allowed-keys`** wave (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**):
+
 | Hook id | Resource list | `resource-config-keys.md` anchor |
 | --- | --- | --- |
 | **`model-allowed-config-keys`** | **`models:`** | Models — default keys under `config` + Adapter-specific (models) |
-
-## Planned CLIs
-
-Same remaining resources as the **`*-allowed-keys`** wave (**`macro`**, **`seed`**, **`snapshot`**, **`exposure`**):
-
-| Hook id | Resource list | `resource-config-keys.md` anchor |
-| --- | --- | --- |
-| **`macro-allowed-config-keys`** | **`macros:`** | Macro config keys |
-| **`seed-allowed-config-keys`** | **`seeds:`** | Seed config keys |
-| **`snapshot-allowed-config-keys`** | **`snapshots:`** | Snapshot config keys |
-| **`exposure-allowed-config-keys`** | **`exposures:`** | Exposure config keys |
+| **`macro-allowed-config-keys`** | **`macros:`** | Macros |
+| **`seed-allowed-config-keys`** | **`seeds:`** | Seeds |
+| **`snapshot-allowed-config-keys`** | **`snapshots:`** | Snapshots |
+| **`exposure-allowed-config-keys`** | **`exposures:`** | Exposures |
 
 **Sources**, **analyses**, **unit tests**, and other targets are **out of scope for v1** unless added explicitly later (same pattern as **`*-allowed-keys`** § 6).
 

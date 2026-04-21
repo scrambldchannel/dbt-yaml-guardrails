@@ -1,9 +1,8 @@
 """Fusion-oriented default allowlists for keys under ``config:`` in dbt property YAML.
 
-``MODEL_CONFIG_ALLOWED_KEYS`` and ``MODEL_CONFIG_LEGACY_KEY_MESSAGES`` are the
-implementation source for **model-allowed-config-keys**; they **must** stay
-aligned with ``specs/resource-config-keys.md`` (change the spec and this module
-together).
+The ``*_CONFIG_ALLOWED_KEYS`` and ``*_CONFIG_LEGACY_KEY_MESSAGES`` values are the
+implementation source for **`*-allowed-config-keys`**; they **must** stay aligned
+with ``specs/resource-config-keys.md`` (change the spec and this module together).
 """
 
 from __future__ import annotations
@@ -127,3 +126,160 @@ MODEL_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
         "`baseline` or `strict`."
     ),
 }
+
+# ---------------------------------------------------------------------------
+# Seeds — MUST match ``specs/resource-config-keys.md`` § **Seeds**
+# ---------------------------------------------------------------------------
+
+_SEED_CONFIG_CROSS_ADAPTER: tuple[str, ...] = (
+    "alias",
+    "column_types",
+    "database",
+    "delimiter",
+    "enabled",
+    "event_time",
+    "full_refresh",
+    "grants",
+    "meta",
+    "persist_docs",
+    "post_hook",
+    "pre_hook",
+    "quote_columns",
+    "schema",
+    "static_analysis",
+    "tags",
+)
+
+# Adapter keys documented for seeds (subset of the model union) — see spec § Adapter-specific (seeds).
+_SEED_CONFIG_ADAPTER: tuple[str, ...] = (
+    "auto_liquid_cluster",
+    "automatic_clustering",
+    "cluster_by",
+    "clustered_by",
+    "buckets",
+    "compression",
+    "databricks_tags",
+    "dist",
+    "file_format",
+    "grant_access_to",
+    "hours_to_expiration",
+    "include_full_name_in_path",
+    "indexes",
+    "kms_key_name",
+    "labels",
+    "liquid_clustered_by",
+    "location_root",
+    "partition_by",
+    "partition_expiration_days",
+    "query_group",
+    "query_tag",
+    "query_tags",
+    "require_partition_filter",
+    "resource_tags",
+    "snowflake_warehouse",
+    "sort",
+    "sort_type",
+    "table_format",
+    "tblproperties",
+    "transient",
+    "unlogged",
+)
+
+SEED_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(
+    _SEED_CONFIG_CROSS_ADAPTER + _SEED_CONFIG_ADAPTER
+)
+
+SEED_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
+
+# ---------------------------------------------------------------------------
+# Snapshots — MUST match ``specs/resource-config-keys.md`` § **Snapshots**
+# ---------------------------------------------------------------------------
+
+_SNAPSHOT_CONFIG_CROSS_ADAPTER: tuple[str, ...] = (
+    "alias",
+    "check_cols",
+    "database",
+    "dbt_valid_to_current",
+    "enabled",
+    "event_time",
+    "grants",
+    "hard_deletes",
+    "meta",
+    "persist_docs",
+    "post_hook",
+    "pre_hook",
+    "schema",
+    "snapshot_meta_column_names",
+    "static_analysis",
+    "strategy",
+    "tags",
+    "unique_key",
+    "updated_at",
+)
+
+# Model adapter keys that do not apply to snapshots (Python models, dynamic tables, …).
+_SNAPSHOT_CONFIG_ADAPTER_EXCLUDE: frozenset[str] = frozenset(
+    (
+        "access_control_list",
+        "additional_libs",
+        "cluster_id",
+        "compute_region",
+        "create_notebook",
+        "dataproc_cluster_name",
+        "enable_change_history",
+        "enable_list_inference",
+        "enable_refresh",
+        "external_access_integrations",
+        "gcs_bucket",
+        "http_path",
+        "imports",
+        "index_url",
+        "intermediate_format",
+        "job_cluster_config",
+        "max_staleness",
+        "notebook_template_id",
+        "packages",
+        "partitions",
+        "python_job_config",
+        "python_version",
+        "refresh_interval_minutes",
+        "schedule",
+        "secrets",
+        "submission_method",
+        "timeout",
+        "immutable_where",
+        "initialize",
+        "overwrite_columns",
+        "refresh_mode",
+        "scheduler",
+        "snowflake_initialization_warehouse",
+        "target_lag",
+        "tmp_relation_type",
+    )
+)
+
+_SNAPSHOT_CONFIG_ADAPTER: tuple[str, ...] = tuple(
+    sorted(frozenset(_MODEL_CONFIG_ADAPTER) - _SNAPSHOT_CONFIG_ADAPTER_EXCLUDE)
+)
+
+SNAPSHOT_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(
+    _SNAPSHOT_CONFIG_CROSS_ADAPTER + _SNAPSHOT_CONFIG_ADAPTER
+)
+
+SNAPSHOT_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
+
+# ---------------------------------------------------------------------------
+# Macros — MUST match ``specs/resource-config-keys.md`` § **Macros**
+# ---------------------------------------------------------------------------
+
+MACRO_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(("docs", "meta"))
+
+MACRO_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
+
+# ---------------------------------------------------------------------------
+# Exposures — MUST match ``specs/resource-config-keys.md`` § **Exposures**
+# ---------------------------------------------------------------------------
+
+EXPOSURE_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(("enabled", "meta", "tags"))
+
+EXPOSURE_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}

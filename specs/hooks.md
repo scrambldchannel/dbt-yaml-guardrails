@@ -10,7 +10,7 @@ Keep **`.pre-commit-hooks.yaml`** in sync with each shipped hook: every **`entry
 
 ## Shared foundations
 
-Shared behavior (parser, document shape, when to skip a file, stderr/exit semantics, message ordering) is defined in **`yaml-handling.md`**. Default **top-level allowed-key sets** per resource type for the **`*-allowed-keys`** family are in **`resource-keys.md`**. Default **keys under `config`** for the **`*-allowed-config-keys`** family are in **`resource-config-keys.md`** (**`model-allowed-config-keys`** shipped; other resources **TBD**)—see **`hook-families/allowed-config-keys.md`**.
+Shared behavior (parser, document shape, when to skip a file, stderr/exit semantics, message ordering) is defined in **`yaml-handling.md`**. Default **top-level allowed-key sets** per resource type for the **`*-allowed-keys`** family are in **`resource-keys.md`**. Default **keys under `config`** for the **`*-allowed-config-keys`** family are in **`resource-config-keys.md`** (all five resource hooks shipped)—see **`hook-families/allowed-config-keys.md`**.
 
 **Per-hook** CLI names, arguments, numeric **exit codes**, defaults, and pre-commit `id`/`entry` details live in **hook family** specs under **`hook-families/`** (see below), not only in this file.
 
@@ -21,7 +21,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 | Family | Spec | What it validates (summary) |
 | --- | --- | --- |
 | Top-level keys on each resource entry | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, … |
-| Top-level keys under each entry’s `config` mapping | **`hook-families/allowed-config-keys.md`** | **`*-allowed-config-keys`**: **`model`** shipped; **`macro`**, **`seed`**, **`snapshot`**, **`exposure`** **TBD**. Same CLI as **`*-allowed-keys`** (`--required` / `--forbidden`); default allowlists in **`resource-config-keys.md`** (Fusion-oriented cross-adapter keys **plus** documented adapter-specific **union** for models) |
+| Top-level keys under each entry’s `config` mapping | **`hook-families/allowed-config-keys.md`** | **`*-allowed-config-keys`**: **`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`** shipped. Same CLI as **`*-allowed-keys`** (`--required` / `--forbidden`); default allowlists in **`resource-config-keys.md`** (Fusion-oriented cross-adapter keys **plus** documented adapter-specific **union** per resource) |
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 | String at a path under `config.meta` (v1) | **`hook-families/meta-accepted-values.md`** | **`*-meta-accepted-values`**: **`model`**, **`seed`**, **`snapshot`**, **`exposure`** shipped; **`macro`** planned; **`--key`** dot path, **`--values`** allowlist, optional **`--optional`**; non-string scalars **future** |
 

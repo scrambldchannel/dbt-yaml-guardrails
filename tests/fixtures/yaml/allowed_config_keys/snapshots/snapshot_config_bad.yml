@@ -1,0 +1,5 @@
+version: 2
+snapshots:
+  - name: sn
+    config:
+      bogus_snapshot_key: true

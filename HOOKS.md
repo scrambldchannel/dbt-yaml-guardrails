@@ -28,8 +28,12 @@ Top-level keys under each entry’s **`config:`** mapping in property YAML.
 | ID | Validates |
 | --- | --- |
 | `model-allowed-config-keys` | Keys under `config` on each `models:` entry |
+| `macro-allowed-config-keys` | Keys under `config` on each `macros:` entry |
+| `seed-allowed-config-keys` | Keys under `config` on each `seeds:` entry |
+| `snapshot-allowed-config-keys` | Keys under `config` on each `snapshots:` entry |
+| `exposure-allowed-config-keys` | Keys under `config` on each `exposures:` entry |
 
-Allowlists are in [`specs/resource-config-keys.md`](specs/resource-config-keys.md) (implementation: `MODEL_CONFIG_ALLOWED_KEYS` in `resource_config_keys.py`). CLI mirrors **`*-allowed-keys`**: **`--required`**, **`--forbidden`**. See [`specs/hook-families/allowed-config-keys.md`](specs/hook-families/allowed-config-keys.md).
+Allowlists are in [`specs/resource-config-keys.md`](specs/resource-config-keys.md) (implementation: `*_CONFIG_ALLOWED_KEYS` in `resource_config_keys.py`). CLI mirrors **`*-allowed-keys`**: **`--required`**, **`--forbidden`**. See [`specs/hook-families/allowed-config-keys.md`](specs/hook-families/allowed-config-keys.md).
 
 ## `*-allowed-meta-keys`
 
@@ -88,6 +92,10 @@ repos:
 
       # allowed config keys (under config:)
       - id: model-allowed-config-keys
+      - id: macro-allowed-config-keys
+      - id: seed-allowed-config-keys
+      - id: snapshot-allowed-config-keys
+      - id: exposure-allowed-config-keys
 
       # allowed meta keys
       - id: model-allowed-meta-keys
