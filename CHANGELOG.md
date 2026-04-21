@@ -57,4 +57,3 @@ All notable changes to this project are documented here. Versions match **git ta
 - `***-allowed-meta-keys**` hooks for `**models**`, `**seeds**`, `**snapshots**`, `**exposures**`, and `**macros**`: validate keys under `**config.meta**` with optional `**--allowed**`, plus `**--required**` / `**--forbidden**`.
 - Shared YAML loading and parsing (`**yaml_handling**`) per `**specs/yaml-handling.md**`.
 - MIT license; `**pyproject.toml**` metadata (authors, URLs, keywords, classifiers) for tooling and documentation.
-
