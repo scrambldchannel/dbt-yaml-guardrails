@@ -16,3 +16,7 @@ uv run pytest
 ```
 
 Details: **[`specs/testing-strategy.md`](specs/testing-strategy.md)**.
+
+## Issues and pull requests
+
+GitHub **[issue templates](.github/ISSUE_TEMPLATE/)** and **[`pull_request_template.md`](.github/pull_request_template.md)** mirror this doc: **spec-first** changes, clear repros for bugs, and **`uv run pytest`** before review when you touch behavior.
