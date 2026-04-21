@@ -43,11 +43,7 @@ repos:
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) (spec-driven workflow, dev setup, tests).
-
-## Author
-
-**Alexander Sutcliffe** — report issues and discuss changes on [GitHub Issues](https://github.com/scrambldchannel/dbt-yaml-guardrails/issues).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) (spec-driven workflow, dev setup, tests). Issues and change discussion: [GitHub Issues](https://github.com/scrambldchannel/dbt-yaml-guardrails/issues).
 
 ## License
 
