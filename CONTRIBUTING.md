@@ -17,6 +17,16 @@ uv run pytest
 
 Details: **[`specs/testing-strategy.md`](specs/testing-strategy.md)**.
 
+### Ad hoc hook runs (optional)
+
+For quick, hands-on checks of stderr and exit codes without writing a new pytest case, use the **ringfenced** file **[`tests/hook_sandbox/sandbox.yml`](tests/hook_sandbox/sandbox.yml)** and the **`dbtg-sandbox-*`** hooks in **[`.pre-commit-config.yaml`](.pre-commit-config.yaml)**. They use **`uv run …`**, are scoped to that YAML only, and use **`stages: [manual]`** so they do not run on a normal commit. Run one hook, for example:
+
+```bash
+pre-commit run dbtg-sandbox-model-allowed-keys --hook-stage manual --files tests/hook_sandbox/sandbox.yml
+```
+
+Full write-up: **[`specs/testing-strategy.md`](specs/testing-strategy.md)** § **Local pre-commit (manual hook smoke)**.
+
 ## Issues and pull requests
 
 GitHub **[issue templates](.github/ISSUE_TEMPLATE/)** and **[`pull_request_template.md`](.github/pull_request_template.md)** mirror this doc: **spec-first** changes, clear repros for bugs, and **`uv run pytest`** before review when you touch behavior.

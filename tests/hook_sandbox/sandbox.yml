@@ -1,0 +1,45 @@
+# Ringfenced YAML for ad-hoc local hook runs (see specs/testing-strategy.md § Local pre-commit).
+# Edit freely; not used by pytest fixtures.
+version: 2
+
+models:
+  - name: sb_model
+    description: sandbox
+    config:
+      tags: [nightly, finance]
+      meta:
+        domain: sales
+        owner: sandbox
+
+seeds:
+  - name: sb_seed
+    description: sandbox
+    config:
+      tags: [raw, finance]
+      meta:
+        domain: sales
+
+snapshots:
+  - name: sb_snap
+    config:
+      tags: [nightly]
+      meta:
+        domain: sales
+
+exposures:
+  - name: sb_exp
+    type: dashboard
+    owner:
+      email: team@example.com
+    config:
+      tags: [finance, raw]
+      meta:
+        domain: sales
+
+macros:
+  - name: sb_macro
+    config:
+      tags: [nightly, raw]
+      meta:
+        domain: sales
+        owner: sandbox
