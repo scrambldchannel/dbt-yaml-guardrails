@@ -11,6 +11,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     SKIP_NO_MODELS_SECTION,
     SKIP_NO_SEEDS_SECTION,
     SKIP_NO_SNAPSHOTS_SECTION,
+    SKIP_NO_SOURCES_SECTION,
     ExposureEntriesResult,
     ExposureEntriesSkip,
     MacroEntriesResult,
@@ -24,7 +25,10 @@ from dbt_yaml_guardrails.yaml_handling import (
     SeedEntriesSkip,
     SnapshotEntriesResult,
     SnapshotEntriesSkip,
+    SourceEntriesResult,
+    SourceEntriesSkip,
     extract_exposure_entries,
+    extract_source_entries,
     extract_macro_entries,
     extract_model_entries,
     extract_seed_entries,
@@ -34,6 +38,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     iter_model_entries,
     iter_seed_entries,
     iter_snapshot_entries,
+    iter_source_entries,
     load_property_yaml,
 )
 
@@ -323,3 +328,47 @@ def test_iter_exposure_entries_sorted_names() -> None:
     assert isinstance(out, ExposureEntriesResult)
     names = [n for n, _ in iter_exposure_entries(out.by_name)]
     assert names == ["app_b", "dash_a"]
+
+
+# --- extract_source_entries ---
+
+
+def test_extract_no_sources_section_skip() -> None:
+    out = extract_source_entries(_success("shared/minimal_version2.yml"))
+    assert isinstance(out, SourceEntriesSkip)
+    assert out.reason == SKIP_NO_SOURCES_SECTION
+
+
+def test_extract_sources_empty_list() -> None:
+    out = extract_source_entries(_success("allowed_keys/sources/sources_empty.yml"))
+    assert isinstance(out, SourceEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_sources_two() -> None:
+    out = extract_source_entries(_success("allowed_keys/sources/sources_two.yml"))
+    assert isinstance(out, SourceEntriesResult)
+    assert set(out.by_name) == {"raw", "staging"}
+    assert out.by_name["raw"]["tables"] == []
+    assert out.by_name["staging"]["config"]["meta"]["team"] == "analytics"
+
+
+def test_extract_duplicate_source_name() -> None:
+    out = extract_source_entries(
+        _success("allowed_keys/sources/sources_duplicate_name.yml")
+    )
+    assert isinstance(out, ParseError)
+    assert "Duplicate source name" in out.message
+
+
+def test_iter_source_entries_sorted_names() -> None:
+    out = extract_source_entries(_success("allowed_keys/sources/sources_two.yml"))
+    assert isinstance(out, SourceEntriesResult)
+    names = [n for n, _ in iter_source_entries(out.by_name)]
+    assert names == ["raw", "staging"]
+
+
+def test_extract_sources_null() -> None:
+    out = extract_source_entries(_success("allowed_keys/sources/sources_null.yml"))
+    assert isinstance(out, ParseError)
+    assert "not null" in out.message

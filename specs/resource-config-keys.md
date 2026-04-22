@@ -4,9 +4,9 @@ Fusion-oriented **default allowed keys** **under each resource’s `config:` map
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`resource-keys.md`](resource-keys.md) (top-level keys on each resource entry), [`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md).
 
-**Source of truth (implementation):** frozen sets **`MODEL_CONFIG_ALLOWED_KEYS`**, **`SEED_CONFIG_ALLOWED_KEYS`**, **`SNAPSHOT_CONFIG_ALLOWED_KEYS`**, **`MACRO_CONFIG_ALLOWED_KEYS`**, **`EXPOSURE_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (cross-adapter rows **plus** the **Adapter-specific** union for each resource, per spec).
+**Source of truth (implementation):** frozen sets **`MODEL_CONFIG_ALLOWED_KEYS`**, **`SEED_CONFIG_ALLOWED_KEYS`**, **`SNAPSHOT_CONFIG_ALLOWED_KEYS`**, **`MACRO_CONFIG_ALLOWED_KEYS`**, **`EXPOSURE_CONFIG_ALLOWED_KEYS`**, **`SOURCE_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (cross-adapter rows **plus** the **Adapter-specific** union for each resource where the spec documents a union, per spec).
 
-**Sources:** [Model configs](https://docs.getdbt.com/reference/model-configs), [Seed configs](https://docs.getdbt.com/reference/seed-configs), [Snapshot configs](https://docs.getdbt.com/reference/snapshot-configs), [Macro properties](https://docs.getdbt.com/reference/macro-properties), [Exposure properties](https://docs.getdbt.com/reference/exposure-properties), [access](https://docs.getdbt.com/reference/resource-configs/access), [group](https://docs.getdbt.com/reference/resource-configs/group), [static_analysis](https://docs.getdbt.com/reference/resource-configs/static-analysis) (Fusion). Default tables list **cross-adapter** keys from those pages; **Fusion** adds **`static_analysis`** on models, seeds, and snapshots per [Fusion docs](https://docs.getdbt.com/docs/fusion/new-concepts).
+**Doc references:** [Model configs](https://docs.getdbt.com/reference/model-configs), [Seed configs](https://docs.getdbt.com/reference/seed-configs), [Snapshot configs](https://docs.getdbt.com/reference/snapshot-configs), [Source configs](https://docs.getdbt.com/reference/source-configs), [Macro properties](https://docs.getdbt.com/reference/macro-properties), [Exposure properties](https://docs.getdbt.com/reference/exposure-properties), [access](https://docs.getdbt.com/reference/resource-configs/access), [group](https://docs.getdbt.com/reference/resource-configs/group), [static_analysis](https://docs.getdbt.com/reference/resource-configs/static-analysis) (Fusion). Default tables list **cross-adapter** keys from those pages; **Fusion** adds **`static_analysis`** on models, seeds, and snapshots per [Fusion docs](https://docs.getdbt.com/docs/fusion/new-concepts).
 
 **Adapter-specific keys:** Resolving **which** warehouse adapter a project uses (profile / target) is **out of scope** for the hook. The default allowlist is therefore a **union** of documented adapter **`config`** keys—primarily from dbt’s **[BigQuery](https://docs.getdbt.com/reference/resource-configs/bigquery-configs)**, **[Snowflake](https://docs.getdbt.com/reference/resource-configs/snowflake-configs)**, **[Redshift](https://docs.getdbt.com/reference/resource-configs/redshift-configs)**, **[Postgres](https://docs.getdbt.com/reference/resource-configs/postgres-configs)**, **[Databricks](https://docs.getdbt.com/reference/resource-configs/databricks-configs)**, and **[Apache Spark](https://docs.getdbt.com/reference/resource-configs/spark-configs)** pages—so legitimate keys are not flagged merely because they only apply on another platform. Implementations **MUST** include this union in the frozen default set alongside the cross-adapter table for each resource type.
 
@@ -187,3 +187,15 @@ The default allowlist **includes** every key in **Models § Adapter-specific** t
 | `enabled` | [Exposure properties](https://docs.getdbt.com/reference/exposure-properties) (`config` block) |
 | `meta` | |
 | `tags` | |
+
+## Sources — default keys under `config`
+
+Documented for source definitions in property YAML: [Source configurations](https://docs.getdbt.com/reference/source-configs) (`enabled`, `event_time`, `meta`, `freshness` on the source) and the usual `tags` under `config` (same idea as [Exposures](#exposures--default-keys-under-config)). **v1 default allowlist** matches that documented cross-adapter set; if dbt documentations add adapter-specific `config` keys for sources, extend this subsection and **`SOURCE_CONFIG_ALLOWED_KEYS`** together (mirroring seeds/snapshots).
+
+| Key | Notes |
+| --- | --- |
+| `enabled` | [enabled](https://docs.getdbt.com/reference/resource-configs/enabled) |
+| `event_time` | [event_time](https://docs.getdbt.com/reference/resource-configs/event-time) |
+| `freshness` | [freshness](https://docs.getdbt.com/reference/resource-properties/freshness) (nested block under `config`) |
+| `meta` | [meta](https://docs.getdbt.com/reference/resource-configs/meta) |
+| `tags` | [tags](https://docs.getdbt.com/reference/resource-configs/tags) |

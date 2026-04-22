@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: s
+    database: raw
+    schema: public
+    tables: []
+    config:
+      enabled: true
+      meta: {}

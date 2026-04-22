@@ -4,7 +4,7 @@ Hooks are named **`{resource}-tags-accepted-values`** (e.g. **`model-tags-accept
 
 **User story:** restrict tags to a **project-defined vocabulary**—not to require tags on every resource. If **`config`** or **`tags`** is absent, the hook **passes**. This family intentionally has **no** “required tags” or “optional tags” flags: **`--values`** is the only behavioral flag besides entry-point arguments.
 
-**Status:** **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`macro`** **`*-tags-accepted-values`** CLIs are **shipped** (**`hook_families/tags_accepted_values/`**, **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, **`HOOKS.md`**).
+**Status:** **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**, **`macro`** **`*-tags-accepted-values`** CLIs are **shipped** (**`hook_families/tags_accepted_values/`**, **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, **`HOOKS.md`**).
 
 ---
 
@@ -69,6 +69,7 @@ If there is nothing to validate, the hook **passes**:
 | **`seed-tags-accepted-values`** | **`seeds:`** | **Shipped** |
 | **`snapshot-tags-accepted-values`** | **`snapshots:`** | **Shipped** |
 | **`exposure-tags-accepted-values`** | **`exposures:`** | **Shipped** |
+| **`source-tags-accepted-values`** | **`sources:`** | **Shipped** |
 | **`macro-tags-accepted-values`** | **`macros:`** | **Shipped** |
 
 **Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.

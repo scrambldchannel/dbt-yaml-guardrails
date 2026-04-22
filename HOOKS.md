@@ -13,6 +13,7 @@ Top-level keys on each resource entry in property YAML.
 | `model-allowed-keys` | Top-level keys on each `models:` entry |
 | `macro-allowed-keys` | Top-level keys on each `macros:` entry |
 | `seed-allowed-keys` | Top-level keys on each `seeds:` entry |
+| `source-allowed-keys` | Top-level keys on each `sources:` entry |
 | `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
 | `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
 
@@ -30,6 +31,7 @@ Top-level keys under each entry’s **`config:`** mapping in property YAML.
 | `model-allowed-config-keys` | Keys under `config` on each `models:` entry |
 | `macro-allowed-config-keys` | Keys under `config` on each `macros:` entry |
 | `seed-allowed-config-keys` | Keys under `config` on each `seeds:` entry |
+| `source-allowed-config-keys` | Keys under `config` on each `sources:` entry |
 | `snapshot-allowed-config-keys` | Keys under `config` on each `snapshots:` entry |
 | `exposure-allowed-config-keys` | Keys under `config` on each `exposures:` entry |
 
@@ -45,6 +47,7 @@ Keys under **`config.meta`** on each resource entry (see [`specs/hook-families/a
 | `seed-allowed-meta-keys` | Keys under `config.meta` on each `seeds:` entry |
 | `snapshot-allowed-meta-keys` | Keys under `config.meta` on each `snapshots:` entry |
 | `exposure-allowed-meta-keys` | Keys under `config.meta` on each `exposures:` entry |
+| `source-allowed-meta-keys` | Keys under `config.meta` on each `sources:` entry |
 | `macro-allowed-meta-keys` | Keys under `config.meta` on each `macros:` entry |
 
 There is **no** built-in allowlist in **`resource-keys.md`** or **`resource-config-keys.md`** for **`meta`** key names—your policy is entirely from CLI flags (comma-separated keys, same parsing as the **`*-allowed-keys`** family). All flags apply to **keys on `config.meta`** for each resource entry.
@@ -69,6 +72,7 @@ The value at a **dot path** under **`config.meta`** must be a **string** or **li
 | `seed-meta-accepted-values` | One path on each `seeds:` entry |
 | `snapshot-meta-accepted-values` | One path on each `snapshots:` entry |
 | `exposure-meta-accepted-values` | One path on each `exposures:` entry |
+| `source-meta-accepted-values` | One path on each `sources:` entry |
 | `macro-meta-accepted-values` | One path on each `macros:` entry |
 
 ## `*-tags-accepted-values`
@@ -81,6 +85,7 @@ The value at a **dot path** under **`config.meta`** must be a **string** or **li
 | `seed-tags-accepted-values` | `config.tags` on each `seeds:` entry |
 | `snapshot-tags-accepted-values` | `config.tags` on each `snapshots:` entry |
 | `exposure-tags-accepted-values` | `config.tags` on each `exposures:` entry |
+| `source-tags-accepted-values` | `config.tags` on each `sources:` entry |
 | `macro-tags-accepted-values` | `config.tags` on each `macros:` entry |
 
 ## pre-commit
@@ -100,6 +105,7 @@ repos:
         args: ["--required", "description", "--forbidden", "version"]
       - id: macro-allowed-keys
       - id: seed-allowed-keys
+      - id: source-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
 
@@ -107,6 +113,7 @@ repos:
       - id: model-allowed-config-keys
       - id: macro-allowed-config-keys
       - id: seed-allowed-config-keys
+      - id: source-allowed-config-keys
       - id: snapshot-allowed-config-keys
       - id: exposure-allowed-config-keys
 
@@ -116,6 +123,7 @@ repos:
       - id: seed-allowed-meta-keys
       - id: snapshot-allowed-meta-keys
       - id: exposure-allowed-meta-keys
+      - id: source-allowed-meta-keys
       - id: macro-allowed-meta-keys
 
       # meta accepted values (enum-like string at one dot path)
@@ -126,6 +134,8 @@ repos:
       - id: snapshot-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
       - id: exposure-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: source-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
       - id: macro-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
@@ -138,6 +148,8 @@ repos:
       - id: snapshot-tags-accepted-values
         args: ["--values", "nightly,finance,raw"]
       - id: exposure-tags-accepted-values
+        args: ["--values", "nightly,finance,raw"]
+      - id: source-tags-accepted-values
         args: ["--values", "nightly,finance,raw"]
       - id: macro-tags-accepted-values
         args: ["--values", "nightly,finance,raw"]

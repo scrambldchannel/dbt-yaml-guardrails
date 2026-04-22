@@ -283,3 +283,19 @@ MACRO_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
 EXPOSURE_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(("enabled", "meta", "tags"))
 
 EXPOSURE_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
+
+# ---------------------------------------------------------------------------
+# Sources — MUST match ``specs/resource-config-keys.md`` § **Sources**
+# ---------------------------------------------------------------------------
+
+SOURCE_CONFIG_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "enabled",
+        "event_time",
+        "freshness",
+        "meta",
+        "tags",
+    )
+)
+
+SOURCE_CONFIG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}

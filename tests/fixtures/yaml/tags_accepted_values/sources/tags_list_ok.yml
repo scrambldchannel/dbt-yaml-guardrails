@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: m
+    tables: []
+    config:
+      tags:
+        - nightly
+        - finance

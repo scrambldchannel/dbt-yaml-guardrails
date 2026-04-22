@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`, § **Sources** default subsection for `source-allowed-keys`). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
 
 ## Files
 
@@ -31,6 +31,7 @@ Resource types differ in shape (e.g. **`sources:`** with nested **`tables:`** vs
 + Duplicate top-level sections for the same resource type should raise an error
 + Each resource type should appear at most once at the top level of the document (e.g. a single `models:` list, a single `sources:` list)
 + If a hook is only checking one resource type, ignore entries for other resource types when parsing
++ For **`sources:`**, **`extract_source_entries`** and **`iter_source_entries`** in **`src/dbt_yaml_guardrails/yaml_handling.py`** build the same name-keyed map as for other list-shaped resources; nested **`tables:`** and other fields stay on each source entry (not expanded into separate top-level resource rows at this layer)
 
 ## Errors
 
