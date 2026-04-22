@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and `**version`** in `**pyproject.toml**`). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [0.4.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-19
+
+### Changed
+
+- **Release metadata:** `**pyproject.toml**` `**version**` is **0.4.0**; pre-commit `**rev:**` examples in **`README.md`**, **`HOOKS.md`**, and **`specs/hook-families/meta-accepted-values.md`** use **`v0.4.0`**. No CLI or spec behavior change beyond the version pin—tag **v0.4.0** for consumers who track releases by git ref.
+
 ## [0.3.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-21
 
 ### Added
