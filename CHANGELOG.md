@@ -2,7 +2,22 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and `**version`** in `**pyproject.toml**`). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [0.4.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-22
+
+### Added
+
+- **`source-allowed-meta-keys`**, **`source-meta-accepted-values`**, **`source-tags-accepted-values`**: same behavior as the other resource CLIs in those families, for **`sources:`** entries. **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, manual sandbox hooks, **`HOOKS.md`**, and family specs updated; tests and fixtures under **`tests/hook_families/`** and **`tests/fixtures/yaml/**`** per family.
+- **`source-allowed-config-keys`**: top-level keys under each source’s **`config:`** mapping; default **`SOURCE_CONFIG_ALLOWED_KEYS`** in **`resource_config_keys.py`** (see **`specs/resource-config-keys.md`** § **Sources — default keys under `config`**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, sandbox **`dbtg-sandbox-source-allowed-config-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-config-keys.md`** updated. Tests: **`tests/hook_families/allowed_config_keys/test_source_allowed_config_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_config_keys/sources/**`.
+- **`source-allowed-keys`**: top-level keys on each **`sources:`** entry; default allowlist **`SOURCE_ALLOWED_KEYS`** in **`resource_keys.py`** (see **`specs/resource-keys.md`** § **Sources** / **Default allowlist (source-allowed-keys)**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, sandbox hook **`dbtg-sandbox-source-allowed-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-keys.md`** §6 updated. Tests: **`tests/hook_families/allowed_keys/test_source_allowed_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/sources/**`.
+- **`yaml_handling`**: **`extract_source_entries`** and **`iter_source_entries`** for top-level **`sources:`** (keyed by each source’s **`name`**; nested **`tables:`** preserved on the entry). **`_extract_named_list_by_name`** accepts optional **`duplicate_name_kind`** so duplicate-**`name`** errors read **`Duplicate source name`** (not **`sourc`**). Spec: **`specs/yaml-handling.md`**; tests: **`tests/test_yaml_handling.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/sources/**`.
+
+### Changed
+
+- **Release metadata:** **`version`** in **`pyproject.toml`** is **0.4.1**; pre-commit **`rev:`** examples in **`README.md`**, **`HOOKS.md`**, **`specs/hook-families/meta-accepted-values.md`**, and **`specs/project-spec.md`** use **`v0.4.1`**.
+
 ## [0.4.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-22
+
+> **Note:** This tag was an **administrative mistake**: the version was released before the intended work was on **`main`**, so **0.4.0** does **not** include the code that was meant to ship with it. Use **0.4.1** (section above) or later for the release that contains that work.
 
 ### Changed
 
@@ -12,12 +27,8 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
-- **`source-allowed-meta-keys`**, **`source-meta-accepted-values`**, **`source-tags-accepted-values`**: same behavior as the other resource CLIs in those families, for **`sources:`** entries. **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, manual sandbox hooks, **`HOOKS.md`**, and family specs updated; tests and fixtures under **`tests/hook_families/`** and **`tests/fixtures/yaml/**`** per family.
-- **`source-allowed-config-keys`**: top-level keys under each source’s **`config:`** mapping; default **`SOURCE_CONFIG_ALLOWED_KEYS`** in **`resource_config_keys.py`** (see **`specs/resource-config-keys.md`** § **Sources — default keys under `config`**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, sandbox **`dbtg-sandbox-source-allowed-config-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-config-keys.md`** updated. Tests: **`tests/hook_families/allowed_config_keys/test_source_allowed_config_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_config_keys/sources/**`.
-- **`source-allowed-keys`**: top-level keys on each **`sources:`** entry; default allowlist **`SOURCE_ALLOWED_KEYS`** in **`resource_keys.py`** (see **`specs/resource-keys.md`** § **Sources** / **Default allowlist (source-allowed-keys)**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, sandbox hook **`dbtg-sandbox-source-allowed-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-keys.md`** §6 updated. Tests: **`tests/hook_families/allowed_keys/test_source_allowed_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/sources/**`.
-- **`yaml_handling`**: **`extract_source_entries`** and **`iter_source_entries`** for top-level **`sources:`** (keyed by each source’s **`name`**; nested **`tables:`** preserved on the entry). **`_extract_named_list_by_name`** accepts optional **`duplicate_name_kind`** so duplicate-**`name`** errors read **`Duplicate source name`** (not **`sourc`**). Spec: **`specs/yaml-handling.md`**; tests: **`tests/test_yaml_handling.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/sources/**`.
 - `**macro-meta-accepted-values**`: same behavior as the other `***-meta-accepted-values**` CLIs, for entries under `**macros:**` (`**--key**`, `**--values**`, optional `**--optional**`). Implementation: `**src/dbt_yaml_guardrails/hook_families/meta_accepted_values/macro_meta_accepted_values.py**`; `**[project.scripts]**`, `**.pre-commit-hooks.yaml**`, and docs/specs updated. Tests: `**tests/hook_families/meta_accepted_values/test_macro_meta_accepted_values.py**` and `**tests/fixtures/yaml/meta_accepted_values/macros/**`.
-- `***-tags-accepted-values`** hooks (`**model**`, `**seed**`, `**snapshot**`, `**exposure**`, `**source**`, `**macro**`): validate `**config.tags**` (string or list of strings) against `**--values**` when `**tags**` is declared; missing `**config**` or `**tags**` passes (see `**specs/hook-families/tags-accepted-values.md**`). Implementation: `**src/dbt_yaml_guardrails/hook_families/tags_accepted_values/**`; `**[project.scripts]**`, `**.pre-commit-hooks.yaml**`, `**HOOKS.md**` example block, and `**specs/**` index updated.
+- `***-tags-accepted-values`** hooks (`**model**`, `**seed**`, `**snapshot**`, `**exposure**`, `**macro**`): validate `**config.tags**` (string or list of strings) against `**--values**` when `**tags**` is declared; missing `**config**` or `**tags**` passes (see `**specs/hook-families/tags-accepted-values.md**`). Implementation: `**src/dbt_yaml_guardrails/hook_families/tags_accepted_values/**`; `**[project.scripts]**`, `**.pre-commit-hooks.yaml**`, `**HOOKS.md**` example block, and `**specs/**` index updated.
 
 ### Changed
 
