@@ -6,11 +6,12 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
+- `**macro-meta-accepted-values**`: same behavior as the other `***-meta-accepted-values**` CLIs, for entries under `**macros:**` (`**--key**`, `**--values**`, optional `**--optional**`). Implementation: `**src/dbt_yaml_guardrails/hook_families/meta_accepted_values/macro_meta_accepted_values.py**`; `**[project.scripts]**`, `**.pre-commit-hooks.yaml**`, and docs/specs updated. Tests: `**tests/hook_families/meta_accepted_values/test_macro_meta_accepted_values.py**` and `**tests/fixtures/yaml/meta_accepted_values/macros/**`.
 - `***-tags-accepted-values`** hooks (`**model**`, `**seed**`, `**snapshot**`, `**exposure**`, `**macro**`): validate `**config.tags**` (string or list of strings) against `**--values**` when `**tags**` is declared; missing `**config**` or `**tags**` passes (see `**specs/hook-families/tags-accepted-values.md**`). Implementation: `**src/dbt_yaml_guardrails/hook_families/tags_accepted_values/**`; `**[project.scripts]**`, `**.pre-commit-hooks.yaml**`, `**HOOKS.md**` example block, and `**specs/**` index updated.
 
 ### Changed
 
-- **Tests**: `**tests/hook_families/tags_accepted_values/`** and `**tests/fixtures/yaml/tags_accepted_values/**` cover the new CLIs.
+- **Tests**: `**tests/hook_families/tags_accepted_values/`** and `**tests/fixtures/yaml/tags_accepted_values/**` cover the tags family; `**tests/hook_families/meta_accepted_values/**` includes `**macro**` where applicable.
 
 ## [0.2.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-21
 

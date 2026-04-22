@@ -70,6 +70,7 @@ model-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_va
 seed-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_values.seed_meta_accepted_values:cli_main"
 snapshot-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_values.snapshot_meta_accepted_values:cli_main"
 exposure-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_values.exposure_meta_accepted_values:cli_main"
+macro-meta-accepted-values = "dbt_yaml_guardrails.hook_families.meta_accepted_values.macro_meta_accepted_values:cli_main"
 model-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.model_tags_accepted_values:cli_main"
 seed-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.seed_tags_accepted_values:cli_main"
 snapshot-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.snapshot_tags_accepted_values:cli_main"

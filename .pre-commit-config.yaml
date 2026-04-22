@@ -175,6 +175,14 @@ repos:
         files: ^tests/hook_sandbox/sandbox\.yml$
         args: ['--key', 'domain', '--values', 'sales,hr,finance']
         stages: [manual]
+      - id: dbtg-sandbox-macro-meta-accepted-values
+        name: (sandbox) macro-meta-accepted-values
+        entry: uv run macro-meta-accepted-values
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+        stages: [manual]
       - id: dbtg-sandbox-model-tags-accepted-values
         name: (sandbox) model-tags-accepted-values
         entry: uv run model-tags-accepted-values

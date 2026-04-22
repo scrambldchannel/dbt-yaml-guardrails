@@ -134,6 +134,13 @@
   language: python
   types: [yaml]
 
+- id: macro-meta-accepted-values
+  name: dbt macro meta accepted values
+  description: Validate a string or string list under config.meta against a comma-separated allowlist (dot path via --key)
+  entry: macro-meta-accepted-values
+  language: python
+  types: [yaml]
+
 - id: model-tags-accepted-values
   name: dbt model tags accepted values
   description: Validate config.tags values against a comma-separated allowlist (--values)

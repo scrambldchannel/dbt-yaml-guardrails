@@ -2,7 +2,7 @@
 
 Hooks in this family are named **`{resource}-meta-accepted-values`** (e.g. **`model-meta-accepted-values`**). Like **`*-allowed-meta-keys`**, the **`config`** wrapper is **implied**: validation applies to a **single key path** under **`config.meta`** (dot-separated path relative to **`meta`**). This family constrains the **value** at that path to a **fixed set of allowed strings** supplied on the CLI—not **which keys** may exist on **`meta`** (see **`allowed-meta-keys.md`** for key-name policy). The leaf may be a **single string** or a **YAML sequence of strings** (e.g. multiple domains or owners); **§ Leaf value typing** defines behavior. Other scalar types and comparison rules remain **future extensions** where noted.
 
-**Status:** **`model`**, **`seed`**, **`snapshot`**, and **`exposure`** **`*-meta-accepted-values`** CLIs are **shipped**; **`macro-meta-accepted-values`** is **planned**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
+**Status:** **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, and **`macro`** **`*-meta-accepted-values`** CLIs are **shipped**. Implementations should mirror **`yaml-handling.md`**, **`allowed-meta-keys.md`** stderr conventions, and per-resource wiring used elsewhere.
 
 ### Why this family is simpler than nested `*-allowed-meta-keys`
 
@@ -129,7 +129,7 @@ Each hook targets one top-level list, same pattern as **`*-allowed-meta-keys`**.
 | **`seed-meta-accepted-values`** | **`seeds:`** | **Shipped** |
 | **`snapshot-meta-accepted-values`** | **`snapshots:`** | **Shipped** |
 | **`exposure-meta-accepted-values`** | **`exposures:`** | **Shipped** |
-| **`macro-meta-accepted-values`** | **`macros:`** | Planned |
+| **`macro-meta-accepted-values`** | **`macros:`** | **Shipped** |
 
 **Pre-commit:** **`language: python`**, **`entry:`** matches hook id, **`types: [yaml]`** — align **`.pre-commit-hooks.yaml`** and **`[project.scripts]`** for each shipped hook.
 

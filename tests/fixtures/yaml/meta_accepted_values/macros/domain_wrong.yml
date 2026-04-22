@@ -1,0 +1,7 @@
+version: 2
+
+macros:
+  - name: m
+    config:
+      meta:
+        domain: other

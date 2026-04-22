@@ -69,6 +69,7 @@ The value at a **dot path** under **`config.meta`** must be a **string** or **li
 | `seed-meta-accepted-values` | One path on each `seeds:` entry |
 | `snapshot-meta-accepted-values` | One path on each `snapshots:` entry |
 | `exposure-meta-accepted-values` | One path on each `exposures:` entry |
+| `macro-meta-accepted-values` | One path on each `macros:` entry |
 
 ## `*-tags-accepted-values`
 
@@ -125,6 +126,8 @@ repos:
       - id: snapshot-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
       - id: exposure-meta-accepted-values
+        args: ["--key", "domain", "--values", "sales,hr,finance"]
+      - id: macro-meta-accepted-values
         args: ["--key", "domain", "--values", "sales,hr,finance"]
 
       # config.tags allowlist (when tags are declared in YAML)
