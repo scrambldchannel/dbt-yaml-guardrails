@@ -50,7 +50,7 @@ Until then, parsers and docs **MUST** treat tokens as **single-segment** top-lev
 
 ## 1. Shipped CLIs (same contract)
 
-Each hook validates **keys on `config.meta`** for entries under one top-level list (`models:`, `seeds:`, `snapshots:`, `exposures:`, or `macros:`). The CLI **`id`** / console script name matches the hook id (e.g. **`model-allowed-meta-keys`**).
+Each hook validates **keys on `config.meta`** for entries under one top-level list (`models:`, `seeds:`, `snapshots:`, `exposures:`, `sources:`, or `macros:`). The CLI **`id`** / console script name matches the hook id (e.g. **`model-allowed-meta-keys`**).
 
 | Hook id | Resource list |
 | --- | --- |
@@ -58,6 +58,7 @@ Each hook validates **keys on `config.meta`** for entries under one top-level li
 | **`seed-allowed-meta-keys`** | **`seeds:`** |
 | **`snapshot-allowed-meta-keys`** | **`snapshots:`** |
 | **`exposure-allowed-meta-keys`** | **`exposures:`** |
+| **`source-allowed-meta-keys`** | **`sources:`** |
 | **`macro-allowed-meta-keys`** | **`macros:`** |
 
 **Pre-commit (shipped):** **`language: python`**, **`entry:`** matches the hook id, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
@@ -72,6 +73,6 @@ The **`*-allowed-keys`** family uses **`violations_for_entries`** in **`allowed_
 
 **Future consolidation:** A single shared abstraction for “key policy on a mapping” might replace parallel **`violations_for_entries`** and **`violations_for_meta_keys`** later; that is **optional** and not required for the first shipped hook.
 
-**Status:** **`model-allowed-meta-keys`**, **`seed-allowed-meta-keys`**, **`snapshot-allowed-meta-keys`**, **`exposure-allowed-meta-keys`**, and **`macro-allowed-meta-keys`** are shipped with the same CLI shape and per-resource wiring.
+**Status:** **`model-allowed-meta-keys`**, **`seed-allowed-meta-keys`**, **`snapshot-allowed-meta-keys`**, **`exposure-allowed-meta-keys`**, **`source-allowed-meta-keys`**, and **`macro-allowed-meta-keys`** are shipped with the same CLI shape and per-resource wiring.
 
 **Related:** **[`../hooks.md`](../hooks.md)** (umbrella), **[`../yaml-handling.md`](../yaml-handling.md)** (parsing; how **`config`** and **`meta`** are represented after load), **[`allowed-keys.md`](allowed-keys.md)** (reference for flag shape and exit codes), **[`meta-accepted-values.md`](meta-accepted-values.md)** (dot paths under **`meta`**; value allowlists).

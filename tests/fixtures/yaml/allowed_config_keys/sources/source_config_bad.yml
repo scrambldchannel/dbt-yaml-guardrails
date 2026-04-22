@@ -1,0 +1,6 @@
+version: 2
+
+sources:
+  - name: s
+    config:
+      not_allowed: true

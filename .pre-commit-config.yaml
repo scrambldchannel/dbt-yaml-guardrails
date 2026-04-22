@@ -58,6 +58,14 @@ repos:
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
         stages: [manual]
+      - id: dbtg-sandbox-source-allowed-keys
+        name: (sandbox) source-allowed-keys
+        entry: uv run source-allowed-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        args: ['--required', 'description', '--forbidden', 'overrides']
+        stages: [manual]
       - id: dbtg-sandbox-snapshot-allowed-keys
         name: (sandbox) snapshot-allowed-keys
         entry: uv run snapshot-allowed-keys
@@ -89,6 +97,13 @@ repos:
       - id: dbtg-sandbox-seed-allowed-config-keys
         name: (sandbox) seed-allowed-config-keys
         entry: uv run seed-allowed-config-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        stages: [manual]
+      - id: dbtg-sandbox-source-allowed-config-keys
+        name: (sandbox) source-allowed-config-keys
+        entry: uv run source-allowed-config-keys
         language: system
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
@@ -136,6 +151,13 @@ repos:
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
         stages: [manual]
+      - id: dbtg-sandbox-source-allowed-meta-keys
+        name: (sandbox) source-allowed-meta-keys
+        entry: uv run source-allowed-meta-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        stages: [manual]
       - id: dbtg-sandbox-macro-allowed-meta-keys
         name: (sandbox) macro-allowed-meta-keys
         entry: uv run macro-allowed-meta-keys
@@ -170,6 +192,14 @@ repos:
       - id: dbtg-sandbox-exposure-meta-accepted-values
         name: (sandbox) exposure-meta-accepted-values
         entry: uv run exposure-meta-accepted-values
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+        stages: [manual]
+      - id: dbtg-sandbox-source-meta-accepted-values
+        name: (sandbox) source-meta-accepted-values
+        entry: uv run source-meta-accepted-values
         language: system
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
@@ -210,6 +240,14 @@ repos:
       - id: dbtg-sandbox-exposure-tags-accepted-values
         name: (sandbox) exposure-tags-accepted-values
         entry: uv run exposure-tags-accepted-values
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        args: ['--values', 'nightly,finance,raw']
+        stages: [manual]
+      - id: dbtg-sandbox-source-tags-accepted-values
+        name: (sandbox) source-tags-accepted-values
+        entry: uv run source-tags-accepted-values
         language: system
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$

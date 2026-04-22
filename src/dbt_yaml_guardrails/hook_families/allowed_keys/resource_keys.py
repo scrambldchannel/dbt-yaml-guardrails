@@ -106,3 +106,28 @@ EXPOSURE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags` (unless your dbt version documents an exception).",
 }
+
+# Canonical set for ``source-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Sources**
+# subsection **Default allowlist (source-allowed-keys)**.
+SOURCE_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "name",
+        "description",
+        "config",
+        "data_tests",
+        "columns",
+        "database",
+        "schema",
+        "tables",
+        "loader",
+        "quoting",
+    )
+)
+
+# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Sources **Legacy / deprecated**
+SOURCE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+    "meta": "Use `config.meta` instead of top-level `meta`.",
+    "tags": "Use `config.tags` instead of top-level `tags`.",
+    "overrides": "Remove `overrides` (deprecated in dbt v1.10+); use other source configuration.",
+}

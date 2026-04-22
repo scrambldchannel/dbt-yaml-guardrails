@@ -1,0 +1,5 @@
+version: 2
+
+sources:
+  - name: x
+    not_in_allowlist: true

@@ -1,0 +1,6 @@
+version: 2
+
+sources:
+  - name: with_meta
+    meta:
+      owner: analytics

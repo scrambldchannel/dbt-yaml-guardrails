@@ -11,6 +11,19 @@ models:
         domain: sales
         owner: sandbox
 
+sources:
+  - name: sb_src
+    description: sandbox
+    database: raw
+    schema: public
+    tables: []
+    config:
+      enabled: true
+      tags: [nightly, finance]
+      meta:
+        domain: sales
+        team: sandbox
+
 seeds:
   - name: sb_seed
     description: sandbox

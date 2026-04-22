@@ -170,25 +170,38 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 | `columns` | |
 | `config` | |
 | `data_tests` | |
+| `database` | [database](https://docs.getdbt.com/reference/resource-properties/database) |
 | `deprecation_date` | |
 | `description` | |
 | `docs` | Nested object (`show`); [source properties](https://docs.getdbt.com/reference/source-properties) |
 | `latest_version` | |
+| `loader` | [loader](https://docs.getdbt.com/reference/resource-properties/loader) |
 | `name` | |
 | `original_file_path` | |
 | `package_name` | |
 | `patch_path` | |
+| `quoting` | [quoting](https://docs.getdbt.com/reference/resource-properties/quoting) |
 | `relation_name` | |
 | `resource_type` | |
+| `schema` | [schema](https://docs.getdbt.com/reference/resource-properties/schema) |
+| `tables` | List of table definitions; [source properties](https://docs.getdbt.com/reference/source-properties) |
 | `tests` | Legacy alias for `data_tests` |
 | `unrendered_config` | |
 | `versions` | |
+
+### Default allowlist (`source-allowed-keys`)
+
+The frozen set **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (used by **`source-allowed-keys`**) is the dbt-typical subset: **`columns`**, **`config`**, **`data_tests`**, **`database`**, **`description`**, **`loader`**, **`name`**, **`quoting`**, **`schema`**, **`tables`**. Other top-level keys in the table above may be allowed or called out as legacy; extend **`SOURCE_ALLOWED_KEYS`** and this subsection together when broadening the hook’s defaults.
 
 ### Legacy / deprecated (top-level keys)
 
 | Key | Notes | Suggested violation detail |
 | --- | --- | --- |
+| `meta` | Prefer **`config.meta`**. | Use `config.meta` instead of top-level `meta`. |
+| `overrides` | Deprecated in dbt v1.10+ for sources. | Remove `overrides` (deprecated in dbt v1.10+); use other source configuration. |
 | `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/source-properties#sources) |
+| `tags` | Prefer **`config.tags`**. | Use `config.tags` instead of top-level `tags`. |
+| `tests` | Use **`data_tests`**. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
 
 ## Analyses
 
