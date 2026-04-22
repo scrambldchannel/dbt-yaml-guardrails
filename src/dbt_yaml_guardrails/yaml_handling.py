@@ -1,7 +1,8 @@
 """dbt property YAML loading and shape normalization.
 
 Behavior is specified in ``specs/yaml-handling.md``. :func:`load_property_yaml`
-covers document-level parsing; :func:`extract_model_entries` normalizes ``models:``.
+covers document-level parsing; :func:`extract_model_entries` and friends normalize
+per-resource top-level lists (``models:``, ``sources:``, …).
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ SKIP_NO_MACROS_SECTION = "no_macros_section"
 SKIP_NO_SEEDS_SECTION = "no_seeds_section"
 SKIP_NO_SNAPSHOTS_SECTION = "no_snapshots_section"
 SKIP_NO_EXPOSURES_SECTION = "no_exposures_section"
+SKIP_NO_SOURCES_SECTION = "no_sources_section"
 
 
 @dataclass(frozen=True)
@@ -166,6 +168,25 @@ ExposureEntriesOutcome: TypeAlias = (
 )
 
 
+@dataclass(frozen=True)
+class SourceEntriesSkip:
+    """No ``sources:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class SourceEntriesResult:
+    """Normalized source entries under ``sources:`` (each list item; keyed by ``name``)."""
+
+    path: Path
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+SourceEntriesOutcome: TypeAlias = SourceEntriesResult | SourceEntriesSkip | ParseError
+
+
 # ---------------------------------------------------------------------------
 # YAML loading (Phases 1–3: I/O + single document + root + version)
 # ---------------------------------------------------------------------------
@@ -251,7 +272,7 @@ def load_property_yaml(path: Path) -> ParseFileOutcome:
     Implements ``specs/yaml-handling.md`` § Parsing (UTF-8, BOM, empty skip,
     ``ruamel.yaml``, single document, duplicate keys, invalid YAML) and
     top-level ``version:`` validation. Does not inspect resource list shape
-    (``models:``, ``macros:``, …); use the ``extract_*_entries`` functions.
+    (``models:``, ``sources:``, ``macros:``, …); use the ``extract_*_entries`` functions.
 
     Args:
         path: Path to the YAML file.
@@ -412,6 +433,7 @@ def _extract_named_list_by_name(
     *,
     section_key: str,
     label: str,
+    duplicate_name_kind: str | None = None,
 ) -> ParseError | Literal["skip"] | dict[str, dict[str, Any]]:
     """Parse ``root[section_key]`` as a list of mappings with a string ``name``.
 
@@ -419,6 +441,9 @@ def _extract_named_list_by_name(
         success: Loaded YAML document.
         section_key: Top-level key (e.g. ``\"seeds\"``).
         label: Human-readable plural for error messages (e.g. ``\"seeds\"``).
+        duplicate_name_kind: Word used in the duplicate-name error (e.g. ``\"source\"``
+            for ``sources``; default is *label* with the last character removed, which
+            works for *seeds*, *snapshots*, *exposures* but not *sources*).
 
     Returns:
         ``\"skip\"`` if *section_key* is absent, a :class:`ParseError` on bad
@@ -455,7 +480,10 @@ def _extract_named_list_by_name(
             )
         name = raw_name.strip()
         if name in by_name:
-            return ParseError(path, f"Duplicate {label[:-1]} name {name!r}")
+            kind = (
+                duplicate_name_kind if duplicate_name_kind is not None else label[:-1]
+            )
+            return ParseError(path, f"Duplicate {kind} name {name!r}")
         by_name[name] = dict(item)
 
     return by_name
@@ -567,6 +595,51 @@ def iter_exposure_entries(
 
     Args:
         by_name: Map from exposure name to exposure entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def extract_source_entries(success: ParseSuccess) -> SourceEntriesOutcome:
+    """Normalize ``success.root["sources"]`` into a map keyed by source ``name``.
+
+    If there is no ``sources`` key, returns :class:`SourceEntriesSkip`. Otherwise
+    ``sources`` must be a list of mappings, each with a non-empty string ``name``;
+    duplicate ``name`` values are an error. Nested ``tables:`` and other keys are
+    left on each entry as-is; only the list shape and per-entry ``name`` are
+    validated here.
+
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`SourceEntriesResult`, :class:`SourceEntriesSkip` if there is no
+        ``sources:`` section, or :class:`ParseError` on bad shape.
+    """
+    r = _extract_named_list_by_name(
+        success,
+        section_key="sources",
+        label="sources",
+        duplicate_name_kind="source",
+    )
+    if r == "skip":
+        return SourceEntriesSkip(success.path, SKIP_NO_SOURCES_SECTION)
+    if isinstance(r, ParseError):
+        return r
+    return SourceEntriesResult(success.path, r)
+
+
+def iter_source_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in sorted name order (see :func:`iter_model_entries`).
+
+    Args:
+        by_name: Map from source name to source entry dict.
 
     Yields:
         ``(name, entry)`` tuples in sorted name order.

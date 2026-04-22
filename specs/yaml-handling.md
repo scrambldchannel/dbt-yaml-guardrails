@@ -31,6 +31,7 @@ Resource types differ in shape (e.g. **`sources:`** with nested **`tables:`** vs
 + Duplicate top-level sections for the same resource type should raise an error
 + Each resource type should appear at most once at the top level of the document (e.g. a single `models:` list, a single `sources:` list)
 + If a hook is only checking one resource type, ignore entries for other resource types when parsing
++ For **`sources:`**, **`extract_source_entries`** and **`iter_source_entries`** in **`src/dbt_yaml_guardrails/yaml_handling.py`** build the same name-keyed map as for other list-shaped resources; nested **`tables:`** and other fields stay on each source entry (not expanded into separate top-level resource rows at this layer)
 
 ## Errors
 
