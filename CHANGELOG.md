@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and `**version`** in `**pyproject.toml**`). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## [0.4.2](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-23
+
+### Fixed
+
+- **`*-allowed-keys` default allowlists** (**`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**) now list only **top-level keys users can author in dbt property YAML** (per the dbt **resource properties** reference for each resource), **not** manifest-only fields (e.g. `original_file_path`, `package_name`, `relation_name`, `resource_type`, `unrendered_config`). Models use the [model properties](https://docs.getdbt.com/reference/model-properties) surface (including latest YAML fields such as `semantic_model`, `metrics`, `agg_time_dimension`, `primary_entity`); seeds, snapshots, macros, exposures, and sources match their respective dbt property docs. **`specs/resource-keys.md`**, **`specs/hook-families/allowed-keys.md`**, and **`specs/README.md`** describe the policy; the **Analyses** / **Unit tests** wide tables were replaced with a short note (no matching shipped hooks yet).
+
+### Changed
+
+- **Release metadata:** **`version`** in **`pyproject.toml`** is **0.4.2**; pre-commit **`rev:`** examples in **`README.md`**, **`HOOKS.md`**, **`specs/hook-families/meta-accepted-values.md`**, and **`specs/project-spec.md`** use **`v0.4.2`**.
+
 ## [0.4.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-22
 
 ### Added
