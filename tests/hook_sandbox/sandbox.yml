@@ -10,6 +10,7 @@ models:
       meta:
         domain: sales
         owner: sandbox
+    deprecation_date: 2026-04-23
 
 sources:
   - name: sb_src

@@ -15,7 +15,7 @@ Several hooks validate **top-level keys on each entry** in a dbt property YAML d
 **CLI contract** (same for every hook in this family):
 
 + `--required` — comma-separated keys that must be present on each validated entry. Default: none. Do not require keys that dbt always supplies for real resources if that would be redundant (e.g. **`name`** on models); each hook’s section calls out exceptions.
-+ **Allowed keys are fixed** for that hook’s target node: only the Fusion-oriented set in **`resource-keys.md`** for the matching **§**.
++ **Allowed keys are fixed** for that hook’s target: only the **user-authorable** top-level keys in **`resource-keys.md`** for the matching **§** (dbt **resource properties**, not manifest-only fields; see that doc’s intro).
 + `--forbidden` — optional comma-separated keys that **must not** appear on an entry, even when otherwise allowlisted (stricter team policy).
 
 **Legacy keys:** If a top-level key on an entry appears in **`resource-keys.md`** § **Legacy / deprecated** for that hook’s resource type, implementations **SHOULD** emit a violation whose message is **actionable**: it **SHOULD** include the **Suggested violation detail** from that row (rename target, e.g. use **`data_tests`** instead of **`tests`**, or where to nest under **`config`**, e.g. **`config.meta`**). Keys that are neither allowlisted nor listed as legacy continue to use generic **disallowed key** wording (see **`yaml-handling.md`** § Errors).
@@ -88,7 +88,7 @@ The CLI entry point and hook **`id`** should be **`source-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: source-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real sources in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Sources** (subsection **Default allowlist (source-allowed-keys)**), implemented as **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real sources in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Sources**, implemented as **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**.
 
 ## 7. Other resource types (later version)
 

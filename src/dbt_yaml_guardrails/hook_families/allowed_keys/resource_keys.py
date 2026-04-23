@@ -1,133 +1,144 @@
-"""Fusion-oriented default allowlists for dbt property YAML.
+"""User-authorable top-level keys for dbt property YAML (``specs/resource-keys.md``).
 
-The ``*_ALLOWED_KEYS`` and ``*_LEGACY_KEY_MESSAGES`` values are the implementation
-source for the **`*-allowed-keys`** family; they **must** stay aligned with
-``specs/resource-keys.md`` (change the spec and this module together).
+The ``*_ALLOWED_KEYS`` frozensets list keys that a user may **write** in resource
+**property YAML** (``schema.yml`` / ``*.yml`` under model-paths, etc.), as documented in
+the dbt **resource properties** reference for each type. They intentionally **do not**
+include **manifest / artifact-only** fields (e.g. ``original_file_path``,
+``package_name``, ``relation_name``) that appear on parsed nodes in ``manifest.json``
+but are not declared in property files.
+
+**Legacy keys** (e.g. ``tests`` for ``data_tests``) stay **out** of the allowlist so
+``*_legacy_key_messages`` can steer users toward the supported spelling.
+
+The ``*_LEGACY_KEY_MESSAGES`` and **Legacy / deprecated** subsections in the spec
+cover keys users should not use; those keys are not in the allowlist unless
+explicitly listed for special handling.
 """
 
 from __future__ import annotations
 
 from typing import Mapping
 
-# Canonical set for ``model-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Models**
-# (the markdown table mirrors this constant; change both together).
+# [Model properties](https://docs.getdbt.com/reference/model-properties) “Available
+# top-level model properties” + latest-YAML fields from the same page (``agg_time_dimension``,
+# ``primary_entity`` in the latest example). Excludes ``tests`` (use ``MODEL_LEGACY_KEY_MESSAGES``).
 MODEL_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
-        "description",
+        "access",
+        "agg_time_dimension",
         "columns",
-        "data_tests",
-        "versions",
-        "latest_version",
-        "version",
-        "constraints",
-        "docs",
         "config",
+        "constraints",
+        "data_tests",
+        "deprecation_date",
+        "description",
+        "latest_version",
+        "metrics",
+        "name",
+        "primary_entity",
+        "semantic_model",
+        "time_spine",
+        "versions",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Models **Suggested violation detail**
 MODEL_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
-    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
     "meta": "Use `config.meta` instead of top-level `meta`.",
+    "sources": "Deprecated: prefer `exposures` and `sources` per dbt model properties; remove top-level `sources`.",
     "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
-# Canonical set for ``macro-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Macros**
+# [Macro properties](https://docs.getdbt.com/reference/macro-properties)
 MACRO_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
-        "description",
-        "config",
         "arguments",
+        "config",
+        "description",
+        "name",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Macros **Suggested violation detail**
 MACRO_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
-# Canonical set for ``seed-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Seeds**
+# [Seed properties](https://docs.getdbt.com/reference/seed-properties)
 SEED_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
-        "description",
+        "columns",
         "config",
         "data_tests",
-        "columns",
+        "description",
+        "name",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Seeds **Suggested violation detail**
 SEED_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
-    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
-# Canonical set for ``snapshot-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Snapshots**
+# [Snapshot properties](https://docs.getdbt.com/reference/snapshot-properties)
 SNAPSHOT_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
-        "description",
+        "columns",
         "config",
         "data_tests",
-        "columns",
+        "description",
+        "name",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Snapshots **Suggested violation detail**
 SNAPSHOT_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
-    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
-# Canonical set for ``exposure-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Exposures**
+# [Exposure properties](https://docs.getdbt.com/reference/exposure-properties)
 EXPOSURE_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
+        "config",
+        "depends_on",
         "description",
+        "enabled",
+        "label",
+        "maturity",
+        "name",
+        "owner",
         "type",
         "url",
-        "maturity",
-        "enabled",
-        "config",
-        "owner",
-        "depends_on",
-        "label",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Exposures **Suggested violation detail**
 EXPOSURE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags` (unless your dbt version documents an exception).",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
-# Canonical set for ``source-allowed-keys`` — MUST match ``specs/resource-keys.md`` § **Sources**
-# subsection **Default allowlist (source-allowed-keys)**.
+# [Source properties](https://docs.getdbt.com/reference/source-properties)
 SOURCE_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
-        "name",
-        "description",
         "config",
-        "data_tests",
-        "columns",
         "database",
+        "description",
+        "loader",
+        "name",
+        "quoting",
         "schema",
         "tables",
-        "loader",
-        "quoting",
     )
 )
 
-# Legacy keys → stderr detail — MUST match ``specs/resource-keys.md`` § Sources **Legacy / deprecated**
 SOURCE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
-    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
     "meta": "Use `config.meta` instead of top-level `meta`.",
-    "tags": "Use `config.tags` instead of top-level `tags`.",
     "overrides": "Remove `overrides` (deprecated in dbt v1.10+); use other source configuration.",
+    "sources": "Deprecated in favor of **`exposures`** + `sources`.",
+    "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }

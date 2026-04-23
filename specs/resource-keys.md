@@ -1,38 +1,39 @@
 # Resource key allowlists
 
-Fusion-oriented **fixed allowed keys** **per resource type** for **`dbt-*-allowed-keys`** hooks (see **`hook-families/allowed-keys.md`** and **`hooks.md`**). **`--forbidden`** can additionally ban keys from the default set for stricter projects.
+**`*-allowed-keys`** hooks use a **default allowlist of top-level keys users may author in property YAML** (per dbt’s **resource properties** reference for each type). The lists **intentionally omit manifest / artifact-only** fields (e.g. `original_file_path`, `package_name`, `relation_name`, `resource_type`, `unrendered_config`) that appear on nodes in `manifest.json` but are not written in `schema.yml`-style files.
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md), [`hooks.md`](hooks.md).
 
-Allowlists describe **keys on the resource object** the hook targets (e.g. each dict under `models:`), not wrapper keys like `models` itself.
+Allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For keys **inside** `config:`, see **[`resource-config-keys.md`](resource-config-keys.md)**.
 
-For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-keys`** ), see **[`resource-config-keys.md`](resource-config-keys.md)**.
+**`--forbidden`** can still ban keys that appear in a default allowlist if your policy is stricter than dbt’s surface area.
 
 ## Models
 
+[Model properties](https://docs.getdbt.com/reference/model-properties) (available top-level + latest YAML / Fusion fields from that page: `agg_time_dimension`, `primary_entity`, `semantic_model`, `metrics`).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | [build](https://docs.getdbt.com/reference/resource-configs/build) |
+| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) (top-level for compatibility) |
+| `agg_time_dimension` | Latest YAML / Fusion; default time dimension for metrics |
 | `columns` | |
-| `config` | |
+| `config` | `docs` / `access` for the model are typically **under** `config` per dbt |
 | `constraints` | |
 | `data_tests` | |
 | `deprecation_date` | [deprecation_date](https://docs.getdbt.com/reference/resource-properties/deprecation_date) |
 | `description` | |
-| `docs` | Nested object (`show`); [model properties](https://docs.getdbt.com/reference/model-properties) |
-| `latest_version` | [latest_version](https://docs.getdbt.com/reference/resource-properties/latest_version) |
+| `latest_version` | |
+| `metrics` | [Metric properties](https://docs.getdbt.com/reference/metric-properties) |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `time_spine` | [time_spine](https://docs.getdbt.com/reference/model-properties#time_spine) |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
+| `primary_entity` | Latest YAML / Fusion |
+| `semantic_model` | [Semantic model properties](https://docs.getdbt.com/reference/semantic-model-properties) |
+| `time_spine` | [Time spine](https://docs.getdbt.com/docs/build/metricflow-time-spine) |
 | `versions` | |
+| `tests` | Legacy alias for `data_tests` — **not** in `MODEL_ALLOWED_KEYS` (use legacy message) |
+
+### Default allowlist (`model-allowed-keys`)
+
+**`MODEL_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** matches the authorable table above **except** **`tests`**. **Legacy / deprecated** keys are **out** of the set unless handled via **`MODEL_LEGACY_KEY_MESSAGES`**. **`--forbidden`** can still block keys that are in the set.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -42,27 +43,20 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 
 ## Seeds
 
+[Seed properties](https://docs.getdbt.com/reference/seed-properties).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
 | `columns` | |
-| `config` | |
+| `config` | includes `docs` (show / node color) per dbt |
 | `data_tests` | |
-| `deprecation_date` | |
 | `description` | |
-| `docs` | Nested object (`show`); [seed properties](https://docs.getdbt.com/reference/seed-properties) |
-| `latest_version` | |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+| `tests` | Legacy — **not** in `SEED_ALLOWED_KEYS` |
+
+### Default allowlist (`seed-allowed-keys`)
+
+**`SEED_ALLOWED_KEYS`** matches the table above **except** **`tests`**. See **`SEED_LEGACY_KEY_MESSAGES`** in **`resource_keys.py`**.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -72,27 +66,20 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 
 ## Snapshots
 
+[Snapshot properties](https://docs.getdbt.com/reference/snapshot-properties).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
 | `columns` | |
 | `config` | |
 | `data_tests` | |
-| `deprecation_date` | |
 | `description` | |
-| `docs` | Nested object (`show`); [snapshot properties](https://docs.getdbt.com/reference/snapshot-properties) |
-| `latest_version` | |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+| `tests` | Legacy — **not** in `SNAPSHOT_ALLOWED_KEYS` |
+
+### Default allowlist (`snapshot-allowed-keys`)
+
+**`SNAPSHOT_ALLOWED_KEYS`** matches the table above **except** **`tests`**. See **`resource_keys.py`**.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -102,27 +89,19 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 
 ## Macros
 
+[Macro properties](https://docs.getdbt.com/reference/macro-properties).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
-| `columns` | |
+| `arguments` | |
 | `config` | |
-| `data_tests` | |
-| `deprecation_date` | |
 | `description` | |
-| `docs` | Nested object (`show`); [macro properties](https://docs.getdbt.com/reference/macro-properties) |
-| `latest_version` | |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+| `tests` | Legacy — **not** in `MACRO_ALLOWED_KEYS` |
+
+### Default allowlist (`macro-allowed-keys`)
+
+**`MACRO_ALLOWED_KEYS`** matches the table above **except** **`tests`**. See **`resource_keys.py`**.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -132,27 +111,25 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 
 ## Exposures
 
+[Exposure properties](https://docs.getdbt.com/reference/exposure-properties).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
-| `columns` | |
-| `config` | |
-| `data_tests` | |
-| `deprecation_date` | |
+| `config` | `meta` / `tags` under `config` in modern dbt |
+| `depends_on` | |
 | `description` | |
-| `docs` | Nested object (`show`); [exposure properties](https://docs.getdbt.com/reference/exposure-properties) |
-| `latest_version` | |
+| `enabled` | |
+| `label` | |
+| `maturity` | |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+| `owner` | |
+| `type` | required (dashboard, notebook, …) |
+| `url` | |
+| `tests` | Legacy — **not** in `EXPOSURE_ALLOWED_KEYS` |
+
+### Default allowlist (`exposure-allowed-keys`)
+
+**`EXPOSURE_ALLOWED_KEYS`** matches the table above **except** **`tests`**. See **`resource_keys.py`**.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -162,36 +139,22 @@ For keys **inside** each entry’s **`config:`** mapping ( **`*-allowed-config-k
 
 ## Sources
 
+[Source properties](https://docs.getdbt.com/reference/source-properties).
+
 | Key | Notes |
 | --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
-| `columns` | |
-| `config` | |
-| `data_tests` | |
-| `database` | [database](https://docs.getdbt.com/reference/resource-properties/database) |
-| `deprecation_date` | |
+| `config` | `meta` / `tags` / freshness under `config` in modern dbt |
+| `database` | |
 | `description` | |
-| `docs` | Nested object (`show`); [source properties](https://docs.getdbt.com/reference/source-properties) |
-| `latest_version` | |
-| `loader` | [loader](https://docs.getdbt.com/reference/resource-properties/loader) |
+| `loader` | |
 | `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `quoting` | [quoting](https://docs.getdbt.com/reference/resource-properties/quoting) |
-| `relation_name` | |
-| `resource_type` | |
-| `schema` | [schema](https://docs.getdbt.com/reference/resource-properties/schema) |
-| `tables` | List of table definitions; [source properties](https://docs.getdbt.com/reference/source-properties) |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+| `quoting` | |
+| `schema` | |
+| `tables` | table definitions; columns and `data_tests` live **under** `tables` |
 
 ### Default allowlist (`source-allowed-keys`)
 
-The frozen set **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (used by **`source-allowed-keys`**) is the dbt-typical subset: **`columns`**, **`config`**, **`data_tests`**, **`database`**, **`description`**, **`loader`**, **`name`**, **`quoting`**, **`schema`**, **`tables`**. Other top-level keys in the table above may be allowed or called out as legacy; extend **`SOURCE_ALLOWED_KEYS`** and this subsection together when broadening the hook’s defaults.
+**`SOURCE_ALLOWED_KEYS`** is exactly the table above. Deprecated top-level `meta` / `tags` / `overrides` and legacy `tests` are **out** of the set; see **`SOURCE_LEGACY_KEY_MESSAGES`**. **`--forbidden`** can still ban keys in the set.
 
 ### Legacy / deprecated (top-level keys)
 
@@ -203,64 +166,12 @@ The frozen set **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_fami
 | `tags` | Prefer **`config.tags`**. | Use `config.tags` instead of top-level `tags`. |
 | `tests` | Use **`data_tests`**. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
 
-## Analyses
+## Analyses, unit tests
 
-| Key | Notes |
-| --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
-| `columns` | |
-| `config` | |
-| `data_tests` | |
-| `deprecation_date` | |
-| `description` | |
-| `docs` | Nested object (`show`); [analysis properties](https://docs.getdbt.com/reference/analysis-properties) |
-| `latest_version` | |
-| `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
+This repository does not ship `analysis-allowed-keys` or `unit-test-allowed-keys`. For [analysis](https://docs.getdbt.com/reference/analysis-properties) and [unit test](https://docs.getdbt.com/reference/unit-test-properties) property YAML, use the dbt reference for authorable top-level keys; do not assume the wide “node field” lists from older revisions of this spec (manifest overlap).
 
-### Legacy / deprecated (top-level keys)
+## Manifest-only fields (not in default allowlists)
 
-| Key | Notes | Suggested violation detail |
-| --- | --- | --- |
-| `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/analysis-properties#sources) |
+Fields such as `original_file_path`, `package_name`, `patch_path`, `relation_name`, `resource_type`, and `unrendered_config` appear on **nodes in `manifest.json`**. They are **not** part of the default `*_ALLOWED_KEYS` sets—users do not author them in property YAML.
 
-## Unit tests
-
-| Key | Notes |
-| --- | --- |
-| `access` | [access](https://docs.getdbt.com/reference/resource-configs/access) |
-| `alias` | |
-| `build` | |
-| `columns` | |
-| `config` | |
-| `data_tests` | |
-| `deprecation_date` | |
-| `description` | |
-| `docs` | Nested object (`show`); [unit test properties](https://docs.getdbt.com/reference/unit-test-properties) |
-| `latest_version` | |
-| `name` | |
-| `original_file_path` | |
-| `package_name` | |
-| `patch_path` | |
-| `relation_name` | |
-| `resource_type` | |
-| `tests` | Legacy alias for `data_tests` |
-| `unrendered_config` | |
-| `versions` | |
-
-### Legacy / deprecated (top-level keys)
-
-| Key | Notes | Suggested violation detail |
-| --- | --- | --- |
-| `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/unit-test-properties#sources) |
-
-When new resource types or Fusion keys are added, extend these tables and **`resource_keys.py`** (or a sibling module) so the implementation and hook behavior stay aligned.
+When dbt’s published property surface grows (new top-level resource keys in the official reference), update **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** and the **user-authorable** tables in this document together.
