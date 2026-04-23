@@ -42,15 +42,27 @@ repos:
 
 ## Use in GitHub Actions
 
-Use the same **`.pre-commit-config.yaml`** you use locally. For **pull requests**, you can run hooks only on **files that changed** between the PR base and head with **`--from-ref`** and **`--to-ref`** (install pre-commit, then run from the repository root, where the config file lives).
+Use the same **`.pre-commit-config.yaml`** you use locally. For **pull requests**, you can run hooks only on **files that changed** between the PR base and head with **`--from-ref`** and **`--to-ref`**.
+
+A **matrix** of hooks (one **job** per hook, **`fail-fast: false`**) makes which hook failed obvious in the Actions UI. The **`hook`** names in the matrix must match your config: the **`id:`** of each hook, or the **`alias:`** if you have more than one hook with the same `id` (as with the two **`model-meta-accepted-values`** stanzas in [Example usage](#example-usage) above, which use **`accepted-domains`** and **`accepted-owners`**). Expand or change the `matrix.hook` list to match the hooks you actually configured.
 
 ```yaml
-# .github/workflows/pre-commit.yml — example for pull_request; adjust as needed
+# .github/workflows/pre-commit.yml — pull request; only files changed in the PR
+# Matrix matches the dbt-yaml-guardrails hooks in "Example usage" (plus any other repo: blocks you have).
 name: pre-commit
 on: pull_request
 jobs:
   pre-commit:
+    name: ${{ matrix.hook }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        hook:
+          - model-allowed-keys
+          - model-allowed-config-keys
+          - accepted-domains
+          - accepted-owners
     steps:
       - uses: actions/checkout@v6
         with:
@@ -59,10 +71,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install pre-commit
-      - run: pre-commit run --show-diff-on-failure --from-ref "${{ github.event.pull_request.base.sha }}" --to-ref "${{ github.event.pull_request.head.sha }}"
+      - name: pre-commit run
+        run: >
+          pre-commit run ${{ matrix.hook }}
+          --show-diff-on-failure
+          --from-ref "${{ github.event.pull_request.base.sha }}"
+          --to-ref "${{ github.event.pull_request.head.sha }}"
 ```
 
-For **`push`** events (no pull request) you might use `pre-commit run --all-files` or another `--from-ref` / `--to-ref` range. [pre-commit’s CI docs](https://pre-commit.com/#usage-in-continuous-integration) and the [`pre-commit` action](https://github.com/pre-commit/action) cover caching, wrappers, and more.
+On **`push`** (no `pull_request` payload), use a different `pre-commit run` form—often **`--all-files`** for each hook in the matrix, or a single job with **`pre-commit run --all-files`**. [pre-commit’s CI docs](https://pre-commit.com/#usage-in-continuous-integration) and the [`pre-commit` action](https://github.com/pre-commit/action) cover that, plus caching and wrappers.
 
 ## Contributing
 
