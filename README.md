@@ -40,6 +40,29 @@ repos:
         args: ["--key", "owner", "--values", "alex,annemarie,ryu,ken"]
 ```
 
+## Use in GitHub Actions
+
+Use the same **`.pre-commit-config.yaml`** you use locally. For **pull requests**, you can run hooks only on **files that changed** between the PR base and head with **`--from-ref`** and **`--to-ref`** (install pre-commit, then run from the repository root, where the config file lives).
+
+```yaml
+# .github/workflows/pre-commit.yml — example for pull_request; adjust as needed
+name: pre-commit
+on: pull_request
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pre-commit
+      - run: pre-commit run --show-diff-on-failure --from-ref "${{ github.event.pull_request.base.sha }}" --to-ref "${{ github.event.pull_request.head.sha }}"
+```
+
+For **`push`** events (no pull request) you might use `pre-commit run --all-files` or another `--from-ref` / `--to-ref` range. [pre-commit’s CI docs](https://pre-commit.com/#usage-in-continuous-integration) and the [`pre-commit` action](https://github.com/pre-commit/action) cover caching, wrappers, and more.
 
 ## Contributing
 
