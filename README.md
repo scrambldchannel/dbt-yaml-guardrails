@@ -1,10 +1,10 @@
 # dbt-yaml-guardrails
 
-A lightweight set of pre-commit hooks that enforce standards on dbt property YAML (Fusion-oriented). Behavior is specified under [`specs/`](specs/).
+A lightweight set of pre-commit hooks that enforce standards on dbt property YAML (Fusion-oriented). Behavior is specified under [`specs/`](specs/). Read [`specs/scope.md`](specs/scope.md) for an idea of what it does, and does not, attempt to do.
 
 ## Motivation
 
-I wanted a simple, dependency light, framework that would simply enforce user configurable standards on dbt properties files without relying on the presence of dbt artifacts.
+I wanted a simple, dependency-light framework that would enforce user-configurable standards on dbt property YAML without relying on the presence of dbt artifacts. I was especially interested in enforcing a Fusion-compatible YAML structure for those looking to eventually migrate.
 
 ## Example Usage
 
