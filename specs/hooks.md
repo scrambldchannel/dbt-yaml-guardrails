@@ -20,7 +20,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 
 | Family | Spec | What it validates (summary) |
 | --- | --- | --- |
-| Top-level keys on each resource entry | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, `sources:`, … (**`source-allowed-keys`** and other `*-allowed-keys`; see that spec) |
+| Top-level keys (property entries or `dbt_project.yml` root) | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, `sources:`, …, and **`dbt-project-allowed-keys`** for top-level keys in **`dbt_project.yml`** (see that spec §7) |
 | Top-level keys under each entry’s `config` mapping | **`hook-families/allowed-config-keys.md`** | **`*-allowed-config-keys`**: **`model`**, **`macro`**, **`seed`**, **`source`**, **`snapshot`**, **`exposure`** shipped. Same CLI as **`*-allowed-keys`** (`--required` / `--forbidden`); default allowlists in **`resource-config-keys.md`** (Fusion-oriented; adapter **union** where the spec documents it) |
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 | String or string list at a path under `config.meta` | **`hook-families/meta-accepted-values.md`** | **`*-meta-accepted-values`**: **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**, **`macro`** shipped; **`--key`** dot path, **`--values`** allowlist, optional **`--optional`**; non-string scalars **future** |

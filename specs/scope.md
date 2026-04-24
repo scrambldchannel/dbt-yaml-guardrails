@@ -7,6 +7,7 @@ See **`README.md`** in this folder for how this fits with the other specs (`proj
 These items should be considered in scope:
 
 + Parsing and checking the validity according to user defined rules for all dbt resource types that exist as of dbt core 1.10
++ **Policy** on **`dbt_project.yml`**, including a planned **`*-allowed-keys`–style** check for [documented](https://docs.getdbt.com/reference/dbt_project.yml) top-level project keys (see **`hook-families/allowed-keys.md`** § **`dbt-project-allowed-keys`**, **`resource-keys.md`** § **dbt project file**; implementation may ship later)
 + Exposing a stable CLI entrypoint for pre-commit hooks
 
 ## **Out of scope**
@@ -14,8 +15,7 @@ These items should be considered in scope:
 These items should be considered out of scope:
 
 + SQL linting
-+ dbt_project.yml policy
-+ Running dbt commands, or parsing any dbt artifacts (e.g. manifest.json, catalog.json)
++ Running dbt commands, or parsing any dbt artifacts (e.g. manifest.json, catalog.json) as a substitute for YAML checks
 
 ## **Fusion first**
 
