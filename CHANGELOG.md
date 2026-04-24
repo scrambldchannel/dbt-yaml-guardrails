@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Versions match **git tags** (and `**version`** in `**pyproject.toml**`). This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
+## Unreleased
+
+### Added
+
+- **`catalog-allowed-keys`**: top-level keys on each **`catalogs:`** entry (dbt Core 1.10+); default allowlist **`CATALOG_ALLOWED_KEYS`** in **`resource_keys.py`** (see **`specs/resource-keys.md`** § **Catalogs** / **Default allowlist**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, manual sandbox hook **`dbtg-sandbox-catalog-allowed-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-keys.md`** §7 updated. **`yaml_handling`**: **`extract_catalog_entries`** and **`iter_catalog_entries`**. Tests: **`tests/hook_families/allowed_keys/test_catalog_allowed_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/catalogs/**`**; **`tests/test_yaml_handling.py`** for catalog extraction.
+
 ## [0.4.2](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-23
 
 ### Fixed

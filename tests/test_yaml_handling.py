@@ -6,12 +6,15 @@ from pathlib import Path
 
 from dbt_yaml_guardrails.yaml_handling import (
     SKIP_EMPTY_OR_WHITESPACE,
+    SKIP_NO_CATALOGS_SECTION,
     SKIP_NO_EXPOSURES_SECTION,
     SKIP_NO_MACROS_SECTION,
     SKIP_NO_MODELS_SECTION,
     SKIP_NO_SEEDS_SECTION,
     SKIP_NO_SNAPSHOTS_SECTION,
     SKIP_NO_SOURCES_SECTION,
+    CatalogEntriesResult,
+    CatalogEntriesSkip,
     ExposureEntriesResult,
     ExposureEntriesSkip,
     MacroEntriesResult,
@@ -27,12 +30,14 @@ from dbt_yaml_guardrails.yaml_handling import (
     SnapshotEntriesSkip,
     SourceEntriesResult,
     SourceEntriesSkip,
+    extract_catalog_entries,
     extract_exposure_entries,
-    extract_source_entries,
     extract_macro_entries,
     extract_model_entries,
     extract_seed_entries,
     extract_snapshot_entries,
+    extract_source_entries,
+    iter_catalog_entries,
     iter_exposure_entries,
     iter_macro_entries,
     iter_model_entries,
@@ -370,5 +375,49 @@ def test_iter_source_entries_sorted_names() -> None:
 
 def test_extract_sources_null() -> None:
     out = extract_source_entries(_success("allowed_keys/sources/sources_null.yml"))
+    assert isinstance(out, ParseError)
+    assert "not null" in out.message
+
+
+# --- extract_catalog_entries ---
+
+
+def test_extract_no_catalogs_section_skip() -> None:
+    out = extract_catalog_entries(_success("shared/minimal_version2.yml"))
+    assert isinstance(out, CatalogEntriesSkip)
+    assert out.reason == SKIP_NO_CATALOGS_SECTION
+
+
+def test_extract_catalogs_empty_list() -> None:
+    out = extract_catalog_entries(_success("allowed_keys/catalogs/catalogs_empty.yml"))
+    assert isinstance(out, CatalogEntriesResult)
+    assert out.by_name == {}
+
+
+def test_extract_catalogs_two() -> None:
+    out = extract_catalog_entries(_success("allowed_keys/catalogs/catalogs_two.yml"))
+    assert isinstance(out, CatalogEntriesResult)
+    assert set(out.by_name) == {"cat_a", "cat_b"}
+    assert "write_integrations" in out.by_name["cat_a"]
+    assert out.by_name["cat_b"]["active_write_integration"] == "int_b"
+
+
+def test_extract_duplicate_catalog_name() -> None:
+    out = extract_catalog_entries(
+        _success("allowed_keys/catalogs/catalogs_duplicate_name.yml")
+    )
+    assert isinstance(out, ParseError)
+    assert "Duplicate catalog name" in out.message
+
+
+def test_iter_catalog_entries_sorted_names() -> None:
+    out = extract_catalog_entries(_success("allowed_keys/catalogs/catalogs_two.yml"))
+    assert isinstance(out, CatalogEntriesResult)
+    names = [n for n, _ in iter_catalog_entries(out.by_name)]
+    assert names == ["cat_a", "cat_b"]
+
+
+def test_extract_catalogs_null() -> None:
+    out = extract_catalog_entries(_success("allowed_keys/catalogs/catalogs_null.yml"))
     assert isinstance(out, ParseError)
     assert "not null" in out.message

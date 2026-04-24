@@ -1,0 +1,6 @@
+version: 2
+
+catalogs:
+  - name: x
+    not_in_allowlist: true
+    write_integrations: []

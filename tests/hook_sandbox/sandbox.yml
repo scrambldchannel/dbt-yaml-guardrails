@@ -57,3 +57,11 @@ macros:
       meta:
         domain: sales
         owner: sandbox
+
+catalogs:
+  - name: sb_catalog
+    write_integrations:
+      - name: sb_write
+        catalog_type: unity
+        table_format: iceberg
+        external_volume: sb_volume

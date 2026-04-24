@@ -1,9 +1,10 @@
 """User-authorable top-level keys for dbt property YAML (``specs/resource-keys.md``).
 
 The ``*_ALLOWED_KEYS`` frozensets list keys that a user may **write** in resource
-**property YAML** (``schema.yml`` / ``*.yml`` under model-paths, etc.), as documented in
-the dbt **resource properties** reference for each type. They intentionally **do not**
-include **manifest / artifact-only** fields (e.g. ``original_file_path``,
+**property YAML** (``schema.yml`` / ``catalogs.yml`` / ``*.yml`` under model-paths,
+etc.), as documented in the dbt **resource properties** reference (or, for
+``catalogs:``, the v1.10+ catalog wiring docs) for each type. They intentionally
+**do not** include **manifest / artifact-only** fields (e.g. ``original_file_path``,
 ``package_name``, ``relation_name``) that appear on parsed nodes in ``manifest.json``
 but are not declared in property files.
 
@@ -142,3 +143,16 @@ SOURCE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "tags": "Use `config.tags` instead of top-level `tags`.",
     "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
+
+# dbt 1.10+ [catalogs.yml](https://docs.getdbt.com/docs/dbt-versions/core-upgrade/upgrading-to-v1.10)
+# and adapter [write catalog](https://github.com/dbt-labs/dbt-adapters/blob/main/docs/guides/write_catalog.md):
+# each list item under `catalogs:`.
+CATALOG_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "active_write_integration",
+        "name",
+        "write_integrations",
+    )
+)
+
+CATALOG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}

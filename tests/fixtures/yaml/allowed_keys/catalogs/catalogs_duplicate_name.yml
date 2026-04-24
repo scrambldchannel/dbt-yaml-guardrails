@@ -1,0 +1,7 @@
+version: 2
+
+catalogs:
+  - name: dup
+    write_integrations: []
+  - name: dup
+    write_integrations: []

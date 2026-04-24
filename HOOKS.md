@@ -16,6 +16,7 @@ Top-level keys on each resource entry in property YAML.
 | `source-allowed-keys` | Top-level keys on each `sources:` entry |
 | `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
 | `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
+| `catalog-allowed-keys` | Top-level keys on each `catalogs:` entry (dbt 1.10+) |
 
 These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
@@ -108,6 +109,7 @@ repos:
       - id: source-allowed-keys
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
+      - id: catalog-allowed-keys
 
       # allowed config keys (under config:)
       - id: model-allowed-config-keys

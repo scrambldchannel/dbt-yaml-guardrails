@@ -2,7 +2,7 @@
 
 Behavior is specified in ``specs/yaml-handling.md``. :func:`load_property_yaml`
 covers document-level parsing; :func:`extract_model_entries` and friends normalize
-per-resource top-level lists (``models:``, ``sources:``, …).
+per-resource top-level lists (``models:``, ``sources:``, ``catalogs:``, …).
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ SKIP_NO_SEEDS_SECTION = "no_seeds_section"
 SKIP_NO_SNAPSHOTS_SECTION = "no_snapshots_section"
 SKIP_NO_EXPOSURES_SECTION = "no_exposures_section"
 SKIP_NO_SOURCES_SECTION = "no_sources_section"
+SKIP_NO_CATALOGS_SECTION = "no_catalogs_section"
 
 
 @dataclass(frozen=True)
@@ -185,6 +186,27 @@ class SourceEntriesResult:
 
 
 SourceEntriesOutcome: TypeAlias = SourceEntriesResult | SourceEntriesSkip | ParseError
+
+
+@dataclass(frozen=True)
+class CatalogEntriesSkip:
+    """No ``catalogs:`` section — not an error (hook should ignore the file)."""
+
+    path: Path
+    reason: str
+
+
+@dataclass(frozen=True)
+class CatalogEntriesResult:
+    """Normalized catalog entries under ``catalogs:`` (each list item; keyed by ``name``)."""
+
+    path: Path
+    by_name: Mapping[str, Mapping[str, Any]]
+
+
+CatalogEntriesOutcome: TypeAlias = (
+    CatalogEntriesResult | CatalogEntriesSkip | ParseError
+)
 
 
 # ---------------------------------------------------------------------------
@@ -640,6 +662,50 @@ def iter_source_entries(
 
     Args:
         by_name: Map from source name to source entry dict.
+
+    Yields:
+        ``(name, entry)`` tuples in sorted name order.
+    """
+    for name in sorted(by_name):
+        yield name, by_name[name]
+
+
+def extract_catalog_entries(success: ParseSuccess) -> CatalogEntriesOutcome:
+    """Normalize ``success.root["catalogs"]`` into a map keyed by catalog ``name``.
+
+    If there is no ``catalogs`` key, returns :class:`CatalogEntriesSkip`. Otherwise
+    ``catalogs`` must be a list of mappings, each with a non-empty string ``name``;
+    duplicate ``name`` values are an error. Nested ``write_integrations:`` and
+    other keys are left on each entry as-is; only the list shape and per-entry
+    ``name`` are validated here.
+
+    Args:
+        success: Result of :func:`load_property_yaml` after discarding
+            :class:`ParseSkip` / :class:`ParseError`.
+
+    Returns:
+        :class:`CatalogEntriesResult`, :class:`CatalogEntriesSkip` if there is no
+        ``catalogs:`` section, or :class:`ParseError` on bad shape.
+    """
+    r = _extract_named_list_by_name(
+        success,
+        section_key="catalogs",
+        label="catalogs",
+    )
+    if r == "skip":
+        return CatalogEntriesSkip(success.path, SKIP_NO_CATALOGS_SECTION)
+    if isinstance(r, ParseError):
+        return r
+    return CatalogEntriesResult(success.path, r)
+
+
+def iter_catalog_entries(
+    by_name: Mapping[str, Mapping[str, Any]],
+) -> Iterator[tuple[str, Mapping[str, Any]]]:
+    """Yield ``(name, entry)`` in sorted name order (see :func:`iter_model_entries`).
+
+    Args:
+        by_name: Map from catalog name to catalog entry dict.
 
     Yields:
         ``(name, entry)`` tuples in sorted name order.

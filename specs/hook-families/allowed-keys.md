@@ -6,7 +6,7 @@ Top-level keys on each resource entry in dbt property YAML. Umbrella packaging a
 
 + **`0`** — every processed file passed (including skipped files with no target section or empty file).
 + **`1`** — at least one key violation, or a YAML/parse/shape error for a file (see **`yaml-handling.md`** § Errors).
-+ **`2`** — invalid CLI usage (e.g. redundant **`name`** in **`--required`** for any **`*-allowed-keys`** hook that validates named resources: **`model-allowed-keys`**, **`macro-allowed-keys`**, **`seed-allowed-keys`**, **`source-allowed-keys`**, **`snapshot-allowed-keys`**, **`exposure-allowed-keys`**, …).
++ **`2`** — invalid CLI usage (e.g. redundant **`name`** in **`--required`** for any **`*-allowed-keys`** hook that validates named resources: **`model-allowed-keys`**, **`macro-allowed-keys`**, **`seed-allowed-keys`**, **`source-allowed-keys`**, **`snapshot-allowed-keys`**, **`exposure-allowed-keys`**, **`catalog-allowed-keys`**, …).
 
 ## Pattern: `*-allowed-keys` (shared design)
 
@@ -20,7 +20,7 @@ Several hooks validate **top-level keys on each entry** in a dbt property YAML d
 
 **Legacy keys:** If a top-level key on an entry appears in **`resource-keys.md`** § **Legacy / deprecated** for that hook’s resource type, implementations **SHOULD** emit a violation whose message is **actionable**: it **SHOULD** include the **Suggested violation detail** from that row (rename target, e.g. use **`data_tests`** instead of **`tests`**, or where to nest under **`config`**, e.g. **`config.meta`**). Keys that are neither allowlisted nor listed as legacy continue to use generic **disallowed key** wording (see **`yaml-handling.md`** § Errors).
 
-**Hook identity:** each hook has its own **`id`** and **`entry`** (console script name). Name hooks so **`id`** and **`entry`** clearly identify the target (e.g. `model-allowed-keys`, `source-allowed-keys`, `seed-allowed-keys`, …). Nested or secondary lists (e.g. table rows under `sources: … → tables:`) get a distinct hook when we validate them, with a distinct **`resource-keys.md`** section and a distinct **`id`** / **`entry`** (e.g. `source-table-allowed-keys`).
+**Hook identity:** each hook has its own **`id`** and **`entry`** (console script name). Name hooks so **`id`** and **`entry`** clearly identify the target (e.g. `model-allowed-keys`, `source-allowed-keys`, `catalog-allowed-keys`, `seed-allowed-keys`, …). Nested or secondary lists (e.g. table rows under `sources: … → tables:`) get a distinct hook when we validate them, with a distinct **`resource-keys.md`** section and a distinct **`id`** / **`entry`** (e.g. `source-table-allowed-keys`).
 
 **Implementation reuse:** all `*-allowed-keys` hooks **SHOULD** delegate to **one shared validation core** (load YAML per **`yaml-handling.md`**, extract entries for the hook’s target section, apply required / allowlist / forbidden rules, emit violations). Per-hook code **SHOULD** be limited to wiring (Typer/command entry, argument forwarding) plus **resource-specific** pieces: which top-level section and list path to walk (including nesting), and the **default allowlist** (frozen sets in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**, documented in **`resource-keys.md`**). Avoid copying the full check loop for each new resource type.
 
@@ -90,9 +90,19 @@ The CLI entry point and hook **`id`** should be **`source-allowed-keys`**.
 
 **Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real sources in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Sources**, implemented as **`SOURCE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**.
 
-## 7. Other resource types (later version)
+## 7. `catalog-allowed-keys`
 
-Hooks for **source tables**, **analyses**, **unit tests**, and any other targets described in **`resource-keys.md`** but not listed in **§§ 1–6** above are **planned for a later version**. They **`SHOULD`** follow **§ Pattern: `*-allowed-keys`** when implemented, with **`resource-keys.md`** as the allowlist source for each target:
+Validates the **top-level keys on each catalog entry** (each dict under the `catalogs:` list). dbt Core **1.10+** parses [catalogs property YAML](https://docs.getdbt.com/docs/dbt-versions/core-upgrade/upgrading-to-v1.10) (often `catalogs.yml` at the project root); adapter integration fields live **under** each catalog’s `write_integrations` list, not as extra top-level keys on the catalog row.
+
+The CLI entry point and hook **`id`** should be **`catalog-allowed-keys`**.
+
+**Pre-commit (shipped):** **`language: python`**, **`entry: catalog-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
+
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for real catalogs in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Catalogs**, implemented as **`CATALOG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`**.
+
+## 8. Other resource types (later version)
+
+Hooks for **source tables**, **analyses**, **unit tests**, and any other targets described in **`resource-keys.md`** but not listed in **§§ 1–7** above are **planned for a later version**. They **`SHOULD`** follow **§ Pattern: `*-allowed-keys`** when implemented, with **`resource-keys.md`** as the allowlist source for each target:
 
 | Target (conceptual) | `resource-keys.md` section | Notes |
 | --- | --- | --- |

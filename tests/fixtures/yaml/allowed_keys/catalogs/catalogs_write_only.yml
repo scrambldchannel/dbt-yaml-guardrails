@@ -1,0 +1,9 @@
+version: 2
+
+catalogs:
+  - name: with_write
+    write_integrations:
+      - name: w
+        catalog_type: unity
+        table_format: iceberg
+        external_volume: ev

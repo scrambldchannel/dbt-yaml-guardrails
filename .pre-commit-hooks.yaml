@@ -85,6 +85,13 @@
   language: python
   types: [yaml]
 
+- id: catalog-allowed-keys
+  name: dbt catalog allowed keys
+  description: Validate top-level keys on each catalog entry in dbt property YAML
+  entry: catalog-allowed-keys
+  language: python
+  types: [yaml]
+
 - id: model-allowed-meta-keys
   name: dbt model allowed meta keys
   description: Validate keys on config.meta for each model entry in dbt property YAML

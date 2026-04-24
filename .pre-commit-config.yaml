@@ -80,6 +80,13 @@ repos:
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
         stages: [manual]
+      - id: dbtg-sandbox-catalog-allowed-keys
+        name: (sandbox) catalog-allowed-keys
+        entry: uv run catalog-allowed-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/sandbox\.yml$
+        stages: [manual]
       - id: dbtg-sandbox-model-allowed-config-keys
         name: (sandbox) model-allowed-config-keys
         entry: uv run model-allowed-config-keys

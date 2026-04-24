@@ -1,0 +1,16 @@
+version: 2
+
+catalogs:
+  - name: cat_a
+    write_integrations:
+      - name: int_a
+        catalog_type: unity
+        table_format: iceberg
+        external_volume: vol
+  - name: cat_b
+    active_write_integration: int_b
+    write_integrations:
+      - name: int_b
+        catalog_type: iceberg_rest
+        table_format: iceberg
+        external_volume: s3://bucket/prefix/

@@ -166,6 +166,20 @@ Allowlists target **keys on each resource entry** (e.g. each dict under `models:
 | `tags` | Prefer **`config.tags`**. | Use `config.tags` instead of top-level `tags`. |
 | `tests` | Use **`data_tests`**. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
 
+## Catalogs
+
+dbt Core **1.10+** [parses `catalogs.yml`](https://docs.getdbt.com/docs/dbt-versions/core-upgrade/upgrading-to-v1.10) and related property YAML. Top-level list keys on each `catalogs:` item follow the dbt/adapter [write catalog](https://github.com/dbt-labs/dbt-adapters/blob/main/docs/guides/write_catalog.md) pattern (and examples in the [v1.10 upgrade](https://docs.getdbt.com/docs/dbt-versions/core-upgrade/upgrading-to-v1.10) note). This hook validates only **catalog-row** top-level keys, not the nested **`write_integrations:`** list items (those are integration configs, not catalog entries).
+
+| Key | Notes |
+| --- | --- |
+| `active_write_integration` | Optional; which named write integration to use (defaults to the only one, if applicable) |
+| `name` | |
+| `write_integrations` | List of write integration definitions |
+
+### Default allowlist (`catalog-allowed-keys`)
+
+**`CATALOG_ALLOWED_KEYS`** is exactly the table above. There is no legacy top-level key map for catalogs yet; **`CATALOG_LEGACY_KEY_MESSAGES`** is empty. **`--forbidden`** can still ban keys in the set.
+
 ## Analyses, unit tests
 
 This repository does not ship `analysis-allowed-keys` or `unit-test-allowed-keys`. For [analysis](https://docs.getdbt.com/reference/analysis-properties) and [unit test](https://docs.getdbt.com/reference/unit-test-properties) property YAML, use the dbt reference for authorable top-level keys; do not assume the wide “node field” lists from older revisions of this spec (manifest overlap).
