@@ -1,10 +1,10 @@
 # Resource key allowlists
 
-**`*-allowed-keys`** hooks use a **default allowlist of top-level keys users may author in property YAML** (per dbt’s **resource properties** reference for each type). The lists **intentionally omit manifest / artifact-only** fields (e.g. `original_file_path`, `package_name`, `relation_name`, `resource_type`, `unrendered_config`) that appear on nodes in `manifest.json` but are not written in `schema.yml`-style files.
+**`*-allowed-keys`** hooks use **default allowlists of top-level keys** users may author: in **property YAML** (per dbt’s **resource properties** reference for each type), or in **`dbt_project.yml`** (per the [dbt project file](https://docs.getdbt.com/reference/dbt_project.yml) reference), depending on the hook. The lists **intentionally omit manifest / artifact-only** fields (e.g. `original_file_path`, `package_name`, `relation_name`, `resource_type`, `unrendered_config`) that appear on nodes in `manifest.json` but are not written in YAML.
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md), [`hooks.md`](hooks.md).
 
-Allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For keys **inside** `config:`, see **[`resource-config-keys.md`](resource-config-keys.md)**.
+For **property YAML**, allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For the **dbt project file**, the allowlist targets **top-level keys of the root mapping** only (see **§ dbt project file**). For keys **inside** `config:` on resource entries, see **[`resource-config-keys.md`](resource-config-keys.md)**.
 
 **`--forbidden`** can still ban keys that appear in a default allowlist if your policy is stricter than dbt’s surface area.
 
@@ -180,6 +180,57 @@ dbt Core **1.10+** [parses `catalogs.yml`](https://docs.getdbt.com/docs/dbt-vers
 
 **`CATALOG_ALLOWED_KEYS`** is exactly the table above. There is no legacy top-level key map for catalogs yet; **`CATALOG_LEGACY_KEY_MESSAGES`** is empty. **`--forbidden`** can still ban keys in the set.
 
+## dbt project file (`dbt_project.yml`)
+
+[dbt_project.yml](https://docs.getdbt.com/reference/dbt_project.yml) — the **required** project configuration file. dbt Core **1.10+** adds [stricter validation](https://github.com/dbt-labs/dbt-core) of this file (for example JSON Schema–based checks). The table below is the **documented** top-level key set for **`dbt-project-allowed-keys`** (see **`hook-families/allowed-keys.md`** §8); it is **not** a byte-for-byte copy of dbt’s internal schema—when dbt adds or renames keys, update this section and **`DBT_PROJECT_ALLOWED_KEYS`** together.
+
+| Key | Notes |
+| --- | --- |
+| `name` | Project name (snake_case) |
+| `config-version` | Should be **`2`** per dbt |
+| `version` | [Project version](https://docs.getdbt.com/reference/project-configs/version) (package / semver semantics)—**not** resource YAML `version: 2` |
+| `profile` | Profile name for `profiles.yml` |
+| `model-paths` | |
+| `seed-paths` | |
+| `test-paths` | |
+| `analysis-paths` | |
+| `macro-paths` | |
+| `snapshot-paths` | |
+| `docs-paths` | |
+| `asset-paths` | |
+| `function-paths` | |
+| `packages-install-path` | |
+| `clean-targets` | |
+| `query-comment` | |
+| `require-dbt-version` | |
+| `flags` | [Project flags](https://docs.getdbt.com/reference/global-configs/project-flags) |
+| `dbt-cloud` | dbt Cloud / CLI integration (e.g. `project-id`) |
+| `analyses` | Project-level analysis configs (dbt **v1.12+** may require a flag; see dbt docs) |
+| `exposures` | |
+| `quoting` | Includes adapter-specific subkeys (e.g. **`snowflake_ignore_case`** is **Fusion-only** on `quoting`) |
+| `metrics` | |
+| `models` | Hierarchical model configs—**values** are not validated by **`dbt-project-allowed-keys`** |
+| `seeds` | |
+| `semantic-models` | |
+| `saved-queries` | |
+| `snapshots` | |
+| `sources` | |
+| `data_tests` | |
+| `vars` | |
+| `on-run-start` | |
+| `on-run-end` | |
+| `dispatch` | |
+| `restrict-access` | |
+| `functions` | |
+
+### Default allowlist (`dbt-project-allowed-keys`)
+
+**`DBT_PROJECT_ALLOWED_KEYS`** (when implemented) **SHOULD** match the table above. **`DBT_PROJECT_LEGACY_KEY_MESSAGES`** **MAY** map deprecated top-level keys (e.g. keys dbt still parses but recommends renaming) to actionable messages. **`--forbidden`** can still ban keys in the set.
+
+### Legacy / deprecated (top-level keys)
+
+Add rows here as dbt deprecates or renames project-file keys; until then this subsection may be empty.
+
 ## Analyses, unit tests
 
 This repository does not ship `analysis-allowed-keys` or `unit-test-allowed-keys`. For [analysis](https://docs.getdbt.com/reference/analysis-properties) and [unit test](https://docs.getdbt.com/reference/unit-test-properties) property YAML, use the dbt reference for authorable top-level keys; do not assume the wide “node field” lists from older revisions of this spec (manifest overlap).
@@ -188,4 +239,4 @@ This repository does not ship `analysis-allowed-keys` or `unit-test-allowed-keys
 
 Fields such as `original_file_path`, `package_name`, `patch_path`, `relation_name`, `resource_type`, and `unrendered_config` appear on **nodes in `manifest.json`**. They are **not** part of the default `*_ALLOWED_KEYS` sets—users do not author them in property YAML.
 
-When dbt’s published property surface grows (new top-level resource keys in the official reference), update **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** and the **user-authorable** tables in this document together.
+When dbt’s published **resource property** or **project file** surface grows, update **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** and the **user-authorable** tables in this document together.

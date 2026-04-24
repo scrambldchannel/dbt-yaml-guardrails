@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** per resource type for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (see **`resource-keys.md`** § **Models** for `model-allowed-keys`, § **Sources** default subsection for `source-allowed-keys`). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (e.g. **`resource-keys.md`** § **Models** for `model-allowed-keys`, § **Sources** for `source-allowed-keys`, § **dbt project file** for `dbt-project-allowed-keys` when implemented). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
 
 ## Files
 
@@ -18,7 +18,13 @@ Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec 
 + **Empty or whitespace-only files:** ignore (no violations, no error) so hooks behave when given sparse path lists
 + **Multi-document YAML** (stream with `---`): **unsupported** — if more than one document is present, raise an error
 + Top-level `version:` is **optional** (aligned with dbt Core v1.5+ resource YAML). If it is present, the value must be **`2`**, either as the **integer** `2` or the **string** `2` (YAML may yield either); values such as `2.0`, booleans, or other strings should raise an error
-+ Top-level `version` is **document metadata**: hooks that validate **keys on each resource entry** (e.g. each dict under `models:`) do **not** count `version` toward those allowed/required key rules—the checks above still apply to the top-level mapping only
++ Top-level `version` is **document metadata** for **dbt property YAML** under resource paths: hooks that validate **keys on each resource entry** (e.g. each dict under `models:`) do **not** count that `version` toward those allowed/required key rules—the checks above still apply to the top-level mapping only. **`dbt_project.yml`** is different: a top-level **`version`** key (when present) is the [project `version` config](https://docs.getdbt.com/reference/project-configs/version), not the v2 document marker. **`dbt-project-allowed-keys`** (see **`hook-families/allowed-keys.md`** §8) treats optional **`version`** as an allowlisted **key** only; it does not enforce semver shape.
+
+## dbt project file (`dbt_project.yml`)
+
+Hooks that validate the **project** file (not property YAML) **SHOULD** use **`yaml-handling.md`** § **Parsing** for encoding, **UTF-8 BOM**, **duplicate keys**, **empty file skip**, and **no multi-doc streams**. They **MUST NOT** require property-YAML’s optional top-level `version: 2` for this file. The root node **MUST** be a **mapping**; if it is a list or scalar, that is a **parse / shape error** for the file. Validating only **`dbt_project.yml`** (via pre-commit **`files:`**) **SHOULD** avoid false positives on unrelated YAML.
+
+**Implementation note:** a dedicated loader (e.g. `load_dbt_project_yaml`) may wrap the same `ruamel.yaml` settings as `load_property_yaml` but **without** the property-YAML `version: 2` check—spec detail lives with **`dbt-project-allowed-keys`**.
 
 ## dbt shape
 
