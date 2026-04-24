@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dbt-yaml-guardrails"
-version = "0.4.2"
+version = "0.4.3"
 description = "Pre-commit hooks for configurable standards on dbt property YAML (Fusion-oriented)."
 readme = "README.md"
 keywords = [
@@ -64,6 +64,7 @@ source-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.source_all
 snapshot-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.snapshot_allowed_keys:cli_main"
 exposure-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.exposure_allowed_keys:cli_main"
 catalog-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.catalog_allowed_keys:cli_main"
+dbt-project-allowed-keys = "dbt_yaml_guardrails.hook_families.allowed_keys.dbt_project_allowed_keys:cli_main"
 model-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.model_allowed_meta_keys:cli_main"
 seed-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.seed_allowed_meta_keys:cli_main"
 snapshot-allowed-meta-keys = "dbt_yaml_guardrails.hook_families.allowed_meta_keys.snapshot_allowed_meta_keys:cli_main"

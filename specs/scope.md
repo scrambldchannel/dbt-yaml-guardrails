@@ -7,7 +7,7 @@ See **`README.md`** in this folder for how this fits with the other specs (`proj
 These items should be considered in scope:
 
 + Parsing and checking the validity according to user defined rules for all dbt resource types that exist as of dbt core 1.10
-+ **Policy** on **`dbt_project.yml`**, including a planned **`*-allowed-keys`–style** check for [documented](https://docs.getdbt.com/reference/dbt_project.yml) top-level project keys (see **`hook-families/allowed-keys.md`** § **`dbt-project-allowed-keys`**, **`resource-keys.md`** § **dbt project file**; implementation may ship later)
++ **Policy** on **`dbt_project.yml`**, including the shipped **`dbt-project-allowed-keys`** hook for [documented](https://docs.getdbt.com/reference/dbt_project.yml) top-level project keys (see **`hook-families/allowed-keys.md`** §8, **`resource-keys.md`** § **dbt project file**)
 + Exposing a stable CLI entrypoint for pre-commit hooks
 
 ## **Out of scope**

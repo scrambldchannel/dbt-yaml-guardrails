@@ -1,12 +1,19 @@
 # Changelog
 
-All notable changes to this project are documented here. Versions match **git tags** (and `**version`** in `**pyproject.toml**`). This project is distributed as a **pre-commit** Git repository, not via PyPI.
+All notable changes to this project are documented here. Versions match **git tags** and **`version`** in **`pyproject.toml`**. This project is distributed as a **pre-commit** Git repository, not via PyPI.
 
-## Unreleased
+**Style (from 0.4.3 onward):** Each release summarizes **user-visible behavior**—new hooks, fixes, and breaking or notable spec changes. Unless a path is the point of the change, avoid inventorying file paths, module names, and test file lists; the **git diff** and **specs** are the source of truth for where code lives. Earlier entries may still read like internal release notes; new entries follow this rule.
+
+## [0.4.3](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-24
 
 ### Added
 
-- **`catalog-allowed-keys`**: top-level keys on each **`catalogs:`** entry (dbt Core 1.10+); default allowlist **`CATALOG_ALLOWED_KEYS`** in **`resource_keys.py`** (see **`specs/resource-keys.md`** § **Catalogs** / **Default allowlist**). **`[project.scripts]`**, **`.pre-commit-hooks.yaml`**, manual sandbox hook **`dbtg-sandbox-catalog-allowed-keys`**, **`HOOKS.md`**, and **`specs/hook-families/allowed-keys.md`** §7 updated. **`yaml_handling`**: **`extract_catalog_entries`** and **`iter_catalog_entries`**. Tests: **`tests/hook_families/allowed_keys/test_catalog_allowed_keys.py`**, fixtures **`tests/fixtures/yaml/allowed_keys/catalogs/**`**; **`tests/test_yaml_handling.py`** for catalog extraction.
+- **`catalog-allowed-keys`**: New hook to enforce the allowlisted top-level keys on each `catalogs:` entry (for dbt 1.10+ catalog / Iceberg write integration YAML). Includes YAML helpers to read catalog entries and a manual sandbox hook for local runs.
+- **`dbt-project-allowed-keys`**: New hook to enforce the allowlisted top-level keys in `dbt_project.yml`, with a project-file loader that does not apply the “resource YAML `version: 2`” document rule to the project’s `version` key. The pre-commit hook is scoped to `dbt_project.yml` by default. Specs and docs were updated to describe the project file, hook behavior, and scope.
+
+### Changed
+
+- **Release and pins:** `pyproject.toml` is **0.4.3**; copy-paste **`rev:`** examples in the README, HOOKS, and related docs use **v0.4.3** for consumers pinning this release.
 
 ## [0.4.2](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-23
 

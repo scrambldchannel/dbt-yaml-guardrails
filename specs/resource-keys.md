@@ -225,7 +225,7 @@ dbt Core **1.10+** [parses `catalogs.yml`](https://docs.getdbt.com/docs/dbt-vers
 
 ### Default allowlist (`dbt-project-allowed-keys`)
 
-**`DBT_PROJECT_ALLOWED_KEYS`** (when implemented) **SHOULD** match the table above. **`DBT_PROJECT_LEGACY_KEY_MESSAGES`** **MAY** map deprecated top-level keys (e.g. keys dbt still parses but recommends renaming) to actionable messages. **`--forbidden`** can still ban keys in the set.
+**`DBT_PROJECT_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** **SHOULD** match the table above. **`DBT_PROJECT_LEGACY_KEY_MESSAGES`** **MAY** map deprecated top-level keys (e.g. keys dbt still parses but recommends renaming) to actionable messages. **`--forbidden`** can still ban keys in the set.
 
 ### Legacy / deprecated (top-level keys)
 

@@ -2,7 +2,7 @@
 
 Examples use **models** for brevity; the same rules apply to every supported dbt resource type, and *model* means an entry under the section the hook validates.
 
-Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (e.g. **`resource-keys.md`** § **Models** for `model-allowed-keys`, § **Sources** for `source-allowed-keys`, § **dbt project file** for `dbt-project-allowed-keys` when implemented). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
+Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec (indexed from **`hooks.md`**). Default **allowed-key sets** for **`*-allowed-keys`** are documented in **`resource-keys.md`** and implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** (e.g. **`resource-keys.md`** § **Models** for `model-allowed-keys`, § **Sources** for `source-allowed-keys`, § **dbt project file** for `dbt-project-allowed-keys`). Default **keys under `config`** for **`*-allowed-config-keys`** are in **`resource-config-keys.md`**, implemented in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** (see **[`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md)**). Product boundaries are in **`scope.md`**.
 
 ## Files
 
@@ -24,7 +24,7 @@ Hook-specific CLIs and flags live in the relevant **`hook-families/*.md`** spec 
 
 Hooks that validate the **project** file (not property YAML) **SHOULD** use **`yaml-handling.md`** § **Parsing** for encoding, **UTF-8 BOM**, **duplicate keys**, **empty file skip**, and **no multi-doc streams**. They **MUST NOT** require property-YAML’s optional top-level `version: 2` for this file. The root node **MUST** be a **mapping**; if it is a list or scalar, that is a **parse / shape error** for the file. Validating only **`dbt_project.yml`** (via pre-commit **`files:`**) **SHOULD** avoid false positives on unrelated YAML.
 
-**Implementation note:** a dedicated loader (e.g. `load_dbt_project_yaml`) may wrap the same `ruamel.yaml` settings as `load_property_yaml` but **without** the property-YAML `version: 2` check—spec detail lives with **`dbt-project-allowed-keys`**.
+**Implementation:** **`load_dbt_project_yaml`** in **`src/dbt_yaml_guardrails/yaml_handling.py`** uses the same `ruamel.yaml` settings as **`load_property_yaml`** but **without** the property-YAML `version: 2` check. Used by **`dbt-project-allowed-keys`**.
 
 ## dbt shape
 

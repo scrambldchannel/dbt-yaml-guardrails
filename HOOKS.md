@@ -6,7 +6,7 @@ Hooks are grouped by **family**. Each family has its own CLI shape.
 
 ## `*-allowed-keys`
 
-Top-level keys on each resource entry in property YAML.
+Top-level keys on each resource entry in property YAML, or the root mapping of `dbt_project.yml` for **`dbt-project-allowed-keys`**.
 
 | ID | Validates |
 | --- | --- |
@@ -17,10 +17,11 @@ Top-level keys on each resource entry in property YAML.
 | `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
 | `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
 | `catalog-allowed-keys` | Top-level keys on each `catalogs:` entry (dbt 1.10+) |
+| `dbt-project-allowed-keys` | Top-level keys in the project root of `dbt_project.yml` |
 
 These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
-- **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). Do not list `name`; it is implied for real resources and the hook rejects `name` in `--required` with exit code 2.
+- **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). For list-shaped resources, do not list `name` in `--required` (exit code 2). **`dbt-project-allowed-keys`** may use **`--required name`** (or **`config-version`**, **`profile`**, etc.) to enforce the project file.
 - **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
 
 ## `*-allowed-config-keys`
@@ -98,7 +99,7 @@ pre-commit installs the repo as a Python environment and runs the hook entry poi
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
-    rev: v0.4.2
+    rev: v0.4.3
     hooks:
 
       # allowed top level keys
@@ -110,6 +111,7 @@ repos:
       - id: snapshot-allowed-keys
       - id: exposure-allowed-keys
       - id: catalog-allowed-keys
+      - id: dbt-project-allowed-keys
 
       # allowed config keys (under config:)
       - id: model-allowed-config-keys

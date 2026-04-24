@@ -1,9 +1,11 @@
-"""User-authorable top-level keys for dbt property YAML (``specs/resource-keys.md``).
+"""User-authorable top-level keys for dbt YAML (``specs/resource-keys.md``).
 
 The ``*_ALLOWED_KEYS`` frozensets list keys that a user may **write** in resource
 **property YAML** (``schema.yml`` / ``catalogs.yml`` / ``*.yml`` under model-paths,
 etc.), as documented in the dbt **resource properties** reference (or, for
-``catalogs:``, the v1.10+ catalog wiring docs) for each type. They intentionally
+``catalogs:``, the v1.10+ catalog wiring docs) for each type. **``DBT_PROJECT_ALLOWED_KEYS``**
+covers top-level keys in **``dbt_project.yml``** (see **``resource-keys.md``** § dbt project file).
+They intentionally
 **do not** include **manifest / artifact-only** fields (e.g. ``original_file_path``,
 ``package_name``, ``relation_name``) that appear on parsed nodes in ``manifest.json``
 but are not declared in property files.
@@ -156,3 +158,48 @@ CATALOG_ALLOWED_KEYS: frozenset[str] = frozenset(
 )
 
 CATALOG_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}
+
+
+# [dbt_project.yml](https://docs.getdbt.com/reference/dbt_project.yml) — top-level keys.
+DBT_PROJECT_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "analyses",
+        "analysis-paths",
+        "asset-paths",
+        "clean-targets",
+        "config-version",
+        "data_tests",
+        "dbt-cloud",
+        "dispatch",
+        "docs-paths",
+        "exposures",
+        "flags",
+        "function-paths",
+        "functions",
+        "macro-paths",
+        "metrics",
+        "model-paths",
+        "models",
+        "name",
+        "on-run-end",
+        "on-run-start",
+        "packages-install-path",
+        "profile",
+        "query-comment",
+        "quoting",
+        "require-dbt-version",
+        "restrict-access",
+        "saved-queries",
+        "seed-paths",
+        "seeds",
+        "semantic-models",
+        "snapshot-paths",
+        "snapshots",
+        "sources",
+        "test-paths",
+        "vars",
+        "version",
+    )
+)
+
+DBT_PROJECT_LEGACY_KEY_MESSAGES: Mapping[str, str] = {}

@@ -1,7 +1,7 @@
 """dbt property YAML loading and shape normalization.
 
-Behavior is specified in ``specs/yaml-handling.md``. :func:`load_property_yaml`
-covers document-level parsing; :func:`extract_model_entries` and friends normalize
+Behavior is specified in ``specs/yaml-handling.md``. :func:`load_property_yaml` and :func:`load_dbt_project_yaml` cover
+document-level parsing; :func:`extract_model_entries` and friends normalize
 per-resource top-level lists (``models:``, ``sources:``, ``catalogs:``, …).
 """
 
@@ -271,6 +271,33 @@ def _parse_yaml_documents(text: str, path: Path) -> ParseFileOutcome:
     return ParseSuccess(path, dict(root))
 
 
+def _parse_dbt_project_documents(text: str, path: Path) -> ParseFileOutcome:
+    """Load one YAML document; root must be a mapping. No property-``version: 2`` rule."""
+    loader = _yaml_loader()
+    try:
+        documents = list(loader.load_all(StringIO(text)))
+    except YAMLError as exc:
+        return ParseError(path, f"Invalid YAML: {exc}")
+
+    if len(documents) != 1:
+        return ParseError(
+            path,
+            f"Expected exactly one YAML document, found {len(documents)}",
+        )
+
+    root = documents[0]
+    if root is None:
+        return ParseError(path, "YAML document is empty")
+
+    if not isinstance(root, MutableMapping):
+        return ParseError(
+            path,
+            f"Expected a mapping at the document root, got {type(root).__name__}",
+        )
+
+    return ParseSuccess(path, dict(root))
+
+
 def _validate_top_level_version(
     root: Mapping[str, Any],
     path: Path,
@@ -308,6 +335,27 @@ def load_property_yaml(path: Path) -> ParseFileOutcome:
     if isinstance(read, (ParseSkip, ParseError)):
         return read
     return _parse_yaml_documents(read, path)
+
+
+def load_dbt_project_yaml(path: Path) -> ParseFileOutcome:
+    """Read a ``dbt_project.yml`` and return a parse outcome.
+
+    Same encoding, BOM, empty skip, single document, and duplicate key rules as
+    :func:`load_property_yaml`, but does **not** require top-level
+    ``version: 2`` (the project ``version`` key is a separate config; see
+    ``specs/yaml-handling.md`` § dbt project file).
+
+    Args:
+        path: Path to the YAML file.
+
+    Returns:
+        :class:`ParseSuccess` with the document root, :class:`ParseSkip` for
+        empty input, or :class:`ParseError` on failure.
+    """
+    read = _read_text(path)
+    if isinstance(read, (ParseSkip, ParseError)):
+        return read
+    return _parse_dbt_project_documents(read, path)
 
 
 def extract_model_entries(success: ParseSuccess) -> ModelEntriesOutcome:

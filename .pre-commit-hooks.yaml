@@ -92,6 +92,14 @@
   language: python
   types: [yaml]
 
+- id: dbt-project-allowed-keys
+  name: dbt project file allowed keys
+  description: Validate top-level keys in dbt_project.yml
+  entry: dbt-project-allowed-keys
+  language: python
+  files: ^dbt_project\.yml$
+  types: [yaml]
+
 - id: model-allowed-meta-keys
   name: dbt model allowed meta keys
   description: Validate keys on config.meta for each model entry in dbt property YAML

@@ -87,6 +87,13 @@ repos:
         pass_filenames: true
         files: ^tests/hook_sandbox/sandbox\.yml$
         stages: [manual]
+      - id: dbtg-sandbox-dbt-project-allowed-keys
+        name: (sandbox) dbt-project-allowed-keys
+        entry: uv run dbt-project-allowed-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/dbt_project\.yml$
+        stages: [manual]
       - id: dbtg-sandbox-model-allowed-config-keys
         name: (sandbox) model-allowed-config-keys
         entry: uv run model-allowed-config-keys

@@ -1,0 +1,5 @@
+name: my_project
+config-version: 2
+profile: p
+not_in_allowlist: true
+model-paths: [models]

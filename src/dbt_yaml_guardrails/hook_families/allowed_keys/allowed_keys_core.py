@@ -10,6 +10,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
     ParseSkip,
     ParseSuccess,
+    load_dbt_project_yaml,
     load_property_yaml,
 )
 
@@ -116,6 +117,8 @@ def format_violation_line(
     fspath, resource_id, _, _ = sort_key
     if resource_id:
         return f"{fspath}: {resource_label} '{resource_id}': {detail}"
+    if resource_label == "project":
+        return f"{fspath}: project: {detail}"
     return f"{fspath}: {detail}"
 
 
@@ -203,6 +206,42 @@ def collect_violation_rows_for_property_paths(
             violations_for_entries(
                 path.as_posix(),
                 iter_entries(inner),
+                allowed=allowed,
+                required=required,
+                forbidden=forbidden,
+                legacy_key_messages=legacy_key_messages,
+            )
+        )
+    return rows
+
+
+def collect_violation_rows_for_dbt_project_paths(
+    files: list[Path],
+    required: set[str],
+    forbidden: set[str],
+    allowed: frozenset[str],
+    *,
+    legacy_key_messages: Mapping[str, str] | None = None,
+) -> list[ViolationRow]:
+    """Walk *files* as ``dbt_project.yml`` roots and validate top-level keys (spec §8).
+
+    Each file is one logical project; stderr uses the ``path: project: …`` form
+    (``format_violation_line`` with ``resource_label=project`` and empty
+    *resource_id* in the sort key).
+    """
+    rows: list[ViolationRow] = []
+    for path in files:
+        path = path.expanduser()
+        loaded = load_dbt_project_yaml(path)
+        if isinstance(loaded, ParseSkip):
+            continue
+        if isinstance(loaded, ParseError):
+            rows.append(violation_row_parse_error(path.as_posix(), loaded.message))
+            continue
+        rows.extend(
+            violations_for_entries(
+                path.as_posix(),
+                [("", dict(loaded.root))],
                 allowed=allowed,
                 required=required,
                 forbidden=forbidden,

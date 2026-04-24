@@ -1,0 +1,5 @@
+# Ringfenced for manual dbt-project-allowed-keys runs (see specs/testing-strategy.md).
+name: sandbox_project
+config-version: 2
+profile: sandbox
+model-paths: [models]

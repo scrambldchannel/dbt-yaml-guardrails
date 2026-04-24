@@ -1,0 +1,6 @@
+name: my_project
+config-version: 2
+profile: p
+model-paths: [models]
+vars:
+  a: 1

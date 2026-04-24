@@ -44,6 +44,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     iter_seed_entries,
     iter_snapshot_entries,
     iter_source_entries,
+    load_dbt_project_yaml,
     load_property_yaml,
 )
 
@@ -421,3 +422,31 @@ def test_extract_catalogs_null() -> None:
     out = extract_catalog_entries(_success("allowed_keys/catalogs/catalogs_null.yml"))
     assert isinstance(out, ParseError)
     assert "not null" in out.message
+
+
+# --- load_dbt_project_yaml ---
+
+
+def test_load_dbt_project_clean() -> None:
+    out = load_dbt_project_yaml(_f("allowed_keys/dbt_project/dbt_project_clean.yml"))
+    assert isinstance(out, ParseSuccess)
+    assert out.root["name"] == "my_project"
+    assert out.root["version"] == "1.0.0"
+
+
+def test_load_dbt_project_accepts_version_not_two(tmp_path: Path) -> None:
+    """dbt project ``version`` is semver/config, not property YAML document v2."""
+    p = tmp_path / "dbt_project.yml"
+    p.write_text(
+        "name: p\nconfig-version: 2\nversion: 3\nmodel-paths: [m]\n",
+        encoding="utf-8",
+    )
+    out = load_dbt_project_yaml(p)
+    assert isinstance(out, ParseSuccess)
+    assert out.root["version"] == 3
+
+
+def test_load_dbt_project_empty_skip() -> None:
+    out = load_dbt_project_yaml(_f("shared/empty.yml"))
+    assert isinstance(out, ParseSkip)
+    assert out.reason == SKIP_EMPTY_OR_WHITESPACE
