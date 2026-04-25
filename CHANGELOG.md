@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Versions match **git ta
 
 **Style (from 0.4.3 onward):** Each release summarizes **user-visible behavior**—new hooks, fixes, and breaking or notable spec changes. Unless a path is the point of the change, avoid inventorying file paths, module names, and test file lists; the **git diff** and **specs** are the source of truth for where code lives. Earlier entries may still read like internal release notes; new entries follow this rule.
 
+## [0.4.4](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
+
+### Added
+
+- **`--check-columns` on `model-`, `seed-`, and `snapshot-allowed-keys`**: by default each hook now also validates **direct keys on every column entry** (each item in `columns:`) against a new per-resource allowlist (`MODEL_COLUMN_ALLOWED_KEYS`, `SEED_COLUMN_ALLOWED_KEYS`, `SNAPSHOT_COLUMN_ALLOWED_KEYS`). Allowlists are documented in `specs/resource-keys.md` § Column keys. Column violations print as `{path}: {resource} '{name}': column '{col}': <detail>`, making them visually distinct from top-level and `config:` violations. Pass `--check-columns false` to restore pre-0.4.4 top-level-only behavior.
+- **Legacy `tests` column key**: a column entry using `tests` instead of `data_tests` gets an actionable message (`Rename to \`data_tests\`…`) consistent with the top-level legacy key handling.
+- **Shape errors** for malformed `columns:` values (`null` / non-list), non-mapping column entries, and column entries missing `name` exit `1` with a precise message (e.g. `model 'x': column at index 0 is missing 'name'`).
+- **`--check-columns` accepted (no effect) on `macro-`, `exposure-`, and `source-allowed-keys`**: the flag is parsed and silently ignored so pre-commit configs that pass it globally do not error on hooks where `columns:` is out of scope.
+
+### Changed
+
+- **Release metadata:** `version` in `pyproject.toml` is **0.4.4**; copy-paste `rev:` examples should use **v0.4.4**.
+
 ## [0.4.3](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-24
 
 ### Added
