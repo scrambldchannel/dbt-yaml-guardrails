@@ -4,10 +4,17 @@ All notable changes to this project are documented here. Versions match **git ta
 
 **Style (from 0.4.3 onward):** Each release summarizes **user-visible behavior**—new hooks, fixes, and breaking or notable spec changes. Unless a path is the point of the change, avoid inventorying file paths, module names, and test file lists; the **git diff** and **specs** are the source of truth for where code lives. Earlier entries may still read like internal release notes; new entries follow this rule.
 
+## [Unreleased]
+
+### Added
+
+- **`dbt-yaml-legacy`**: rewrites legacy **`tests`** to **`data_tests`** in dbt property YAML (resource entries and `columns:` items for model, seed, snapshot, plus resource-level macro, exposure, source). **Check by default** (exit 1 if anything would change or if both keys are present on the same object); use **`--write`** to update files. Uses **ruamel** round-trip to preserve key order. See [`specs/hook-families/dbt-yaml-legacy.md`](specs/hook-families/dbt-yaml-legacy.md). Not yet in a versioned **git tag**; `rev:` in examples stays **v0.5.1** until the next release.
+
 ## [0.5.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
 
 ### Changed
 
+- **Release metadata:** `version` in `pyproject.toml` is **0.5.1**; copy-paste `rev:` examples should use **v0.5.1**.
 - **`--check-nested` renamed to `--check-config`** on all `*-allowed-keys` hooks. The flag behaves identically — it controls whether direct keys under `config:` are validated — but the new name makes its purpose clearer.
 - **`--check-columns` removed from `macro-`, `exposure-`, and `source-allowed-keys`**. Those hooks never had a `columns:` list to check, so the flag was silently ignored. It's now absent rather than a no-op. The flag remains fully functional on `model-`, `seed-`, and `snapshot-allowed-keys`.
 

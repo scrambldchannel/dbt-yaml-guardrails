@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: m1
+    description: x
+    columns:
+      - name: id
+        tests:
+          - not_null

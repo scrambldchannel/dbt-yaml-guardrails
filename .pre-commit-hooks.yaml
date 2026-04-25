@@ -246,3 +246,10 @@
   entry: macro-tags-accepted-values
   language: python
   types: [yaml]
+
+- id: dbt-yaml-legacy
+  name: dbt legacy YAML rewrites
+  description: Rewrite legacy tests key to data_tests in dbt property YAML (use --write to apply)
+  entry: dbt-yaml-legacy
+  language: python
+  types: [yaml]

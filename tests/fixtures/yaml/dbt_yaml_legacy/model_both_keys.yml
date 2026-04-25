@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: m1
+    description: x
+    tests:
+      - unique:
+          column_name: id
+    data_tests:
+      - not_null
