@@ -74,6 +74,24 @@ repos:
         entry: uv run exposure-allowed-config-keys
         language: system
         pass_filenames: true
+      - id: dbtg-sandbox-model-allowed-column-keys
+        name: (sandbox) model-allowed-column-keys
+        entry: uv run model-allowed-column-keys
+        language: system
+        pass_filenames: true
+        args: ['--required', 'description']
+      - id: dbtg-sandbox-seed-allowed-column-keys
+        name: (sandbox) seed-allowed-column-keys
+        entry: uv run seed-allowed-column-keys
+        language: system
+        pass_filenames: true
+        args: ['--required', 'description']
+      - id: dbtg-sandbox-snapshot-allowed-column-keys
+        name: (sandbox) snapshot-allowed-column-keys
+        entry: uv run snapshot-allowed-column-keys
+        language: system
+        pass_filenames: true
+        args: ['--required', 'description']
       - id: dbtg-sandbox-model-allowed-meta-keys
         name: (sandbox) model-allowed-meta-keys
         entry: uv run model-allowed-meta-keys
