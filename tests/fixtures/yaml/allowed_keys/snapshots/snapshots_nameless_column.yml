@@ -1,0 +1,6 @@
+version: 2
+
+snapshots:
+  - name: snap_nameless
+    columns:
+      - description: missing name

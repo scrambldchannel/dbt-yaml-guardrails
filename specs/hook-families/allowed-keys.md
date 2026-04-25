@@ -18,6 +18,7 @@ Most hooks validate **top-level keys on each entry** in a dbt property YAML docu
 + **Allowed keys are fixed** for that hook’s target: only the **user-authorable** top-level keys in **`resource-keys.md`** for the matching **§** (dbt **resource properties** for property YAML, or the **dbt project file** table for **`dbt_project.yml`**; not manifest-only fields; see that doc’s intro).
 + `--forbidden` — optional comma-separated keys that **must not** appear on the **top-level** resource entry, even when otherwise allowlisted. Does **not** apply to keys under **`config:`**; use **`*-allowed-config-keys`** **`--forbidden`** for that (**until further notice**, same as **`--required`** above).
 + **`--check-nested`** — **one** boolean option; default **`true`**. Accept explicit **`true`** or **`false`** (e.g. **`--check-nested false`** to restore historical top-level-only behavior). When **`true`**, hooks listed in **§ Nested keys (`config`) and `--check-nested`** also validate **direct children of `config:`** using the same default allowlists as **`*-allowed-config-keys`** (see **`resource-config-keys.md`** and **`hook-families/allowed-config-keys.md`**). When **`false`**, behavior matches the **historical** **`*-allowed-keys`** scope: **top-level keys on the resource entry only** (no `config` child-key checks). Do **not** split this into a separate inverted flag name (e.g. no standalone **`--no-check-nested`**); a single **`--check-nested`** with a boolean value keeps pre-commit **`args:`** and shell usage predictable.
++ **`--check-columns`** — **one** boolean option; default **`true`**. Accept explicit **`true`** or **`false`**. When **`true`**, hooks listed in **§ Nested keys (`columns:`) and `--check-columns`** also validate **direct keys on each entry in `columns:`** using the default allowlists from **`resource-keys.md`** § **Column keys** (implemented as **`*_COLUMN_ALLOWED_KEYS`** in **`resource_keys.py`**). When **`false`**, no column-level key checks are performed. Do **not** split this into a separate inverted flag name; a single **`--check-columns`** with a boolean value is consistent with **`--check-nested`**.
 
 **Legacy keys:** If a top-level key on an entry appears in **`resource-keys.md`** § **Legacy / deprecated** for that hook’s resource type, implementations **SHOULD** emit a violation whose message is **actionable**: it **SHOULD** include the **Suggested violation detail** from that row (rename target, e.g. use **`data_tests`** instead of **`tests`**, or where to nest under **`config`**, e.g. **`config.meta`**). Keys that are neither allowlisted nor listed as legacy continue to use generic **disallowed key** wording (see **`yaml-handling.md`** § Errors).
 
@@ -45,6 +46,30 @@ Each console script may remain its own small module with duplicated **`main`** /
 
 **Implementation reuse:** **SHOULD** call the same validation logic and legacy maps as **`*-allowed-config-keys`** for the **`config:`** key pass, so the two code paths do not diverge on allowlist contents.
 
+### Nested keys (`columns:`) and `--check-columns`
+
+**Goal:** The default **`*-allowed-keys`** run should also catch **unknown keys on each column entry** (each item in `columns:`), using dbt/Fusion-oriented default allowlists from **`resource-keys.md`** § **Column keys** for that resource type, without adding a separate hook family for column key validation.
+
+**In scope:** Direct keys of each item in the **`columns:`** list for the three property-YAML hooks that have `columns:` at the resource entry level: **`model-allowed-keys`** (§1), **`seed-allowed-keys`** (§3), and **`snapshot-allowed-keys`** (§4). If **`columns:`** is absent or an empty list, skip silently (nothing to check). Shape errors that exit **`1`**:
+
+- `columns:` present but **`null`** or not a list — message: `{resource_kind} '{resource_name}': columns must be a list`
+- a column entry that is **`null`** or not a mapping — message: `{resource_kind} '{resource_name}': column at index {i} must be a mapping`
+- a column entry missing **`name`** — message: `{resource_kind} '{resource_name}': column at index {i} is missing 'name'`
+
+Indices are **0-based** and refer to the position in the `columns:` list.
+
+**Out of scope:** **`macro-allowed-keys`** and **`exposure-allowed-keys`** (those entry shapes have no `columns:` list); **`source-allowed-keys`** (source columns are nested under `tables: → [table] → columns:` — a deeper path addressed when `source-table-allowed-keys` is specced; see §9); **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`**. Deeper nesting inside a column entry (e.g. keys under column-level `meta`, or per-constraint keys) is out of scope and stays with dedicated families.
+
+**`name` on column entries:** Always required on each column dict; do **not** list it in **`--required`** (consistent with resource-level `name` rules). A column entry missing `name` is a **shape error** (exit **`1`**), not a key violation.
+
+**`--required` / `--forbidden` on column keys:** not in scope for this version. Only the default allowlist is checked; per-column `--required`/`--forbidden` (e.g. enforce `description` on every column) are a **future extension**.
+
+**Legacy column keys:** If a key on a column entry appears in **`resource-keys.md`** § **Column keys — Legacy / deprecated** for that resource, implementations **SHOULD** emit an actionable message (the **Suggested violation detail** from that row), consistent with top-level and `config:` legacy key handling. The primary legacy key across all three resources is **`tests`** → rename to `data_tests`.
+
+**stderr for column key violations:** Use **`column '<name>': <detail>`** as the infix after the resource label — e.g. `path/to/schema.yml: model 'my_model': column 'id': disallowed key 'bad_key'` — so column violations are visually distinct from both top-level key violations and `config:` violations on the same hook run.
+
+**Implementation:** SHOULD add a column-validation helper in **`allowed_keys_core.py`** (parallel to `_nested_config_violations`) and extend **`collect_violation_rows_for_property_paths`** with `check_columns`, `column_allowed`, `column_legacy_key_messages`, and `resource_label` params, following the same pattern as the `check_nested` extension. Column allowlists live in **`resource_keys.py`** as **`MODEL_COLUMN_ALLOWED_KEYS`**, **`SEED_COLUMN_ALLOWED_KEYS`**, **`SNAPSHOT_COLUMN_ALLOWED_KEYS`** (and matching `*_COLUMN_LEGACY_KEY_MESSAGES`), documented in **`resource-keys.md`** § **Column keys** for each resource.
+
 ## 1. `model-allowed-keys`
 
 Validates the **top-level keys on each model entry** (each dict under the `models:` list).
@@ -53,7 +78,7 @@ The CLI entry point and hook **`id`** should be **`model-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: model-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** at the repo root (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real models in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Models**, implemented as **`MODEL_ALLOWED_KEYS`**. **`--forbidden`:** e.g. disallow **`config`** on the top-level model entry where policy requires config-only in `dbt_project.yml`. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Models — default keys under `config`**, as **`MODEL_CONFIG_ALLOWED_KEYS`**, matching **`model-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`**, **§ Nested keys (`config`) and `--check-nested`**, and **§ Nested keys (`columns:`) and `--check-columns`**. For **`--required`**: **`name`** is always present for real models in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Models**, implemented as **`MODEL_ALLOWED_KEYS`**. **`--forbidden`:** e.g. disallow **`config`** on the top-level model entry where policy requires config-only in `dbt_project.yml`. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Models — default keys under `config`**, as **`MODEL_CONFIG_ALLOWED_KEYS`**, matching **`model-allowed-config-keys`**. **Column keys (when `--check-columns` is on):** **`resource-keys.md`** § **Models — Column keys**, as **`MODEL_COLUMN_ALLOWED_KEYS`** / **`MODEL_COLUMN_LEGACY_KEY_MESSAGES`**.
 
 ## 2. `macro-allowed-keys`
 
@@ -63,7 +88,7 @@ The CLI entry point and hook **`id`** should be **`macro-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: macro-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real macros in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Macros**, implemented as **`MACRO_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Macros — default keys under `config`** / **`MACRO_CONFIG_ALLOWED_KEYS`**, matching **`macro-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real macros in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Macros**, implemented as **`MACRO_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Macros — default keys under `config`** / **`MACRO_CONFIG_ALLOWED_KEYS`**, matching **`macro-allowed-config-keys`**. **`--check-columns`:** **no effect** (macro entries have no `columns:` list).
 
 ## 3. `seed-allowed-keys`
 
@@ -73,7 +98,7 @@ The CLI entry point and hook **`id`** should be **`seed-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: seed-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real seeds in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Seeds**, implemented as **`SEED_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Seeds — default keys under `config`** / **`SEED_CONFIG_ALLOWED_KEYS`**, matching **`seed-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`**, **§ Nested keys (`config`) and `--check-nested`**, and **§ Nested keys (`columns:`) and `--check-columns`**. For **`--required`**: **`name`** is always present for real seeds in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Seeds**, implemented as **`SEED_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Seeds — default keys under `config`** / **`SEED_CONFIG_ALLOWED_KEYS`**, matching **`seed-allowed-config-keys`**. **Column keys (when `--check-columns` is on):** **`resource-keys.md`** § **Seeds — Column keys**, as **`SEED_COLUMN_ALLOWED_KEYS`** / **`SEED_COLUMN_LEGACY_KEY_MESSAGES`**.
 
 ## 4. `snapshot-allowed-keys`
 
@@ -83,7 +108,7 @@ The CLI entry point and hook **`id`** should be **`snapshot-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: snapshot-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real snapshots in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Snapshots**, implemented as **`SNAPSHOT_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Snapshots — default keys under `config`** / **`SNAPSHOT_CONFIG_ALLOWED_KEYS`**, matching **`snapshot-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`**, **§ Nested keys (`config`) and `--check-nested`**, and **§ Nested keys (`columns:`) and `--check-columns`**. For **`--required`**: **`name`** is always present for real snapshots in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Snapshots**, implemented as **`SNAPSHOT_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Snapshots — default keys under `config`** / **`SNAPSHOT_CONFIG_ALLOWED_KEYS`**, matching **`snapshot-allowed-config-keys`**. **Column keys (when `--check-columns` is on):** **`resource-keys.md`** § **Snapshots — Column keys**, as **`SNAPSHOT_COLUMN_ALLOWED_KEYS`** / **`SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES`**.
 
 ## 5. `exposure-allowed-keys`
 
@@ -93,7 +118,7 @@ The CLI entry point and hook **`id`** should be **`exposure-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: exposure-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real exposures in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Exposures**, implemented as **`EXPOSURE_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Exposures — default keys under `config`** / **`EXPOSURE_CONFIG_ALLOWED_KEYS`**, matching **`exposure-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real exposures in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Exposures**, implemented as **`EXPOSURE_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Exposures — default keys under `config`** / **`EXPOSURE_CONFIG_ALLOWED_KEYS`**, matching **`exposure-allowed-config-keys`**. **`--check-columns`:** **no effect** (exposure entries have no `columns:` list).
 
 ## 6. `source-allowed-keys`
 
@@ -103,7 +128,7 @@ The CLI entry point and hook **`id`** should be **`source-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: source-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real sources in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Sources**, implemented as **`SOURCE_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Sources — default keys under `config`** / **`SOURCE_CONFIG_ALLOWED_KEYS`**, matching **`source-allowed-config-keys`**.
+**Arguments:** see **§ Pattern: `*-allowed-keys`** and **§ Nested keys (`config`) and `--check-nested`**. For **`--required`**: **`name`** is always present for real sources in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Sources**, implemented as **`SOURCE_ALLOWED_KEYS`**. **Nested `config` keys (when `--check-nested` is on):** **`resource-config-keys.md`** § **Sources — default keys under `config`** / **`SOURCE_CONFIG_ALLOWED_KEYS`**, matching **`source-allowed-config-keys`**. **`--check-columns`:** **no effect** in v1; source entry columns are nested under `tables: → [table] → columns:` — a deeper path addressed when `source-table-allowed-keys` is specced (see §9).
 
 ## 7. `catalog-allowed-keys`
 
@@ -113,7 +138,7 @@ The CLI entry point and hook **`id`** should be **`catalog-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: catalog-allowed-keys`**, **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**).
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for each catalog in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Catalogs**, implemented as **`CATALOG_ALLOWED_KEYS`**. Nested keys under each **`write_integrations`** item are not validated by this hook. **`--check-nested`:** **no effect** in v1 (there is no **`config:`** on catalog entries under the current **`CATALOG_ALLOWED_KEYS`** spec; see **§ Nested keys (`config`) and `--check-nested`**).
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. For **`--required`**: **`name`** is always present for each catalog in dbt; do not list it in **`--required`**. **Allowed keys:** **`resource-keys.md`** § **Catalogs**, implemented as **`CATALOG_ALLOWED_KEYS`**. Nested keys under each **`write_integrations`** item are not validated by this hook. **`--check-nested`:** **no effect** in v1 (there is no **`config:`** on catalog entries under the current **`CATALOG_ALLOWED_KEYS`** spec; see **§ Nested keys (`config`) and `--check-nested`**). **`--check-columns`:** **no effect** (catalog entries have no `columns:` list).
 
 ## 8. `dbt-project-allowed-keys`
 
@@ -127,7 +152,7 @@ The CLI entry point and hook **`id`** should be **`dbt-project-allowed-keys`**.
 
 **Pre-commit (shipped):** **`language: python`**, **`entry: dbt-project-allowed-keys`**, **`files: ^dbt_project\.yml$`**, and **`types: [yaml]`** — see **`.pre-commit-hooks.yaml`** (must match **`[project.scripts]`** in **`pyproject.toml`**). Relying on **`types: [yaml]`** without **`files:`** is not recommended for monorepos that run hooks on all `*.yml`.
 
-**Arguments:** see **§ Pattern: `*-allowed-keys`**. **`--required`**: it is valid to require **`name`**, **`config-version`**, **`profile`**, or other top-level keys your policy demands (no exit code **`2`** for including **`name`** in **`--required`**). **Allowed keys:** **`resource-keys.md`** § **dbt project file (`dbt_project.yml`)**, implemented as **`DBT_PROJECT_ALLOWED_KEYS`**. **Legacy or deprecated** top-level project keys dbt still accepts (if any) **SHOULD** be listed in **`resource-keys.md`** for this section and mapped in **`DBT_PROJECT_LEGACY_KEY_MESSAGES`**, the same as other allowlist hooks. **`--forbidden`:** e.g. forbid **`vars`** in the project file if variables must live only in **`profiles.yml`**. **`--check-nested`:** **not applicable** in v1 (this hook validates only the **top level** of **`dbt_project.yml`**; hierarchical **`models:`** / **`seeds:`** / … blocks are a **future** extension—see **§ Nested keys (`config`) and `--check-nested`**).
+**Arguments:** see **§ Pattern: `*-allowed-keys`**. **`--required`**: it is valid to require **`name`**, **`config-version`**, **`profile`**, or other top-level keys your policy demands (no exit code **`2`** for including **`name`** in **`--required`**). **Allowed keys:** **`resource-keys.md`** § **dbt project file (`dbt_project.yml`)**, implemented as **`DBT_PROJECT_ALLOWED_KEYS`**. **Legacy or deprecated** top-level project keys dbt still accepts (if any) **SHOULD** be listed in **`resource-keys.md`** for this section and mapped in **`DBT_PROJECT_LEGACY_KEY_MESSAGES`**, the same as other allowlist hooks. **`--forbidden`:** e.g. forbid **`vars`** in the project file if variables must live only in **`profiles.yml`**. **`--check-nested`:** **not applicable** in v1 (this hook validates only the **top level** of **`dbt_project.yml`**; hierarchical **`models:`** / **`seeds:`** / … blocks are a **future** extension—see **§ Nested keys (`config`) and `--check-nested`**). **`--check-columns`:** **not applicable** (`dbt_project.yml` has no `columns:` list at the root level).
 
 **Violation format:** stderr uses **`path: project: <detail>`** (see **`format_violation_line`** in **`allowed_keys_core.py`** when the resource label is **`project`** and there is no per-row name).
 
@@ -142,6 +167,6 @@ Hooks for **source tables**, **analyses**, **unit tests**, and any other targets
 | Each source table | § **Source tables** (when specified) | Nested list under `sources: … → tables:`; distinct hook from source-level keys |
 | Each analysis | § **Analyses** | Under `analyses:` |
 | Each unit test | § **Unit tests** | Under `unit_tests:` |
-| **`columns:`** entries (per-column keys) | § **Models** (and other resources where **`columns`** applies) | **Next** planned nested extension for **`*-allowed-keys`** after **`config:`** (see **§ Nested keys (`config`) and `--check-nested`**); not shipped in v1 |
+| **`columns:`** entries (per-column keys) on **models, seeds, snapshots** | § **Models — Column keys** / § **Seeds — Column keys** / § **Snapshots — Column keys** | Specced — see **§ Nested keys (`columns:`) and `--check-columns`**; implementation pending. Source entry columns are deeper (`tables: → columns:`) and remain out of scope until `source-table-allowed-keys` is added. |
 
 Concrete **`id`**, **`entry`**, and **`[project.scripts]`** names **`SHOULD`** stay predictable (e.g. `source-table-allowed-keys`, …).

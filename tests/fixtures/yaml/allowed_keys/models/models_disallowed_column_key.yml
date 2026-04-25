@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: x
+    columns:
+      - name: id
+        bad_column_key: oops

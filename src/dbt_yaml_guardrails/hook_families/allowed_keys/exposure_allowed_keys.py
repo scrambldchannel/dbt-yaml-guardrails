@@ -100,6 +100,14 @@ def main(
             "Pass --check-nested false to restore top-level-only behavior."
         ),
     ),
+    check_columns: str = typer.Option(  # noqa: ARG001
+        "true",
+        "--check-columns",
+        help=(
+            "No effect for exposure-allowed-keys: exposure entries have no columns: list. "
+            "Accepted for CLI consistency with other *-allowed-keys hooks."
+        ),
+    ),
 ) -> None:
     """Validate top-level keys on each exposure entry."""
     code = _run(

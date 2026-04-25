@@ -1,0 +1,7 @@
+version: 2
+
+snapshots:
+  - name: snap_x
+    columns:
+      - name: id
+        bad_col_key: wrong

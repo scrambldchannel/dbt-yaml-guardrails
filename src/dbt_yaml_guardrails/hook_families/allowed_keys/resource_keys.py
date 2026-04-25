@@ -16,6 +16,10 @@ but are not declared in property files.
 The ``*_LEGACY_KEY_MESSAGES`` and **Legacy / deprecated** subsections in the spec
 cover keys users should not use; those keys are not in the allowlist unless
 explicitly listed for special handling.
+
+``*_COLUMN_ALLOWED_KEYS`` and ``*_COLUMN_LEGACY_KEY_MESSAGES`` cover keys on each
+item in a resource's ``columns:`` list (``resource-keys.md`` § Column keys). These
+are used by ``*-allowed-keys`` hooks when ``--check-columns`` is active.
 """
 
 from __future__ import annotations
@@ -99,6 +103,64 @@ SNAPSHOT_ALLOWED_KEYS: frozenset[str] = frozenset(
 SNAPSHOT_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "meta": "Use `config.meta` instead of top-level `meta`.",
     "tags": "Use `config.tags` instead of top-level `tags`.",
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+}
+
+# Column keys on each item in a model's ``columns:`` list
+# (``resource-keys.md`` § Models — Column keys)
+MODEL_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "constraints",
+        "data_tests",
+        "data_type",
+        "description",
+        "granularity",
+        "meta",
+        "name",
+        "quote",
+        "tags",
+    )
+)
+
+MODEL_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+}
+
+# Column keys on each item in a seed's ``columns:`` list
+# (``resource-keys.md`` § Seeds — Column keys)
+SEED_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "constraints",
+        "data_tests",
+        "data_type",
+        "description",
+        "meta",
+        "name",
+        "quote",
+        "tags",
+    )
+)
+
+SEED_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+}
+
+# Column keys on each item in a snapshot's ``columns:`` list
+# (``resource-keys.md`` § Snapshots — Column keys)
+SNAPSHOT_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "constraints",
+        "data_tests",
+        "data_type",
+        "description",
+        "meta",
+        "name",
+        "quote",
+        "tags",
+    )
+)
+
+SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 

@@ -29,6 +29,8 @@ from dbt_yaml_guardrails.hook_families.allowed_config_keys.resource_config_keys 
 
 from .resource_keys import (
     SNAPSHOT_ALLOWED_KEYS,
+    SNAPSHOT_COLUMN_ALLOWED_KEYS,
+    SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES,
     SNAPSHOT_LEGACY_KEY_MESSAGES,
 )
 
@@ -49,6 +51,7 @@ def _run(
     required_csv: str,
     forbidden_csv: str,
     check_nested: bool = True,
+    check_columns: bool = True,
 ) -> int:
     required = parse_csv_keys(required_csv)
     forbidden = parse_csv_keys(forbidden_csv)
@@ -71,6 +74,9 @@ def _run(
         check_nested=check_nested,
         config_allowed=SNAPSHOT_CONFIG_ALLOWED_KEYS,
         config_legacy_key_messages=SNAPSHOT_CONFIG_LEGACY_KEY_MESSAGES,
+        check_columns=check_columns,
+        column_allowed=SNAPSHOT_COLUMN_ALLOWED_KEYS,
+        column_legacy_key_messages=SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES,
         resource_label="snapshot",
     )
     return finalize_violation_rows(
@@ -100,6 +106,15 @@ def main(
             "Pass --check-nested false to restore top-level-only behavior."
         ),
     ),
+    check_columns: str = typer.Option(
+        "true",
+        "--check-columns",
+        help=(
+            "Also validate direct keys on each column entry in columns: lists using "
+            "SNAPSHOT_COLUMN_ALLOWED_KEYS (default: true). "
+            "Pass --check-columns false to skip column key checks."
+        ),
+    ),
 ) -> None:
     """Validate top-level keys on each snapshot entry."""
     code = _run(
@@ -107,6 +122,7 @@ def main(
         required,
         forbidden,
         check_nested=check_nested.lower() not in ("false", "0", "no", "f", "off"),
+        check_columns=check_columns.lower() not in ("false", "0", "no", "f", "off"),
     )
     raise typer.Exit(code)
 

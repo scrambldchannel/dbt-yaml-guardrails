@@ -57,6 +57,66 @@ def config_mapping_from_resource_entry(
     return dict(cfg)
 
 
+def _nested_column_violations(
+    path_posix: str,
+    entries: Iterable[tuple[str, Mapping[str, Any]]],
+    *,
+    resource_label: str,
+    column_allowed: frozenset[str],
+    column_legacy_key_messages: Mapping[str, str] | None,
+) -> list[ViolationRow]:
+    """Collect violation rows for direct keys on each column entry.
+
+    Shape errors (``columns:`` not a list, column not a mapping, column missing
+    ``name``) are treated as parse/shape errors (kind ``3``) and exit code ``1``,
+    consistent with ``yaml-handling.md`` § Errors and
+    ``specs/hook-families/allowed-keys.md`` § **Nested keys (`columns:`) and
+    `--check-columns`**.
+
+    Args:
+        path_posix: POSIX path string (for sort keys / messages).
+        entries: ``(resource_id, entry_mapping)`` pairs from the top-level iteration.
+        resource_label: Singular resource noun for shape-error messages.
+        column_allowed: Allowlisted keys on each column entry.
+        column_legacy_key_messages: Optional legacy-key detail map for column keys.
+
+    Returns:
+        Unsorted violation rows.
+    """
+    legacy = column_legacy_key_messages or {}
+    rows: list[ViolationRow] = []
+    for resource_id, entry in entries:
+        if "columns" not in entry:
+            continue
+        raw_columns = entry["columns"]
+        if not isinstance(raw_columns, list):
+            msg = f"{resource_label} '{resource_id}': columns must be a list"
+            rows.append(violation_row_parse_error(path_posix, msg))
+            continue
+        for i, col in enumerate(raw_columns):
+            if col is None or not isinstance(col, Mapping):
+                msg = f"{resource_label} '{resource_id}': column at index {i} must be a mapping"
+                rows.append(violation_row_parse_error(path_posix, msg))
+                continue
+            name = col.get("name")
+            if not name:
+                msg = f"{resource_label} '{resource_id}': column at index {i} is missing 'name'"
+                rows.append(violation_row_parse_error(path_posix, msg))
+                continue
+            col_name = str(name)
+            for key in sorted(col.keys()):
+                if key in column_allowed:
+                    continue
+                sub_detail = legacy.get(key) or f"disallowed key '{key}'"
+                rows.append(
+                    (
+                        (path_posix, resource_id, f"{col_name}:{key}", 2),
+                        f"column '{col_name}': {sub_detail}",
+                    )
+                )
+    return rows
+
+
 def _nested_config_violations(
     path: Path,
     path_posix: str,
@@ -254,6 +314,9 @@ def collect_violation_rows_for_property_paths(
     check_nested: bool = True,
     config_allowed: frozenset[str] | None = None,
     config_legacy_key_messages: Mapping[str, str] | None = None,
+    check_columns: bool = True,
+    column_allowed: frozenset[str] | None = None,
+    column_legacy_key_messages: Mapping[str, str] | None = None,
     resource_label: str = "",
 ) -> list[ViolationRow]:
     """Walk *files*, load YAML, and validate top-level keys on each resource entry.
@@ -262,6 +325,11 @@ def collect_violation_rows_for_property_paths(
     direct keys under each entry's ``config:`` mapping using the same allowlists as
     ``*-allowed-config-keys`` (``specs/hook-families/allowed-keys.md`` § **Nested
     keys (`config`) and `--check-nested`**).
+
+    When *check_columns* is ``True`` and *column_allowed* is provided, also validates
+    direct keys on each entry in the ``columns:`` list using the per-resource column
+    allowlists from ``resource_keys`` (``specs/hook-families/allowed-keys.md`` §
+    **Nested keys (`columns:`) and `--check-columns`**).
 
     Args:
         files: Property YAML paths from the CLI.
@@ -279,14 +347,21 @@ def collect_violation_rows_for_property_paths(
         config_allowed: Allowlisted keys under ``config:`` (from ``resource_config_keys``).
             Required for nested checking; pass ``None`` to disable.
         config_legacy_key_messages: Optional legacy-key detail map for ``config`` keys.
+        check_columns: When ``True`` (default) and *column_allowed* is set, also check
+            direct keys on each entry in the resource's ``columns:`` list.
+        column_allowed: Allowlisted keys on each column entry (from ``resource_keys``
+            ``*_COLUMN_ALLOWED_KEYS``). Required for column checking; pass ``None`` to
+            disable.
+        column_legacy_key_messages: Optional legacy-key detail map for column keys.
         resource_label: Singular resource noun (e.g. ``\"model\"``); used in ``config``
-            shape-error messages when nested checking is active.
+            and column shape-error messages when nested checking is active.
 
     Returns:
         Unsorted violation rows.
     """
     rows: list[ViolationRow] = []
     run_nested = check_nested and config_allowed is not None
+    run_columns = check_columns and column_allowed is not None
     for path in files:
         path = path.expanduser()
         loaded = load_property_yaml(path)
@@ -320,6 +395,16 @@ def collect_violation_rows_for_property_paths(
                     resource_label=resource_label,
                     config_allowed=config_allowed,  # type: ignore[arg-type]
                     config_legacy_key_messages=config_legacy_key_messages,
+                )
+            )
+        if run_columns:
+            rows.extend(
+                _nested_column_violations(
+                    path.as_posix(),
+                    iter_entries(inner),
+                    resource_label=resource_label,
+                    column_allowed=column_allowed,  # type: ignore[arg-type]
+                    column_legacy_key_messages=column_legacy_key_messages,
                 )
             )
     return rows

@@ -100,6 +100,15 @@ def main(
             "Pass --check-nested false to restore top-level-only behavior."
         ),
     ),
+    check_columns: str = typer.Option(  # noqa: ARG001
+        "true",
+        "--check-columns",
+        help=(
+            "No effect for source-allowed-keys in v1: source columns are nested under "
+            "tables: → columns: and are out of scope until source-table-allowed-keys is "
+            "added. Accepted for CLI consistency with other *-allowed-keys hooks."
+        ),
+    ),
 ) -> None:
     """Validate top-level keys on each source entry."""
     code = _run(

@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: with_cols
+    description: A model with valid column keys.
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+        data_tests:
+          - not_null
+      - name: created_at
+        description: Timestamp
+        data_type: timestamp
+        meta:
+          pii: false
+        tags:
+          - time

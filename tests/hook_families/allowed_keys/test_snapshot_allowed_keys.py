@@ -81,3 +81,31 @@ def test_cli_meta_legacy_message() -> None:
     assert r.returncode == 1
     assert "snapshot 'with_meta'" in r.stderr
     assert "Use `config.meta` instead of top-level `meta`." in r.stderr
+
+
+# --- --check-columns (default true) ---
+
+
+def test_cli_check_columns_default_passes_clean_columns() -> None:
+    r = _invoke(_f("snapshots_clean_columns.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_check_columns_default_flags_disallowed_column_key() -> None:
+    r = _invoke(_f("snapshots_disallowed_column_key.yml"))
+    assert r.returncode == 1
+    assert "snapshot 'snap_x'" in r.stderr
+    assert "column 'id': disallowed key 'bad_col_key'" in r.stderr
+
+
+def test_cli_check_columns_false_ignores_bad_column_key() -> None:
+    r = _invoke("--check-columns", "false", _f("snapshots_disallowed_column_key.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_check_columns_nameless_column_is_shape_error() -> None:
+    r = _invoke(_f("snapshots_nameless_column.yml"))
+    assert r.returncode == 1
+    assert "column at index 0 is missing 'name'" in r.stderr

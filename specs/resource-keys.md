@@ -4,7 +4,7 @@
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md), [`hooks.md`](hooks.md).
 
-For **property YAML**, allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For the **dbt project file**, the allowlist targets **top-level keys of the root mapping** only (see **§ dbt project file**). For keys **inside** `config:` on resource entries, see **[`resource-config-keys.md`](resource-config-keys.md)**.
+For **property YAML**, allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For the **dbt project file**, the allowlist targets **top-level keys of the root mapping** only (see **§ dbt project file**). For keys **inside** `config:` on resource entries, see **[`resource-config-keys.md`](resource-config-keys.md)**. For keys on **column entries** (items in each resource's `columns:` list), see **§ Column keys** under the applicable resource section below (currently: **Models**, **Seeds**, **Snapshots**).
 
 **`--forbidden`** can still ban keys that appear in a default allowlist if your policy is stricter than dbt’s surface area.
 
@@ -41,6 +41,33 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 | --- | --- | --- |
 | `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/model-properties#sources) |
 
+### Column keys (`model-allowed-keys --check-columns`)
+
+[Column properties](https://docs.getdbt.com/reference/resource-properties/columns) — keys on each item in a model's `columns:` list. **`meta`** and **`tags`** stay as direct keys on column entries (they are **not** moved under `config:` at the column level). **`tests`** is legacy; use `data_tests`.
+
+| Key | Notes |
+| --- | --- |
+| `constraints` | [Column constraints](https://docs.getdbt.com/reference/resource-properties/constraints) (dbt 1.5+) |
+| `data_tests` | Column-level tests |
+| `data_type` | Data type hint |
+| `description` | |
+| `granularity` | [Time spine granularity](https://docs.getdbt.com/docs/build/metricflow-time-spine) — time dimension for metrics on this column |
+| `meta` | Column-level metadata (top-level on column entry; use `*-allowed-meta-keys` to constrain key names inside `meta`) |
+| `name` | Required; identifies the column |
+| `quote` | Whether to quote the column identifier in generated SQL |
+| `tags` | Column-level tags (top-level on column entry) |
+| `tests` | Legacy alias for `data_tests` — **not** in `MODEL_COLUMN_ALLOWED_KEYS` |
+
+#### Default allowlist (`MODEL_COLUMN_ALLOWED_KEYS`)
+
+**`MODEL_COLUMN_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** matches the table above **except** `tests`. Legacy keys are handled via **`MODEL_COLUMN_LEGACY_KEY_MESSAGES`**.
+
+#### Legacy / deprecated (column keys)
+
+| Key | Notes | Suggested violation detail |
+| --- | --- | --- |
+| `tests` | Legacy alias for `data_tests`. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
+
 ## Seeds
 
 [Seed properties](https://docs.getdbt.com/reference/seed-properties).
@@ -64,6 +91,32 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 | --- | --- | --- |
 | `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/seed-properties#sources) |
 
+### Column keys (`seed-allowed-keys --check-columns`)
+
+[Seed column properties](https://docs.getdbt.com/reference/seed-properties#columns) — keys on each item in a seed's `columns:` list. Seeds do not have a time-spine `granularity` dimension; otherwise column keys mirror models. **`meta`** and **`tags`** stay top-level on column entries (not under `config:`). **`tests`** is legacy.
+
+| Key | Notes |
+| --- | --- |
+| `constraints` | Column constraints (dbt 1.5+) |
+| `data_tests` | Column-level tests |
+| `data_type` | |
+| `description` | |
+| `meta` | Column-level metadata (top-level on column entry) |
+| `name` | Required |
+| `quote` | |
+| `tags` | Column-level tags (top-level on column entry) |
+| `tests` | Legacy alias for `data_tests` — **not** in `SEED_COLUMN_ALLOWED_KEYS` |
+
+#### Default allowlist (`SEED_COLUMN_ALLOWED_KEYS`)
+
+**`SEED_COLUMN_ALLOWED_KEYS`** matches the table above **except** `tests`. Legacy keys: **`SEED_COLUMN_LEGACY_KEY_MESSAGES`**.
+
+#### Legacy / deprecated (column keys)
+
+| Key | Notes | Suggested violation detail |
+| --- | --- | --- |
+| `tests` | Legacy alias for `data_tests`. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
+
 ## Snapshots
 
 [Snapshot properties](https://docs.getdbt.com/reference/snapshot-properties).
@@ -86,6 +139,32 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 | Key | Notes | Suggested violation detail |
 | --- | --- | --- |
 | `sources` | Deprecated in favor of **`exposures`** + `sources`. | [sources](https://docs.getdbt.com/reference/snapshot-properties#sources) |
+
+### Column keys (`snapshot-allowed-keys --check-columns`)
+
+[Snapshot column properties](https://docs.getdbt.com/reference/snapshot-properties#columns) — keys on each item in a snapshot's `columns:` list. Same surface as seeds (no `granularity`). **`meta`** and **`tags`** stay top-level on column entries.
+
+| Key | Notes |
+| --- | --- |
+| `constraints` | Column constraints (dbt 1.5+) |
+| `data_tests` | Column-level tests |
+| `data_type` | |
+| `description` | |
+| `meta` | Column-level metadata (top-level on column entry) |
+| `name` | Required |
+| `quote` | |
+| `tags` | Column-level tags (top-level on column entry) |
+| `tests` | Legacy alias for `data_tests` — **not** in `SNAPSHOT_COLUMN_ALLOWED_KEYS` |
+
+#### Default allowlist (`SNAPSHOT_COLUMN_ALLOWED_KEYS`)
+
+**`SNAPSHOT_COLUMN_ALLOWED_KEYS`** matches the table above **except** `tests`. Legacy keys: **`SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES`**.
+
+#### Legacy / deprecated (column keys)
+
+| Key | Notes | Suggested violation detail |
+| --- | --- | --- |
+| `tests` | Legacy alias for `data_tests`. | Rename to `data_tests` (legacy alias `tests` is deprecated). |
 
 ## Macros
 

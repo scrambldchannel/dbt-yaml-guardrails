@@ -1,0 +1,6 @@
+version: 2
+
+models:
+  - name: nameless
+    columns:
+      - description: column missing name field
