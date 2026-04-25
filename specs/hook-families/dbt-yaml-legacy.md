@@ -4,6 +4,11 @@
 
 **Status:** **`dbt-yaml-legacy`** is **shipped** as a single console script and pre-commit hook (**`id: dbt-yaml-legacy`**). **v1** renames **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. Future transforms (`tags` / `meta`) are not implemented yet.
 
+**Operational notes (not a scope bug):**
+
++ **Check vs. write:** The default is **check** — the tool does **not** change files. It only exits **non-zero** (or, with `--write`, rewrites) when it finds a rename opportunity or a conflict. To apply renames: **`dbt-yaml-legacy --write <files>`** or, in pre-commit, add **`args: ['--write']`**. A hook with no args still performs a useful “fail if legacy keys remain” check; it is **not** an auto-fixer.
++ **Which `rev:` has the tool:** The **`dbt-yaml-legacy`** entry point only exists in **git commits that add it** (and in tags cut **after** that). Pinning an older pre-commit **`rev:`** (e.g. a tag that predates the hook) will **not** install the script, so the hook can appear to “do nothing” or be missing. Until you tag a release that includes the hook, use a **commit SHA**, **`main`**, a path override, or a local/editable run (**`uv run dbt-yaml-legacy`**) when exercising the rewriter.
+
 Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
 ---
@@ -87,7 +92,7 @@ A future version of this family’s spec **SHOULD** name **exact merge rules** a
   - **Write / in-place:** apply **`tests` → `data_tests`** in place; exit **`0`** on success, **`1`** on unrecoverable parse error or on conflict cases as defined above.
 + **No `--required` / `--forbidden`**; this is not a validator family.
 
-**Pre-commit (future):** When shipped, add **`types: [yaml]`** and resource-path **`files:`** patterns aligned with other property-YAML hooks, unless the project standardizes a single broad pattern.
+**Pre-commit:** The shared **`.pre-commit-hooks.yaml`** entry uses **`types: [yaml]`**; optional per-repo **`files:`** patterns can narrow paths like other property-YAML hooks.
 
 ---
 

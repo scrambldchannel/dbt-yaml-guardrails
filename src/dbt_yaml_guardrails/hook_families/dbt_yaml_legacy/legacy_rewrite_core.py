@@ -166,6 +166,9 @@ def write_roundtrip(path: Path, root: Any) -> str | None:
     try:
         y = YAML(typ="rt")
         y.allow_duplicate_keys = False
+        # Match common dbt property YAML: indent block sequences under a key (e.g. ``models:\n  - name:``)
+        # instead of ruamel’s default (``models:\n- name:``), which looks like "broken" indentation.
+        y.indent(mapping=2, sequence=4, offset=2)
         with path.open("w", encoding="utf-8", newline="") as fh:
             y.dump(root, fh)
     except OSError as exc:

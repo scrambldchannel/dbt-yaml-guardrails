@@ -1,6 +1,15 @@
 repos:
   - repo: local
     hooks:
+      # Run first with --write so legacy ``tests`` renames apply before *-allowed-keys runs on the
+      # same file; check-only would only fail without fixing. Pre-commit may exit non-zero the first
+      # time this hook modifies the file ("files were modified"); run ``make sandbox-hooks`` again.
+      - id: dbtg-sandbox-dbt-yaml-legacy
+        name: (sandbox) dbt-yaml-legacy
+        entry: uv run dbt-yaml-legacy
+        language: system
+        pass_filenames: true
+        args: ['--write']
       - id: dbtg-sandbox-model-allowed-keys
         name: (sandbox) model-allowed-keys
         entry: uv run model-allowed-keys
@@ -195,8 +204,3 @@ repos:
         language: system
         pass_filenames: true
         args: ['--values', 'nightly,finance,raw']
-      - id: dbtg-sandbox-dbt-yaml-legacy
-        name: (sandbox) dbt-yaml-legacy
-        entry: uv run dbt-yaml-legacy
-        language: system
-        pass_filenames: true
