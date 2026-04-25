@@ -43,10 +43,13 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 
 ### Column keys (`model-allowed-keys --check-columns`)
 
-[Column properties](https://docs.getdbt.com/reference/resource-properties/columns) — keys on each item in a model's `columns:` list. **`meta`** and **`tags`** stay as direct keys on column entries (they are **not** moved under `config:` at the column level). **`tests`** is legacy; use `data_tests`.
+[Column properties](https://docs.getdbt.com/reference/resource-properties/columns) — keys on each item in a model's `columns:` list. `meta` and `tags` may appear **either** directly on the column entry **or** nested under a column-level `config:` block (dbt supports both). `config` child keys on column entries are **not** validated by this hook (out of scope). **`tests`** is legacy; use `data_tests`.
+
+> **Stability note:** This column key surface targets **dbt Fusion and the latest dbt Core versions** (1.10+). The allowed set may grow as dbt adds or formalises column-level properties. When dbt deprecates or renames a column key, add a row to the **Legacy / deprecated** table below and a matching entry in **`MODEL_COLUMN_LEGACY_KEY_MESSAGES`** rather than removing the key from the allowlist immediately.
 
 | Key | Notes |
 | --- | --- |
+| `config` | Column-level config block; `tags` and `meta` may nest here instead of (or alongside) the top-level equivalents |
 | `constraints` | [Column constraints](https://docs.getdbt.com/reference/resource-properties/constraints) (dbt 1.5+) |
 | `data_tests` | Column-level tests |
 | `data_type` | Data type hint |
@@ -93,10 +96,13 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 
 ### Column keys (`seed-allowed-keys --check-columns`)
 
-[Seed column properties](https://docs.getdbt.com/reference/seed-properties#columns) — keys on each item in a seed's `columns:` list. Seeds do not have a time-spine `granularity` dimension; otherwise column keys mirror models. **`meta`** and **`tags`** stay top-level on column entries (not under `config:`). **`tests`** is legacy.
+[Seed column properties](https://docs.getdbt.com/reference/seed-properties#columns) — keys on each item in a seed's `columns:` list. Seeds do not have a time-spine `granularity` dimension; otherwise column keys mirror models. `meta` and `tags` may appear directly on the column entry or under a column-level `config:` block; `config` child keys on column entries are not validated. **`tests`** is legacy.
+
+> **Stability note:** Targets **dbt Fusion and the latest dbt Core versions**. Update this table (and **`SEED_COLUMN_ALLOWED_KEYS`** / **`SEED_COLUMN_LEGACY_KEY_MESSAGES`**) as the dbt column-property surface evolves.
 
 | Key | Notes |
 | --- | --- |
+| `config` | Column-level config block; `tags` and `meta` may nest here |
 | `constraints` | Column constraints (dbt 1.5+) |
 | `data_tests` | Column-level tests |
 | `data_type` | |
@@ -142,10 +148,13 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 
 ### Column keys (`snapshot-allowed-keys --check-columns`)
 
-[Snapshot column properties](https://docs.getdbt.com/reference/snapshot-properties#columns) — keys on each item in a snapshot's `columns:` list. Same surface as seeds (no `granularity`). **`meta`** and **`tags`** stay top-level on column entries.
+[Snapshot column properties](https://docs.getdbt.com/reference/snapshot-properties#columns) — keys on each item in a snapshot's `columns:` list. Same surface as seeds (no `granularity`). `meta` and `tags` may appear directly on the column entry or under a column-level `config:` block; `config` child keys on column entries are not validated.
+
+> **Stability note:** Targets **dbt Fusion and the latest dbt Core versions**. Update this table (and **`SNAPSHOT_COLUMN_ALLOWED_KEYS`** / **`SNAPSHOT_COLUMN_LEGACY_KEY_MESSAGES`**) as the dbt column-property surface evolves.
 
 | Key | Notes |
 | --- | --- |
+| `config` | Column-level config block; `tags` and `meta` may nest here |
 | `constraints` | Column constraints (dbt 1.5+) |
 | `data_tests` | Column-level tests |
 | `data_type` | |

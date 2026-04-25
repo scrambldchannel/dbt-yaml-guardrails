@@ -110,6 +110,7 @@ SNAPSHOT_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
 # (``resource-keys.md`` § Models — Column keys)
 MODEL_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
+        "config",
         "constraints",
         "data_tests",
         "data_type",
@@ -130,6 +131,7 @@ MODEL_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
 # (``resource-keys.md`` § Seeds — Column keys)
 SEED_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
+        "config",
         "constraints",
         "data_tests",
         "data_type",
@@ -149,6 +151,7 @@ SEED_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
 # (``resource-keys.md`` § Snapshots — Column keys)
 SNAPSHOT_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
     (
+        "config",
         "constraints",
         "data_tests",
         "data_type",

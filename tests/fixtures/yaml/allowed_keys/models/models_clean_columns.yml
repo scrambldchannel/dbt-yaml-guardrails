@@ -16,3 +16,9 @@ models:
           pii: false
         tags:
           - time
+      - name: domain
+        config:
+          tags:
+            - pii
+          meta:
+            owner: platform
