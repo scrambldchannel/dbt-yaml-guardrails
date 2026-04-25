@@ -13,10 +13,15 @@ Here is a short example of how the hooks might be configured on a project. Read 
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
-    rev: v0.4.3
+    rev: v0.5.0
     hooks:
-      # Check that model top level keys are valid and make description required
+      # Check top-level keys only; config and column key validation delegated to hooks below
       - id: model-allowed-keys
+        files: ^models/
+        args: ["--required", "description", "--check-config", "false", "--check-columns", "false"]
+
+      # Require a description on every column entry
+      - id: model-allowed-column-keys
         files: ^models/
         args: ["--required", "description"]
 
@@ -60,6 +65,7 @@ jobs:
       matrix:
         hook:
           - model-allowed-keys
+          - model-allowed-column-keys
           - model-allowed-config-keys
           - accepted-domains
           - accepted-owners

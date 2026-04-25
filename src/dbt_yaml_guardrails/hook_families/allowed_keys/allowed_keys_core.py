@@ -131,7 +131,7 @@ def _nested_config_violations(
     Violations use a ``config: <detail>`` prefix so they are visually distinct
     from top-level key violations on the same hook run
     (``specs/hook-families/allowed-keys.md`` § **Nested keys (`config`) and
-    `--check-nested`**, ``yaml-handling.md`` § Errors).
+    `--check-config`**, ``yaml-handling.md`` § Errors).
 
     Args:
         path: Source file (for shape error construction).
@@ -311,7 +311,7 @@ def collect_violation_rows_for_property_paths(
         [Mapping[str, Mapping[str, Any]]],
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
-    check_nested: bool = True,
+    check_config: bool = True,
     config_allowed: frozenset[str] | None = None,
     config_legacy_key_messages: Mapping[str, str] | None = None,
     check_columns: bool = True,
@@ -321,10 +321,10 @@ def collect_violation_rows_for_property_paths(
 ) -> list[ViolationRow]:
     """Walk *files*, load YAML, and validate top-level keys on each resource entry.
 
-    When *check_nested* is ``True`` and *config_allowed* is provided, also validates
+    When *check_config* is ``True`` and *config_allowed* is provided, also validates
     direct keys under each entry's ``config:`` mapping using the same allowlists as
     ``*-allowed-config-keys`` (``specs/hook-families/allowed-keys.md`` § **Nested
-    keys (`config`) and `--check-nested`**).
+    keys (`config`) and `--check-config`**).
 
     When *check_columns* is ``True`` and *column_allowed* is provided, also validates
     direct keys on each entry in the ``columns:`` list using the per-resource column
@@ -342,7 +342,7 @@ def collect_violation_rows_for_property_paths(
             :class:`~dbt_yaml_guardrails.yaml_handling.ParseError` for shape errors,
             or a ``name -> entry`` map on success.
         iter_entries: Stable iteration over that map (e.g. :func:`~dbt_yaml_guardrails.yaml_handling.iter_model_entries`).
-        check_nested: When ``True`` (default) and *config_allowed* is set, also check
+        check_config: When ``True`` (default) and *config_allowed* is set, also check
             direct keys under each entry's ``config:`` mapping.
         config_allowed: Allowlisted keys under ``config:`` (from ``resource_config_keys``).
             Required for nested checking; pass ``None`` to disable.
@@ -360,7 +360,7 @@ def collect_violation_rows_for_property_paths(
         Unsorted violation rows.
     """
     rows: list[ViolationRow] = []
-    run_nested = check_nested and config_allowed is not None
+    run_config = check_config and config_allowed is not None
     run_columns = check_columns and column_allowed is not None
     for path in files:
         path = path.expanduser()
@@ -386,7 +386,7 @@ def collect_violation_rows_for_property_paths(
                 legacy_key_messages=legacy_key_messages,
             )
         )
-        if run_nested:
+        if run_config:
             rows.extend(
                 _nested_config_violations(
                     path,

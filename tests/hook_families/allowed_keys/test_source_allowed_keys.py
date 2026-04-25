@@ -88,22 +88,22 @@ def test_cli_meta_legacy_message() -> None:
     assert "Use `config.meta` instead of top-level `meta`." in r.stderr
 
 
-# --- --check-nested (default true) ---
+# --- --check-config (default true) ---
 
 
-def test_cli_check_nested_default_flags_bad_config_key() -> None:
+def test_cli_check_config_default_flags_bad_config_key() -> None:
     r = _invoke(_cfg("source_config_bad.yml"))
     assert r.returncode == 1
     assert "config: disallowed key" in r.stderr
 
 
-def test_cli_check_nested_false_ignores_bad_config_key() -> None:
-    r = _invoke("--check-nested", "false", _cfg("source_config_bad.yml"))
+def test_cli_check_config_false_ignores_bad_config_key() -> None:
+    r = _invoke("--check-config", "false", _cfg("source_config_bad.yml"))
     assert r.returncode == 0
     assert r.stderr == ""
 
 
-def test_cli_check_nested_default_passes_clean_config() -> None:
+def test_cli_check_config_default_passes_clean_config() -> None:
     r = _invoke(_cfg("source_config_clean.yml"))
     assert r.returncode == 0
     assert r.stderr == ""

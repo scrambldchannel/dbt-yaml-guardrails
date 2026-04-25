@@ -50,7 +50,7 @@ def _run(
     files: list[Path],
     required_csv: str,
     forbidden_csv: str,
-    check_nested: bool = True,
+    check_config: bool = True,
     check_columns: bool = True,
 ) -> int:
     required = parse_csv_keys(required_csv)
@@ -71,7 +71,7 @@ def _run(
         legacy_key_messages=MODEL_LEGACY_KEY_MESSAGES,
         extract_by_name=_extract_model_by_name,
         iter_entries=iter_model_entries,
-        check_nested=check_nested,
+        check_config=check_config,
         config_allowed=MODEL_CONFIG_ALLOWED_KEYS,
         config_legacy_key_messages=MODEL_CONFIG_LEGACY_KEY_MESSAGES,
         check_columns=check_columns,
@@ -97,13 +97,13 @@ def main(
             "(stricter than the fixed allowlist in specs/resource-keys.md § Models)."
         ),
     ),
-    check_nested: str = typer.Option(
+    check_config: str = typer.Option(
         "true",
-        "--check-nested",
+        "--check-config",
         help=(
             "Also validate direct keys under each entry's config: mapping using the "
             "same allowlist as model-allowed-config-keys (default: true). "
-            "Pass --check-nested false to restore top-level-only behavior."
+            "Pass --check-config false to restore top-level-only behavior."
         ),
     ),
     check_columns: str = typer.Option(
@@ -121,7 +121,7 @@ def main(
         files,
         required,
         forbidden,
-        check_nested=check_nested.lower() not in ("false", "0", "no", "f", "off"),
+        check_config=check_config.lower() not in ("false", "0", "no", "f", "off"),
         check_columns=check_columns.lower() not in ("false", "0", "no", "f", "off"),
     )
     raise typer.Exit(code)

@@ -95,41 +95,41 @@ def test_cli_tests_legacy_message() -> None:
     assert "Rename to `data_tests` (legacy alias `tests` is deprecated)." in r.stderr
 
 
-# --- --check-nested (default true) ---
+# --- --check-config (default true) ---
 
 
-def test_cli_check_nested_default_flags_bad_config_key() -> None:
+def test_cli_check_config_default_flags_bad_config_key() -> None:
     r = _invoke(_cfg("config_disallowed.yml"))
     assert r.returncode == 1
     assert "model 'bad'" in r.stderr
     assert "config: disallowed key 'not_a_real_dbt_config_key'" in r.stderr
 
 
-def test_cli_check_nested_false_ignores_bad_config_key() -> None:
-    r = _invoke("--check-nested", "false", _cfg("config_disallowed.yml"))
+def test_cli_check_config_false_ignores_bad_config_key() -> None:
+    r = _invoke("--check-config", "false", _cfg("config_disallowed.yml"))
     assert r.returncode == 0
     assert r.stderr == ""
 
 
-def test_cli_check_nested_default_passes_clean_config() -> None:
+def test_cli_check_config_default_passes_clean_config() -> None:
     r = _invoke(_cfg("config_clean.yml"))
     assert r.returncode == 0
     assert r.stderr == ""
 
 
-def test_cli_check_nested_config_null_is_shape_error() -> None:
+def test_cli_check_config_config_null_is_shape_error() -> None:
     r = _invoke(_cfg("config_null.yml"))
     assert r.returncode == 1
     assert "config must be a mapping" in r.stderr
 
 
-def test_cli_check_nested_config_not_mapping_is_shape_error() -> None:
+def test_cli_check_config_config_not_mapping_is_shape_error() -> None:
     r = _invoke(_cfg("config_not_mapping.yml"))
     assert r.returncode == 1
     assert "config must be a mapping" in r.stderr
 
 
-def test_cli_check_nested_legacy_config_key_uses_detail() -> None:
+def test_cli_check_config_legacy_config_key_uses_detail() -> None:
     r = _invoke(_cfg("config_legacy_on.yml"))
     assert r.returncode == 1
     assert "model 'legacy'" in r.stderr
