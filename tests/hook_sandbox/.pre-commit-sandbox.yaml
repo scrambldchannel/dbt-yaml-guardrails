@@ -1,0 +1,179 @@
+repos:
+  - repo: local
+    hooks:
+      - id: dbtg-sandbox-model-allowed-keys
+        name: (sandbox) model-allowed-keys
+        entry: uv run model-allowed-keys
+        language: system
+        pass_filenames: true
+        args: ['--required', 'description', '--forbidden', 'version']
+      - id: dbtg-sandbox-macro-allowed-keys
+        name: (sandbox) macro-allowed-keys
+        entry: uv run macro-allowed-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-seed-allowed-keys
+        name: (sandbox) seed-allowed-keys
+        entry: uv run seed-allowed-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-source-allowed-keys
+        name: (sandbox) source-allowed-keys
+        entry: uv run source-allowed-keys
+        language: system
+        pass_filenames: true
+        args: ['--required', 'description', '--forbidden', 'overrides']
+      - id: dbtg-sandbox-snapshot-allowed-keys
+        name: (sandbox) snapshot-allowed-keys
+        entry: uv run snapshot-allowed-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-exposure-allowed-keys
+        name: (sandbox) exposure-allowed-keys
+        entry: uv run exposure-allowed-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-catalog-allowed-keys
+        name: (sandbox) catalog-allowed-keys
+        entry: uv run catalog-allowed-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-dbt-project-allowed-keys
+        name: (sandbox) dbt-project-allowed-keys
+        entry: uv run dbt-project-allowed-keys
+        language: system
+        pass_filenames: true
+        files: ^tests/hook_sandbox/dbt_project\.yml$
+      - id: dbtg-sandbox-model-allowed-config-keys
+        name: (sandbox) model-allowed-config-keys
+        entry: uv run model-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-macro-allowed-config-keys
+        name: (sandbox) macro-allowed-config-keys
+        entry: uv run macro-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-seed-allowed-config-keys
+        name: (sandbox) seed-allowed-config-keys
+        entry: uv run seed-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-source-allowed-config-keys
+        name: (sandbox) source-allowed-config-keys
+        entry: uv run source-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-snapshot-allowed-config-keys
+        name: (sandbox) snapshot-allowed-config-keys
+        entry: uv run snapshot-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-exposure-allowed-config-keys
+        name: (sandbox) exposure-allowed-config-keys
+        entry: uv run exposure-allowed-config-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-model-allowed-meta-keys
+        name: (sandbox) model-allowed-meta-keys
+        entry: uv run model-allowed-meta-keys
+        language: system
+        pass_filenames: true
+        args: ['--allowed', 'owner,domain']
+      - id: dbtg-sandbox-seed-allowed-meta-keys
+        name: (sandbox) seed-allowed-meta-keys
+        entry: uv run seed-allowed-meta-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-snapshot-allowed-meta-keys
+        name: (sandbox) snapshot-allowed-meta-keys
+        entry: uv run snapshot-allowed-meta-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-exposure-allowed-meta-keys
+        name: (sandbox) exposure-allowed-meta-keys
+        entry: uv run exposure-allowed-meta-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-source-allowed-meta-keys
+        name: (sandbox) source-allowed-meta-keys
+        entry: uv run source-allowed-meta-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-macro-allowed-meta-keys
+        name: (sandbox) macro-allowed-meta-keys
+        entry: uv run macro-allowed-meta-keys
+        language: system
+        pass_filenames: true
+      - id: dbtg-sandbox-model-meta-accepted-values
+        name: (sandbox) model-meta-accepted-values
+        entry: uv run model-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-seed-meta-accepted-values
+        name: (sandbox) seed-meta-accepted-values
+        entry: uv run seed-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-snapshot-meta-accepted-values
+        name: (sandbox) snapshot-meta-accepted-values
+        entry: uv run snapshot-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-exposure-meta-accepted-values
+        name: (sandbox) exposure-meta-accepted-values
+        entry: uv run exposure-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-source-meta-accepted-values
+        name: (sandbox) source-meta-accepted-values
+        entry: uv run source-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-macro-meta-accepted-values
+        name: (sandbox) macro-meta-accepted-values
+        entry: uv run macro-meta-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--key', 'domain', '--values', 'sales,hr,finance']
+      - id: dbtg-sandbox-model-tags-accepted-values
+        name: (sandbox) model-tags-accepted-values
+        entry: uv run model-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']
+      - id: dbtg-sandbox-seed-tags-accepted-values
+        name: (sandbox) seed-tags-accepted-values
+        entry: uv run seed-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']
+      - id: dbtg-sandbox-snapshot-tags-accepted-values
+        name: (sandbox) snapshot-tags-accepted-values
+        entry: uv run snapshot-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']
+      - id: dbtg-sandbox-exposure-tags-accepted-values
+        name: (sandbox) exposure-tags-accepted-values
+        entry: uv run exposure-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']
+      - id: dbtg-sandbox-source-tags-accepted-values
+        name: (sandbox) source-tags-accepted-values
+        entry: uv run source-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']
+      - id: dbtg-sandbox-macro-tags-accepted-values
+        name: (sandbox) macro-tags-accepted-values
+        entry: uv run macro-tags-accepted-values
+        language: system
+        pass_filenames: true
+        args: ['--values', 'nightly,finance,raw']

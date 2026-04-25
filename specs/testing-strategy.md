@@ -23,15 +23,25 @@
 
 + **Pytest** is the source of truth for **regressions and CI**; this section is an **optional, complementary** way to run **this repository’s** hook CLIs on **ad hoc** YAML while developing or debugging behavior (stderr, exit codes, and parser interaction) without adding a new pytest case every time.
 + **Ringfenced file:** maintain **one** (or a small, named set of) **YAML file(s) under a dedicated path**—conventionally **`tests/hook_sandbox/sandbox.yml`**—that is **only** for local manual runs. It is **not** a substitute for **fixtures** under **`tests/fixtures/yaml/`**; keep automated tests data-driven and stable there.
-+ **Repository `.pre-commit-config.yaml`:** add **`repo: local`** hook entries (or an equivalent local runner) that:
-  + use **`entry: uv run <script-name>`** (or **`python -m dbt_yaml_guardrails...`**) so the same **`[project.scripts]`** CLIs as consumers run;
-  + set **`files:`** to match **only** the ringfenced path (e.g. **`^tests/hook_sandbox/sandbox\.yml$`**) so the rest of the tree is never scanned;
-  + pass **minimal, documented `args:`** per hook family, aligned with **[`HOOKS.md`](../HOOKS.md)** examples (e.g. **`--values`**, **`--key`**, **`--required` / `--forbidden`** as needed);
-  + use **`stages: [manual]`** (or the project’s equivalent) so these hooks **do not** run on every **`git commit`** by default—invoke them with **`pre-commit run <hook_id> --all-files`**, **`pre-commit run --hook-stage manual --all-files`**, or **`pre-commit run --files tests/hook_sandbox/sandbox.yml`** as you iterate.
++ **Dedicated sandbox config:** sandbox hooks live in **`tests/hook_sandbox/.pre-commit-sandbox.yaml`** (a separate pre-commit config, kept out of the main **`.pre-commit-config.yaml`**). Hook entries in this file:
+  + use **`entry: uv run <script-name>`** so the same **`[project.scripts]`** CLIs as consumers run;
+  + do **not** need **`files:`** patterns or **`stages:`**—the target file is passed explicitly when the config is invoked;
+  + pass **minimal, documented `args:`** per hook family, aligned with **[`HOOKS.md`](../HOOKS.md)** examples (e.g. **`--values`**, **`--key`**, **`--required` / `--forbidden`** as needed).
 + **Workflow:** edit **`sandbox.yml`**, then run the chosen hook (or the full manual block) and read stderr. Reset or branch the file when you are done experimenting. Prefer harmless placeholder content; do not put secrets or real PII in the sandbox file if it is committed.
 + **Coverage:** the sandbox should include **at least** the **`version:`** + resource sections needed to exercise the hooks you care about (e.g. **`models:`** + **`seeds:`** + **`snapshots:`** + **`exposures:`** + **`macros:`** in one file when the parser loads a single document with multiple top-level keys, per **[`yaml-handling.md`](yaml-handling.md)**). Hooks whose resource section is **absent** are expected to **skip** that file, same as in production.
 + **CI:** **do not** require manual pre-commit on **`tests/hook_sandbox/`** for merge gates unless the team explicitly adds a dedicated workflow step; keep **`uv run pytest`** the automated gate in **[`ci.yml`](../.github/workflows/ci.yml)**. For running the same pre-commit config you use locally inside **GitHub Actions** (clone + `pre-commit run`), see the **GitHub Actions** section in the root **[`README.md`](../README.md)**.
-+ **This repository:** **`.pre-commit-config.yaml`** implements the pattern with **`repo: local`** hooks (ids prefixed **`dbtg-sandbox-`**) on **`tests/hook_sandbox/sandbox.yml`**, **`stages: [manual]`**, and args aligned with **[`HOOKS.md`](../HOOKS.md)**. If **`pre-commit run --hook-stage manual --all-files`** reports **(no files to check)** for a sandbox hook, the YAML may be **untracked**—use **`pre-commit run <hook_id> --hook-stage manual --files tests/hook_sandbox/sandbox.yml`** or **`git add`** the sandbox file first.
++ **This repository:** sandbox hooks are defined in **`tests/hook_sandbox/.pre-commit-sandbox.yaml`** (ids prefixed **`dbtg-sandbox-`**) with args aligned with **[`HOOKS.md`](../HOOKS.md)**. If **`make sandbox-hooks`** reports **(no files to check)**, the sandbox file may be untracked—run **`git add tests/hook_sandbox/sandbox.yml`** first.
++ **Makefile:** the repository includes a **`Makefile`** at the root with two targets:
+  + **`make test`** → **`uv run pytest`** (automated regression suite)
+  + **`make sandbox-hooks`** → runs all sandbox hooks via the dedicated config:
+  ```makefile
+  SANDBOX_FILE  = tests/hook_sandbox/sandbox.yml
+  SANDBOX_CFG   = tests/hook_sandbox/.pre-commit-sandbox.yaml
+
+  sandbox-hooks:
+  	pre-commit run --config $(SANDBOX_CFG) --files $(SANDBOX_FILE)
+  ```
+  Keep the Makefile minimal—it is a convenience wrapper, not a build system. When new sandbox hooks are added to **`.pre-commit-sandbox.yaml`**, they are picked up automatically by **`make sandbox-hooks`**.
 
 ## CI
 

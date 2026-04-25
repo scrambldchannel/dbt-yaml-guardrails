@@ -11,6 +11,25 @@ models:
         domain: sales
         owner: sandbox
     deprecation_date: 2026-04-23
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+        data_tests:
+          - not_null
+          - unique
+      - name: created_at
+        description: Row creation timestamp
+        data_type: timestamp
+        meta:
+          pii: false
+      - name: owner_email
+        description: Owner email address
+        data_type: varchar
+        config:
+          tags: [pii]
+          meta:
+            sensitivity: high
 
 sources:
   - name: sb_src
@@ -32,6 +51,13 @@ seeds:
       tags: [raw, finance]
       meta:
         domain: sales
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+      - name: amount
+        description: Transaction amount
+        data_type: numeric
 
 snapshots:
   - name: sb_snap
@@ -39,6 +65,13 @@ snapshots:
       tags: [nightly]
       meta:
         domain: sales
+    columns:
+      - name: id
+        description: Source primary key
+        data_type: integer
+      - name: dbt_scd_id
+        description: SCD surrogate key
+        data_type: varchar
 
 exposures:
   - name: sb_exp
@@ -53,7 +86,6 @@ exposures:
 macros:
   - name: sb_macro
     config:
-      tags: [nightly, raw]
       meta:
         domain: sales
         owner: sandbox
