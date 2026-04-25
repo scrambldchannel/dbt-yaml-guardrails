@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: clean_model
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+        data_tests:
+          - not_null
+      - name: created_at
+        description: Created timestamp
+        data_type: timestamp
+        meta:
+          pii: false
+        tags:
+          - audit

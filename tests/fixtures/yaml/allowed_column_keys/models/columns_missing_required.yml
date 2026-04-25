@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: no_desc_model
+    columns:
+      - name: id
+        data_type: integer

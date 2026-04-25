@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: no_columns_model
+    description: This model declares no columns list.

@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: forbidden_model
+    columns:
+      - name: id
+        meta:
+          owner: platform

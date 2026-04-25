@@ -15,6 +15,27 @@
   language: python
   types: [yaml]
 
+- id: model-allowed-column-keys
+  name: dbt model allowed column keys
+  description: Validate direct keys on each column entry in dbt model property YAML
+  entry: model-allowed-column-keys
+  language: python
+  types: [yaml]
+
+- id: seed-allowed-column-keys
+  name: dbt seed allowed column keys
+  description: Validate direct keys on each column entry in dbt seed property YAML
+  entry: seed-allowed-column-keys
+  language: python
+  types: [yaml]
+
+- id: snapshot-allowed-column-keys
+  name: dbt snapshot allowed column keys
+  description: Validate direct keys on each column entry in dbt snapshot property YAML
+  entry: snapshot-allowed-column-keys
+  language: python
+  types: [yaml]
+
 - id: macro-allowed-config-keys
   name: dbt macro allowed config keys
   description: Validate top-level keys under config on each macro entry in dbt property YAML

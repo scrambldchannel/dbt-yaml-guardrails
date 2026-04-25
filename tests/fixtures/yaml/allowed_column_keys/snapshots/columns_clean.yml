@@ -1,0 +1,11 @@
+version: 2
+
+snapshots:
+  - name: clean_snapshot
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+      - name: dbt_scd_id
+        description: SCD surrogate key
+        data_type: varchar

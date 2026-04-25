@@ -1,0 +1,7 @@
+version: 2
+
+snapshots:
+  - name: bad_snapshot
+    columns:
+      - name: id
+        not_a_real_column_key: wrong

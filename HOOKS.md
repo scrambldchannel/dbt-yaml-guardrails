@@ -27,6 +27,25 @@ These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/reso
 
 > **Heads-up — duplicate violations:** if you run both a `*-allowed-keys` hook (with the default `--check-nested true`) **and** the matching `*-allowed-config-keys` hook on the same files, an unknown `config:` key will produce **two** stderr lines—one from each hook. To avoid this, either drop the `*-allowed-config-keys` hooks you no longer need, or pass `--check-nested false` to the `*-allowed-keys` hooks and keep running `*-allowed-config-keys` separately (useful when you need `--required`/`--forbidden` on `config` keys, which `*-allowed-keys` does not support).
 
+## `*-allowed-column-keys`
+
+Direct keys on each **column entry** (each item in a resource's `columns:` list) in property YAML. The default allowlists are identical to those used by `*-allowed-keys --check-columns`, but this family adds **`--required`** and **`--forbidden`** support for column keys.
+
+| ID | Validates |
+| --- | --- |
+| `model-allowed-column-keys` | Direct keys on each column entry under `models:` |
+| `seed-allowed-column-keys` | Direct keys on each column entry under `seeds:` |
+| `snapshot-allowed-column-keys` | Direct keys on each column entry under `snapshots:` |
+
+Allowlists are in [`specs/resource-keys.md`](specs/resource-keys.md) § **Column keys** (`MODEL_COLUMN_ALLOWED_KEYS`, `SEED_COLUMN_ALLOWED_KEYS`, `SNAPSHOT_COLUMN_ALLOWED_KEYS` in `resource_keys.py`). See [`specs/hook-families/allowed-column-keys.md`](specs/hook-families/allowed-column-keys.md).
+
+- **`--required`** — comma-separated column keys that **must** appear on every column entry (e.g. `--required description` to enforce documented columns). Do **not** list `name` (always required; exit code 2 if specified).
+- **`--forbidden`** — comma-separated column keys that **must not** appear on any column entry, even when otherwise allowlisted.
+
+If a resource entry has no `columns:` key, or `columns:` is an empty list, it is skipped silently — `--required` does not trigger violations for entries without a `columns:` block.
+
+> **Heads-up — duplicate violations:** `*-allowed-keys` validates column keys by default (`--check-columns true`). Running both families on the same files will emit **two** stderr lines for the same disallowed column key. If you adopt `*-allowed-column-keys` for fine-grained control (e.g. `--required description`), consider passing `--check-columns false` to the corresponding `*-allowed-keys` hooks to suppress the duplicate output.
+
 ## `*-allowed-config-keys`
 
 Top-level keys under each entry’s **`config:`** mapping in property YAML.

@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: clean_seed
+    columns:
+      - name: id
+        description: Primary key
+        data_type: integer
+      - name: value
+        description: The value column
+        data_type: varchar

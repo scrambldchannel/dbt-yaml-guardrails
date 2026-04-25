@@ -1,0 +1,7 @@
+version: 2
+
+seeds:
+  - name: bad_seed
+    columns:
+      - name: id
+        not_a_real_column_key: wrong
