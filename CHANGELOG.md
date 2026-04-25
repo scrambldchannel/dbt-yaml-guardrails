@@ -4,6 +4,19 @@ All notable changes to this project are documented here. Versions match **git ta
 
 **Style (from 0.4.3 onward):** Each release summarizes **user-visible behavior**—new hooks, fixes, and breaking or notable spec changes. Unless a path is the point of the change, avoid inventorying file paths, module names, and test file lists; the **git diff** and **specs** are the source of truth for where code lives. Earlier entries may still read like internal release notes; new entries follow this rule.
 
+## [0.5.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
+
+### Added
+
+- **`*-allowed-column-keys`** (`model`, `seed`, `snapshot`): new hook family for enforcing which keys appear on column entries. Supports `--required` (e.g. mandate `description` on every column) and `--forbidden`. `name` in `--required` exits `2`. If `columns:` is absent the entry is skipped silently.
+- **`--check-columns`** on `*-allowed-keys` (`model`, `seed`, `snapshot`): column key validation is now on by default, using the same allowlists as `*-allowed-column-keys`. Pass `--check-columns false` to disable. `macro`, `exposure`, and `source` accept the flag but it has no effect.
+- **Column `config:` key** added to the allowlist for model, seed, and snapshot column entries, reflecting the dbt docs showing `config: { tags, meta }` is valid at the column level.
+
+### Changed
+
+- **Release metadata:** `version` in `pyproject.toml` is **0.5.0**; copy-paste `rev:` examples should use **v0.5.0**.
+- **Sandbox hooks** moved out of the main `.pre-commit-config.yaml` into a dedicated `tests/hook_sandbox/.pre-commit-sandbox.yaml`. The `Makefile` target is now `make sandbox-hooks` (was `make sandbox`), which runs `pre-commit run --config … --files …` so no `stages: [manual]` or `files:` patterns are needed in the sandbox config.
+
 ## [0.4.4](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
 
 ### Added
