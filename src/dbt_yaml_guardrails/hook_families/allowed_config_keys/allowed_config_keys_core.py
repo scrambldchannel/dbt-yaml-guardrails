@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping, MutableMapping
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
 from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
     ViolationRow,
+    config_mapping_from_resource_entry,
     finalize_violation_rows,
     parse_csv_keys,
     violation_row_parse_error,
@@ -18,43 +19,6 @@ from dbt_yaml_guardrails.yaml_handling import (
     ParseSuccess,
     load_property_yaml,
 )
-
-
-def config_mapping_from_resource_entry(
-    path: Path,
-    resource_kind: str,
-    resource_name: str,
-    entry: Mapping[str, Any],
-) -> ParseError | dict[str, Any]:
-    """Return the ``config`` mapping for one resource entry, or a parse error.
-
-    Missing ``config`` yields an empty dict. ``config: null`` or a non-mapping
-    ``config`` value is a shape error (``specs/hook-families/allowed-config-keys.md``
-    § Pattern).
-
-    Args:
-        path: Source file (for errors).
-        resource_kind: Singular label (e.g. ``\"model\"``).
-        resource_name: Resource ``name`` field.
-        entry: Full resource mapping from YAML.
-
-    Returns:
-        A plain dict of ``config`` keys and values, or :class:`ParseError`.
-    """
-    if "config" not in entry:
-        return {}
-    cfg = entry["config"]
-    if cfg is None:
-        return ParseError(
-            path,
-            f"{resource_kind} '{resource_name}': config must be a mapping, not null",
-        )
-    if not isinstance(cfg, MutableMapping):
-        return ParseError(
-            path,
-            f"{resource_kind} '{resource_name}': config must be a mapping, got {type(cfg).__name__}",
-        )
-    return dict(cfg)
 
 
 def violations_for_config_keys(

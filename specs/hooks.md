@@ -10,7 +10,7 @@ Keep **`.pre-commit-hooks.yaml`** in sync with each shipped hook: every **`entry
 
 ## Shared foundations
 
-Shared behavior (parser, document shape, when to skip a file, stderr/exit semantics, message ordering) is defined in **`yaml-handling.md`**. Default **top-level allowed-key sets** per resource type for the **`*-allowed-keys`** family are in **`resource-keys.md`**. Default **keys under `config`** for the **`*-allowed-config-keys`** family are in **`resource-config-keys.md`** ( **`model`**, **`macro`**, **`seed`**, **`source`**, **`snapshot`**, **`exposure`** )—see **`hook-families/allowed-config-keys.md`**.
+Shared behavior (parser, document shape, when to skip a file, stderr/exit semantics, message ordering) is defined in **`yaml-handling.md`**. Default **top-level allowed-key sets** per resource type for the **`*-allowed-keys`** family are in **`resource-keys.md`**. The **same** **`resource-config-keys.md`** allowlists govern **keys under `config:`** on property YAML when **`--check-nested`** is **true** (the default) on **`*-allowed-keys`**, and govern the **`*-allowed-config-keys`** family ( **`model`**, **`macro`**, **`seed`**, **`source`**, **`snapshot`**, **`exposure`** )—see **`hook-families/allowed-keys.md`** and **`hook-families/allowed-config-keys.md`**. If both families run on the same file, each hook emits its own violations (**no** cross-hook deduplication).
 
 **Per-hook** CLI names, arguments, numeric **exit codes**, defaults, and pre-commit `id`/`entry` details live in **hook family** specs under **`hook-families/`** (see below), not only in this file.
 
@@ -20,7 +20,7 @@ Each family groups hooks that share the same validation target and CLI shape. Ad
 
 | Family | Spec | What it validates (summary) |
 | --- | --- | --- |
-| Top-level keys (property entries or `dbt_project.yml` root) | **`hook-families/allowed-keys.md`** | Keys on each dict under `models:`, `macros:`, `seeds:`, `sources:`, `catalogs:`, … (**`catalog-allowed-keys`**, §7) and top-level keys in **`dbt_project.yml`** (**`dbt-project-allowed-keys`**, §8) |
+| Top-level keys (property entries or `dbt_project.yml` root) | **`hook-families/allowed-keys.md`** | Keys on each resource entry and, by default (**`--check-nested`**, see that spec), **direct keys under `config:`** for §§1–6 hooks; top-level keys in **`dbt_project.yml`** (**`dbt-project-allowed-keys`**, §8; nested project blocks **v1 out of scope**) |
 | Top-level keys under each entry’s `config` mapping | **`hook-families/allowed-config-keys.md`** | **`*-allowed-config-keys`**: **`model`**, **`macro`**, **`seed`**, **`source`**, **`snapshot`**, **`exposure`** shipped. Same CLI as **`*-allowed-keys`** (`--required` / `--forbidden`); default allowlists in **`resource-config-keys.md`** (Fusion-oriented; adapter **union** where the spec documents it) |
 | Keys under `config.meta` | **`hook-families/allowed-meta-keys.md`** | **`*-allowed-meta-keys`** (**`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**, **`macro`** shipped); **`config`** implied; optional **`--allowed`**, plus **`--required`** / **`--forbidden`**; no default allowlist in-repo (see that spec) |
 | String or string list at a path under `config.meta` | **`hook-families/meta-accepted-values.md`** | **`*-meta-accepted-values`**: **`model`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**, **`macro`** shipped; **`--key`** dot path, **`--values`** allowlist, optional **`--optional`**; non-string scalars **future** |

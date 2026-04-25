@@ -5,5 +5,4 @@ seeds:
     description: Raw data
   - name: other_seed
     config:
-      docs:
-        show: true
+      tags: []

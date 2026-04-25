@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
 from pathlib import Path
 from typing import Any, TypeAlias
 
@@ -18,6 +18,88 @@ from dbt_yaml_guardrails.yaml_handling import (
 # 0=missing, 1=forbidden, 2=disallowed, 3=parse/shape error at file level.
 SortKey: TypeAlias = tuple[str, str, str, int]
 ViolationRow: TypeAlias = tuple[SortKey, str]
+
+
+def config_mapping_from_resource_entry(
+    path: Path,
+    resource_kind: str,
+    resource_name: str,
+    entry: Mapping[str, Any],
+) -> ParseError | dict[str, Any]:
+    """Return the ``config`` mapping for one resource entry, or a parse error.
+
+    Missing ``config`` yields an empty dict. ``config: null`` or a non-mapping
+    ``config`` value is a shape error (``specs/hook-families/allowed-config-keys.md``
+    § Pattern).
+
+    Args:
+        path: Source file (for errors).
+        resource_kind: Singular label (e.g. ``\"model\"``).
+        resource_name: Resource ``name`` field.
+        entry: Full resource mapping from YAML.
+
+    Returns:
+        A plain dict of ``config`` keys and values, or :class:`ParseError`.
+    """
+    if "config" not in entry:
+        return {}
+    cfg = entry["config"]
+    if cfg is None:
+        return ParseError(
+            path,
+            f"{resource_kind} '{resource_name}': config must be a mapping, not null",
+        )
+    if not isinstance(cfg, MutableMapping):
+        return ParseError(
+            path,
+            f"{resource_kind} '{resource_name}': config must be a mapping, got {type(cfg).__name__}",
+        )
+    return dict(cfg)
+
+
+def _nested_config_violations(
+    path: Path,
+    path_posix: str,
+    entries: Iterable[tuple[str, Mapping[str, Any]]],
+    *,
+    resource_label: str,
+    config_allowed: frozenset[str],
+    config_legacy_key_messages: Mapping[str, str] | None,
+) -> list[ViolationRow]:
+    """Collect violation rows for direct keys under each entry's ``config:`` mapping.
+
+    Violations use a ``config: <detail>`` prefix so they are visually distinct
+    from top-level key violations on the same hook run
+    (``specs/hook-families/allowed-keys.md`` § **Nested keys (`config`) and
+    `--check-nested`**, ``yaml-handling.md`` § Errors).
+
+    Args:
+        path: Source file (for shape error construction).
+        path_posix: POSIX path string (for sort keys / messages).
+        entries: ``(resource_id, entry_mapping)`` pairs from the top-level iteration.
+        resource_label: Singular resource noun for shape-error messages.
+        config_allowed: Allowlisted keys under ``config:``.
+        config_legacy_key_messages: Optional legacy-key detail map (same set as
+            ``*-allowed-config-keys`` for this resource type).
+
+    Returns:
+        Unsorted violation rows.
+    """
+    legacy = config_legacy_key_messages or {}
+    rows: list[ViolationRow] = []
+    for resource_id, entry in entries:
+        cfg = config_mapping_from_resource_entry(
+            path, resource_label, resource_id, entry
+        )
+        if isinstance(cfg, ParseError):
+            rows.append(violation_row_parse_error(path_posix, cfg.message))
+            continue
+        for key in sorted(cfg.keys()):
+            if key in config_allowed:
+                continue
+            sub_detail = legacy.get(key) or f"disallowed key '{key}'"
+            rows.append(((path_posix, resource_id, key, 2), f"config: {sub_detail}"))
+    return rows
 
 
 def parse_csv_keys(raw: str) -> set[str]:
@@ -169,8 +251,17 @@ def collect_violation_rows_for_property_paths(
         [Mapping[str, Mapping[str, Any]]],
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
+    check_nested: bool = True,
+    config_allowed: frozenset[str] | None = None,
+    config_legacy_key_messages: Mapping[str, str] | None = None,
+    resource_label: str = "",
 ) -> list[ViolationRow]:
     """Walk *files*, load YAML, and validate top-level keys on each resource entry.
+
+    When *check_nested* is ``True`` and *config_allowed* is provided, also validates
+    direct keys under each entry's ``config:`` mapping using the same allowlists as
+    ``*-allowed-config-keys`` (``specs/hook-families/allowed-keys.md`` § **Nested
+    keys (`config`) and `--check-nested`**).
 
     Args:
         files: Property YAML paths from the CLI.
@@ -183,11 +274,19 @@ def collect_violation_rows_for_property_paths(
             :class:`~dbt_yaml_guardrails.yaml_handling.ParseError` for shape errors,
             or a ``name -> entry`` map on success.
         iter_entries: Stable iteration over that map (e.g. :func:`~dbt_yaml_guardrails.yaml_handling.iter_model_entries`).
+        check_nested: When ``True`` (default) and *config_allowed* is set, also check
+            direct keys under each entry's ``config:`` mapping.
+        config_allowed: Allowlisted keys under ``config:`` (from ``resource_config_keys``).
+            Required for nested checking; pass ``None`` to disable.
+        config_legacy_key_messages: Optional legacy-key detail map for ``config`` keys.
+        resource_label: Singular resource noun (e.g. ``\"model\"``); used in ``config``
+            shape-error messages when nested checking is active.
 
     Returns:
         Unsorted violation rows.
     """
     rows: list[ViolationRow] = []
+    run_nested = check_nested and config_allowed is not None
     for path in files:
         path = path.expanduser()
         loaded = load_property_yaml(path)
@@ -212,6 +311,17 @@ def collect_violation_rows_for_property_paths(
                 legacy_key_messages=legacy_key_messages,
             )
         )
+        if run_nested:
+            rows.extend(
+                _nested_config_violations(
+                    path,
+                    path.as_posix(),
+                    iter_entries(inner),
+                    resource_label=resource_label,
+                    config_allowed=config_allowed,  # type: ignore[arg-type]
+                    config_legacy_key_messages=config_legacy_key_messages,
+                )
+            )
     return rows
 
 

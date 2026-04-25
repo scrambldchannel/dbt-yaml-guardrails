@@ -6,7 +6,7 @@ See **`README.md`** in this folder for how this fits with the other specs (`proj
 
 These items should be considered in scope:
 
-+ Parsing and checking the validity according to user defined rules for all dbt resource types that exist as of dbt core 1.10
++ Parsing and checking the validity according to user defined rules for all dbt resource types that exist as of dbt core 1.10, including (where **`specs/hook-families/allowed-keys.md`** says so) **default** validation of **keys under `config:`** on property YAML resource entries using the same dbt 1.10+ / **Fusion**-oriented allowlists as **`resource-config-keys.md`**, with **`config.meta` inner keys** left to the **`*-allowed-meta-keys`** (and related) families
 + **Policy** on **`dbt_project.yml`**, including the shipped **`dbt-project-allowed-keys`** hook for [documented](https://docs.getdbt.com/reference/dbt_project.yml) top-level project keys (see **`hook-families/allowed-keys.md`** §8, **`resource-keys.md`** § **dbt project file**)
 + Exposing a stable CLI entrypoint for pre-commit hooks
 

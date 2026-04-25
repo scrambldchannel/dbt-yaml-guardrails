@@ -1,8 +1,10 @@
 # Hook family: `*-allowed-config-keys`
 
-**Top-level keys of the `config` mapping** on each resource entry in dbt property YAML (Fusion-oriented). This is **not** the same as **`*-allowed-keys`** (keys on the resource object itself, e.g. `name`, `description`, `config` as a key name) or **`*-allowed-meta-keys`** (key **names** under `config.meta`). Umbrella packaging and the family index live in **[`../hooks.md`](../hooks.md)**.
+**Top-level keys of the `config` mapping** on each resource entry in dbt property YAML (Fusion-oriented). This family is **distinct** from **`*-allowed-keys`** (keys on the **resource object** outside **`config`**, e.g. `name`, `description`, the **`config`** key as a name) and from **`*-allowed-meta-keys`** (key **names** under `config.meta`). **`*-allowed-keys`** with **`--check-nested` default `true`** **also** enforces the **same** default **`config` child-key** allowlists (no duplicate per-hook allowlist in v1); this family **remains** the place for **`--required` / `--forbidden` on `config` keys** (**until further notice**; no current plan to add those flags to **`*-allowed-keys`** for **`config`**) and for workflows that only run **`config`** checks. Umbrella packaging and the family index live in **[`../hooks.md`](../hooks.md)**.
 
 **Status:** **Shipped** for **`model`**, **`macro`**, **`seed`**, **`source`**, **`snapshot`**, **`exposure`**. Default allowlist tables are in **`resource-config-keys.md`**; **`*_CONFIG_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_config_keys/resource_config_keys.py`** **must** mirror those tables (same policy as **`*-allowed-keys`**: default allowlist is **Fusion-supported / documented cross-adapter keys** plus the **documented adapter-specific union** in **`resource-config-keys.md`** where applicable—detecting which adapter a project uses is **not** required).
+
+**Overlap with `*-allowed-keys`:** **[`hook-families/allowed-keys.md`](allowed-keys.md)** § **Nested keys (`config`) and `--check-nested`** specifies that, by default, **`*-allowed-keys`** also checks **direct keys under `config:`** using **these same** default allowlists and legacy maps. The **`*-allowed-config-keys`** family **remains shipped**; it **may** be **deprecated** later in favor of relying on **`*-allowed-keys`** with **`--check-nested` default `true`**, but that is **not** required for the v1 nested implementation. **Each hook runs independently** as configured: running **both** on the same paths **may** emit **two** stderr lines for the same unknown **`config:`** key (one per hook). Implementations **MUST NOT** deduplicate across hooks.
 
 ---
 
@@ -18,7 +20,7 @@ Projects want to enforce which **direct children** of **`config:`** may appear o
 
 | Family | Validates |
 | --- | --- |
-| **`*-allowed-keys`** | Top-level keys on the **resource entry** (e.g. `models: [].`… keys like `name`, `config`, `columns`). |
+| **`*-allowed-keys`** | Top-level keys on the **resource entry** (e.g. `models: [].`… keys like `name`, `config`, `columns`). When **`--check-nested`** is **true** (default), also **direct keys under `config:`** with the same default allowlists as this family (see **[`allowed-keys.md`](allowed-keys.md)** § **Nested keys (`config`) and `--check-nested`**). |
 | **`*-allowed-config-keys`** (this spec) | Keys **inside** the **`config`** mapping when it is present and is a mapping. |
 | **`*-allowed-meta-keys`** | Key **names** on **`config.meta`** (when **`meta`** is a mapping). |
 | **`*-meta-accepted-values`** | A **value** at one dot path under **`meta`** (string or list of strings). |

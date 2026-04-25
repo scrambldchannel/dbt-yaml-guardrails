@@ -9,11 +9,16 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
 _ALLOWED = _YAML / "allowed_keys"
+_ALLOWED_CFG = _YAML / "allowed_config_keys"
 _SHARED = _YAML / "shared"
 
 
 def _f(name: str) -> str:
     return str(_ALLOWED / "sources" / name)
+
+
+def _cfg(name: str) -> str:
+    return str(_ALLOWED_CFG / "sources" / name)
 
 
 def _shared(name: str) -> str:
@@ -81,3 +86,24 @@ def test_cli_meta_legacy_message() -> None:
     assert r.returncode == 1
     assert "source 'with_meta'" in r.stderr
     assert "Use `config.meta` instead of top-level `meta`." in r.stderr
+
+
+# --- --check-nested (default true) ---
+
+
+def test_cli_check_nested_default_flags_bad_config_key() -> None:
+    r = _invoke(_cfg("source_config_bad.yml"))
+    assert r.returncode == 1
+    assert "config: disallowed key" in r.stderr
+
+
+def test_cli_check_nested_false_ignores_bad_config_key() -> None:
+    r = _invoke("--check-nested", "false", _cfg("source_config_bad.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_check_nested_default_passes_clean_config() -> None:
+    r = _invoke(_cfg("source_config_clean.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""

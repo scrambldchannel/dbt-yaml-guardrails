@@ -6,23 +6,26 @@ Hooks are grouped by **family**. Each family has its own CLI shape.
 
 ## `*-allowed-keys`
 
-Top-level keys on each resource entry in property YAML, or the root mapping of `dbt_project.yml` for **`dbt-project-allowed-keys`**.
+Top-level keys on each resource entry in property YAML, or the root mapping of `dbt_project.yml` for **`dbt-project-allowed-keys`**. For the six property-YAML hooks (`model` through `source`), **direct keys under each entry's `config:` mapping are also validated by default** using the same Fusion-oriented allowlists as `*-allowed-config-keys` (see `--check-nested` below).
 
 | ID | Validates |
 | --- | --- |
-| `model-allowed-keys` | Top-level keys on each `models:` entry |
-| `macro-allowed-keys` | Top-level keys on each `macros:` entry |
-| `seed-allowed-keys` | Top-level keys on each `seeds:` entry |
-| `source-allowed-keys` | Top-level keys on each `sources:` entry |
-| `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry |
-| `exposure-allowed-keys` | Top-level keys on each `exposures:` entry |
+| `model-allowed-keys` | Top-level keys on each `models:` entry; also `config:` child keys by default |
+| `macro-allowed-keys` | Top-level keys on each `macros:` entry; also `config:` child keys by default |
+| `seed-allowed-keys` | Top-level keys on each `seeds:` entry; also `config:` child keys by default |
+| `source-allowed-keys` | Top-level keys on each `sources:` entry; also `config:` child keys by default |
+| `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry; also `config:` child keys by default |
+| `exposure-allowed-keys` | Top-level keys on each `exposures:` entry; also `config:` child keys by default |
 | `catalog-allowed-keys` | Top-level keys on each `catalogs:` entry (dbt 1.10+) |
 | `dbt-project-allowed-keys` | Top-level keys in the project root of `dbt_project.yml` |
 
 These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/resource-keys.md) for that resource type. On top of that:
 
-- **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). For list-shaped resources, do not list `name` in `--required` (exit code 2). **`dbt-project-allowed-keys`** may use **`--required name`** (or **`config-version`**, **`profile`**, etc.) to enforce the project file.
-- **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`).
+- **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). For list-shaped resources, do not list `name` in `--required` (exit code 2). **`dbt-project-allowed-keys`** may use **`--required name`** (or **`config-version`**, **`profile`**, etc.) to enforce the project file. Does **not** apply to keys under `config:` — use `*-allowed-config-keys` for that.
+- **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`). Does **not** apply to keys under `config:`.
+- **`--check-nested`** — (`true` / `false`, default `true`) — when `true`, the six property-YAML hooks also validate **direct keys under each entry's `config:`** against the same default allowlists as `*-allowed-config-keys`. Pass `--check-nested false` to restore the historical top-level-only behavior. Not applicable to `catalog-allowed-keys` or `dbt-project-allowed-keys`.
+
+> **Heads-up — duplicate violations:** if you run both a `*-allowed-keys` hook (with the default `--check-nested true`) **and** the matching `*-allowed-config-keys` hook on the same files, an unknown `config:` key will produce **two** stderr lines—one from each hook. To avoid this, either drop the `*-allowed-config-keys` hooks you no longer need, or pass `--check-nested false` to the `*-allowed-keys` hooks and keep running `*-allowed-config-keys` separately (useful when you need `--required`/`--forbidden` on `config` keys, which `*-allowed-keys` does not support).
 
 ## `*-allowed-config-keys`
 
@@ -102,7 +105,7 @@ repos:
     rev: v0.4.3
     hooks:
 
-      # allowed top level keys
+      # allowed top-level keys (also checks config: child keys by default)
       - id: model-allowed-keys
         args: ["--required", "description", "--forbidden", "version"]
       - id: macro-allowed-keys
@@ -113,7 +116,10 @@ repos:
       - id: catalog-allowed-keys
       - id: dbt-project-allowed-keys
 
-      # allowed config keys (under config:)
+      # allowed config keys — only needed if you want --required/--forbidden on config
+      # keys, or if you run the *-allowed-keys hooks with --check-nested false.
+      # Running both with the default --check-nested true will emit duplicate violations
+      # for the same unknown config: key.
       - id: model-allowed-config-keys
       - id: macro-allowed-config-keys
       - id: seed-allowed-config-keys

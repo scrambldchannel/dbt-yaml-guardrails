@@ -9,11 +9,16 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
 _ALLOWED = _YAML / "allowed_keys"
+_ALLOWED_CFG = _YAML / "allowed_config_keys"
 _SHARED = _YAML / "shared"
 
 
 def _f(name: str) -> str:
     return str(_ALLOWED / "models" / name)
+
+
+def _cfg(name: str) -> str:
+    return str(_ALLOWED_CFG / "models" / name)
 
 
 def _shared(name: str) -> str:
@@ -88,3 +93,44 @@ def test_cli_tests_legacy_message() -> None:
     assert r.returncode == 1
     assert "model 'legacy_tests'" in r.stderr
     assert "Rename to `data_tests` (legacy alias `tests` is deprecated)." in r.stderr
+
+
+# --- --check-nested (default true) ---
+
+
+def test_cli_check_nested_default_flags_bad_config_key() -> None:
+    r = _invoke(_cfg("config_disallowed.yml"))
+    assert r.returncode == 1
+    assert "model 'bad'" in r.stderr
+    assert "config: disallowed key 'not_a_real_dbt_config_key'" in r.stderr
+
+
+def test_cli_check_nested_false_ignores_bad_config_key() -> None:
+    r = _invoke("--check-nested", "false", _cfg("config_disallowed.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_check_nested_default_passes_clean_config() -> None:
+    r = _invoke(_cfg("config_clean.yml"))
+    assert r.returncode == 0
+    assert r.stderr == ""
+
+
+def test_cli_check_nested_config_null_is_shape_error() -> None:
+    r = _invoke(_cfg("config_null.yml"))
+    assert r.returncode == 1
+    assert "config must be a mapping" in r.stderr
+
+
+def test_cli_check_nested_config_not_mapping_is_shape_error() -> None:
+    r = _invoke(_cfg("config_not_mapping.yml"))
+    assert r.returncode == 1
+    assert "config must be a mapping" in r.stderr
+
+
+def test_cli_check_nested_legacy_config_key_uses_detail() -> None:
+    r = _invoke(_cfg("config_legacy_on.yml"))
+    assert r.returncode == 1
+    assert "model 'legacy'" in r.stderr
+    assert "config: Deprecated key `on`" in r.stderr
