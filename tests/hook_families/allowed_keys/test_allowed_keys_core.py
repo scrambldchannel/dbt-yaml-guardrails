@@ -38,3 +38,29 @@ def test_unknown_key_still_generic() -> None:
     assert len(rows) == 1
     _, detail = rows[0]
     assert "disallowed key 'weird'" in detail
+
+
+def test_missing_required_key() -> None:
+    rows = violations_for_entries(
+        "/a.yml",
+        [("m", {"name": "m"})],
+        allowed=MODEL_ALLOWED_KEYS,
+        required={"description"},
+        forbidden=set(),
+    )
+    sk, detail = rows[0]
+    assert sk[3] == 0
+    assert "missing required" in detail
+
+
+def test_forbidden_wins_over_allowlist() -> None:
+    rows = violations_for_entries(
+        "/a.yml",
+        [("m", {"name": "m", "tags": []})],
+        allowed=MODEL_ALLOWED_KEYS,
+        required=set(),
+        forbidden={"tags"},
+    )
+    sk, detail = rows[0]
+    assert sk[3] == 1
+    assert "forbidden" in detail

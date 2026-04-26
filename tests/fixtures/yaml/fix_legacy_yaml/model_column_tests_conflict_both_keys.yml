@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: m1
+    columns:
+      - name: id
+        tests: [x]
+        data_tests: [y]
