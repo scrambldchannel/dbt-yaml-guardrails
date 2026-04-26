@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: raw
+    description: layer
+    database: d
+    schema: s
+    tables:
+      - name: orders
+        description: orders table
+        columns:
+          - name: id
+            description: pk
+            data_tests:
+              - not_null
+          - name: amount
+            description: amt
+        config:
+          tags: [raw]
+      - name: users
+        description: users
+        columns: []

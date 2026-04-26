@@ -88,7 +88,7 @@ Only resources whose entry has a `columns:` list at the **top level of the entry
 **Out of scope (v1):**
 
 + **`macro-allowed-column-keys`**, **`exposure-allowed-column-keys`**: macro and exposure entries have no `columns:` list. These hooks do **not exist** — there is no no-op version. **General policy:** hooks in this family are only shipped for resource types that have a `columns:` list at the resource entry level. For resources without `columns:`, the hook is simply absent rather than added as a no-op. This applies to all future additions to this family.
-+ **`source-allowed-column-keys`**: source columns are nested under `sources: → [source] → tables: → [table] → columns:` — a deeper path requiring a `source-table-*` hook family. Out of scope until `source-table-allowed-keys` is specced (see **`hook-families/allowed-keys.md`** §9). **Planned next** after source table hooks are defined.
++ **`source-allowed-column-keys`**: **not** shipped. Source table **`columns:`** are validated as **top-level** keys on each column dict by the **`source-allowed-keys`** **id** and **`--check-source-table-columns`** (see **`allowed-keys.md`**, **`resource-keys.md`** § **Source table — column keys**). The **`*-allowed-column-keys`** family remains **model / seed / snapshot** only. A **dedicated, more targeted** `source-allowed-column-keys` (or `source-table-allowed-column-keys`–style) **id** may be added in a **future** release to carry **`--required` / `--forbidden` for column** keys under `sources: → … → tables:`, which is **out of scope** for **`source-allowed-keys`**; it is not **required** for the allowlists in **`resource-keys.md`**.
 + **Analyses, unit tests**: out of scope until corresponding entry-level hooks are added.
 
 ---

@@ -99,7 +99,7 @@ Same resource list as the **`*-allowed-keys`** wave (**`model`**, **`macro`**, *
 | **`snapshot-allowed-config-keys`** | **`snapshots:`** | Snapshots |
 | **`exposure-allowed-config-keys`** | **`exposures:`** | Exposures |
 
-**Analyses**, **unit tests**, **source table** rows, and other targets are **out of scope** until added explicitly (same pattern as **`*-allowed-keys`** § 7).
+**`config:`** on **source table** rows is validated by the **`source-allowed-keys`** **id** with **`--check-source-tables`** and **`--check-config`**, reusing the same allowlist as **`source-allowed-config-keys`** (**`SOURCE_CONFIG_ALLOWED_KEYS`**). A separate **`source-table-allowed-config-keys`** **id** is **not** **required**; a **future** spec **MAY** add one (see **`*-allowed-keys`** **§9**). **Analyses**, **unit tests**, and other targets are **out of scope** for this family until added explicitly (same pattern as **`*-allowed-keys`** § 7 and § 9).
 
 ---
 

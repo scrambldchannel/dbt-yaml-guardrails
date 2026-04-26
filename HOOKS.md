@@ -6,14 +6,14 @@ Hooks are grouped by **family**. Each family has its own CLI shape.
 
 ## `*-allowed-keys`
 
-Top-level keys on each resource entry in property YAML, or the root mapping of `dbt_project.yml` for **`dbt-project-allowed-keys`**. For the six property-YAML hooks (`model` through `source`), **direct keys under each entry's `config:` mapping are also validated by default** using the same Fusion-oriented allowlists as `*-allowed-config-keys` (see `--check-config` below).
+Top-level keys on each resource entry in property YAML, or the root mapping of `dbt_project.yml` for **`dbt-project-allowed-keys`**. For the six property-YAML hooks (`model` through `source`), **direct keys under each entry's `config:` mapping are also validated by default** using the same Fusion-oriented allowlists as `*-allowed-config-keys` (see `--check-config` below). **`source-allowed-keys`** is still a **single** hook **id**; nested `sources: → tables:` and `→ columns:` checks are part of that hook (toggled with flags below), not additional pre-commit `id`s—see [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md) **§9** for optional **future** dedicated hooks.
 
 | ID | Validates |
 | --- | --- |
 | `model-allowed-keys` | Top-level keys on each `models:` entry; also `config:` child keys by default |
 | `macro-allowed-keys` | Top-level keys on each `macros:` entry; also `config:` child keys by default |
 | `seed-allowed-keys` | Top-level keys on each `seeds:` entry; also `config:` child keys by default |
-| `source-allowed-keys` | Top-level keys on each `sources:` entry; also `config:` child keys by default |
+| `source-allowed-keys` | Top-level keys on each `sources:` entry; also `config:` child keys by default; with `--check-source-tables` / `--check-source-table-columns` (default `true`), also keys on each `tables:` row and on each table’s `columns:` items (see [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md)) |
 | `snapshot-allowed-keys` | Top-level keys on each `snapshots:` entry; also `config:` child keys by default |
 | `exposure-allowed-keys` | Top-level keys on each `exposures:` entry; also `config:` child keys by default |
 | `catalog-allowed-keys` | Top-level keys on each `catalogs:` entry (dbt 1.10+) |
@@ -23,14 +23,16 @@ These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/reso
 
 - **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). For list-shaped resources, do not list `name` in `--required` (exit code 2). **`dbt-project-allowed-keys`** may use **`--required name`** (or **`config-version`**, **`profile`**, etc.) to enforce the project file. Does **not** apply to keys under `config:` — use `*-allowed-config-keys` for that.
 - **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`). Does **not** apply to keys under `config:`.
-- **`--check-config`** — (`true` / `false`, default `true`) — when `true`, the six property-YAML hooks also validate **direct keys under each entry's `config:`** against the same default allowlists as `*-allowed-config-keys`. Pass `--check-config false` to restore the historical top-level-only behavior. Not applicable to `catalog-allowed-keys` or `dbt-project-allowed-keys`.
+- **`--check-config`** — (`true` / `false`, default `true`) — when `true`, the six property-YAML hooks also validate **direct keys under each entry's `config:`** against the same default allowlists as `*-allowed-config-keys`. For **`source-allowed-keys`**, that includes **`config:`** on each **table** row when `--check-source-tables` is on. Pass `--check-config false` to restore the historical top-level-only behavior. Not applicable to `catalog-allowed-keys` or `dbt-project-allowed-keys`.
+- **`--check-columns`** — (`true` / `false`, default `true`) — **`model-`**, **`seed-`**, and **`snapshot-allowed-keys`** only: also validate top-level keys on each item in the resource’s `columns:` list. **`source-allowed-keys`** does **not** use this flag.
+- **`--check-source-tables`**, **`--check-source-table-columns`** — (`true` / `false`, each default `true`) — **`source-allowed-keys`** only: when `check-source-tables` is on, each row under `tables:` is checked (and nested table `config:` when `--check-config` is on). When `check-source-table-columns` is on (and `check-source-tables` is on), each table’s `columns:` items are checked. You **must** set **`--check-source-table-columns false`** when you set **`--check-source-tables false`**; otherwise the CLI **exits 2** (see [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md)).
 - **`--fix-legacy-yaml`** — (`true` / `false`, default `false`) — **only** on the six property-YAML `*-allowed-keys` hooks: **`model-`**, **`macro-`**, **`seed-`**, **`source-`**, **`snapshot-`**, **`exposure-allowed-keys`**. When `true`, runs mechanical rewrites in place (ruamel round-trip) **before** validation, for the whole file: **`tests` → `data_tests`**, and top-level **`meta` / `tags` → `config`** on each resource entry (see [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md)). **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** define this option. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md).
 
 > **Heads-up — duplicate violations:** if you run both a `*-allowed-keys` hook (with the default `--check-config true`) **and** the matching `*-allowed-config-keys` hook on the same files, an unknown `config:` key will produce **two** stderr lines—one from each hook. To avoid this, either drop the `*-allowed-config-keys` hooks you no longer need, or pass `--check-config false` to the `*-allowed-keys` hooks and keep running `*-allowed-config-keys` separately (useful when you need `--required`/`--forbidden` on `config` keys, which `*-allowed-keys` does not support).
 
 ## `*-allowed-column-keys`
 
-Direct keys on each **column entry** (each item in a resource's `columns:` list) in property YAML. The default allowlists are identical to those used by `*-allowed-keys --check-columns`, but this family adds **`--required`** and **`--forbidden`** support for column keys.
+Direct keys on each **column entry** (each item in a resource’s `columns:` list at the model/seed/snapshot level) in property YAML. **Source** column keys under `sources: → … → tables: → … → columns:` are validated by **`source-allowed-keys`** (`--check-source-table-columns`), not this family. The default allowlists here match those used by `*-allowed-keys --check-columns` for model/seed/snapshot. This family adds **`--required`** and **`--forbidden`** for column keys.
 
 | ID | Validates |
 | --- | --- |

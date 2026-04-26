@@ -36,7 +36,28 @@ sources:
     description: sandbox
     database: raw
     schema: public
-    tables: []
+    tables:
+      - name: sb_external_orders
+        description: Raw orders from the warehouse
+        identifier: ext_orders
+        data_tests: []
+        columns:
+          - name: id
+            description: Order id
+            data_type: string
+            data_tests:
+              - not_null
+          - name: amount
+            description: Line amount
+            data_type: numeric
+        config:
+          tags: [raw, finance]
+      - name: sb_stg_users
+        description: Staging users
+        columns:
+          - name: user_id
+            description: User identifier
+            quote: true
     config:
       enabled: true
       tags: [nightly, finance]

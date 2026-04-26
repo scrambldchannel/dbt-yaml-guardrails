@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: d
+    schema: s
+    tables:
+      - name: t1
+        columns:
+          - name: id
+            not_a_valid_column_key: true

@@ -211,6 +211,39 @@ SOURCE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
     "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
 }
 
+# Each dict in ``sources: → [source] → tables:`` (``resource-keys.md`` § Source tables)
+SOURCE_TABLE_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "columns",
+        "config",
+        "data_tests",
+        "description",
+        "external",
+        "identifier",
+        "name",
+        "quoting",
+    )
+)
+
+SOURCE_TABLE_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+}
+
+# Each item in ``… → tables: → [table] → columns:`` (``resource-keys.md`` § Source table — column keys)
+SOURCE_TABLE_COLUMN_ALLOWED_KEYS: frozenset[str] = frozenset(
+    (
+        "config",
+        "data_tests",
+        "description",
+        "name",
+        "quote",
+    )
+)
+
+SOURCE_TABLE_COLUMN_LEGACY_KEY_MESSAGES: Mapping[str, str] = {
+    "tests": "Rename to `data_tests` (legacy alias `tests` is deprecated).",
+}
+
 # dbt 1.10+ [catalogs.yml](https://docs.getdbt.com/docs/dbt-versions/core-upgrade/upgrading-to-v1.10)
 # and adapter [write catalog](https://github.com/dbt-labs/dbt-adapters/blob/main/docs/guides/write_catalog.md):
 # each list item under `catalogs:`.

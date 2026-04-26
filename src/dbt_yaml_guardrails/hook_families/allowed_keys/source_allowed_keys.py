@@ -31,6 +31,10 @@ from dbt_yaml_guardrails.hook_families.allowed_config_keys.resource_config_keys 
 from .resource_keys import (
     SOURCE_ALLOWED_KEYS,
     SOURCE_LEGACY_KEY_MESSAGES,
+    SOURCE_TABLE_ALLOWED_KEYS,
+    SOURCE_TABLE_COLUMN_ALLOWED_KEYS,
+    SOURCE_TABLE_COLUMN_LEGACY_KEY_MESSAGES,
+    SOURCE_TABLE_LEGACY_KEY_MESSAGES,
 )
 
 
@@ -45,11 +49,21 @@ def _extract_source_by_name(
     return r.by_name
 
 
+def _message_contradictory_source_table_flags() -> str:
+    return (
+        "error: --check-source-tables false is incompatible with "
+        "--check-source-table-columns true; pass --check-source-table-columns false "
+        "when disabling table checks (column checks require table checks)"
+    )
+
+
 def _run(
     files: list[Path],
     required_csv: str,
     forbidden_csv: str,
     check_config: bool = True,
+    check_source_tables: bool = True,
+    check_source_table_columns: bool = True,
     fix_legacy_yaml: bool = False,
 ) -> int:
     required = parse_csv_keys(required_csv)
@@ -59,8 +73,19 @@ def _run(
         typer.echo(message_name_in_required(resource_plural="sources"), err=True)
         return 2
 
+    if not check_source_tables and check_source_table_columns:
+        typer.echo(_message_contradictory_source_table_flags(), err=True)
+        return 2
+
     if not files:
         return 0
+
+    st_allowed = SOURCE_TABLE_ALLOWED_KEYS if check_source_tables else None
+    stc_allowed = (
+        SOURCE_TABLE_COLUMN_ALLOWED_KEYS
+        if (check_source_tables and check_source_table_columns)
+        else None
+    )
 
     rows = collect_violation_rows_for_property_paths(
         files,
@@ -73,8 +98,17 @@ def _run(
         check_config=check_config,
         config_allowed=SOURCE_CONFIG_ALLOWED_KEYS,
         config_legacy_key_messages=SOURCE_CONFIG_LEGACY_KEY_MESSAGES,
+        check_columns=False,
+        column_allowed=None,
+        column_legacy_key_messages=None,
         resource_label="source",
         fix_legacy_yaml=fix_legacy_yaml,
+        check_source_tables=check_source_tables,
+        check_source_table_columns=check_source_table_columns,
+        source_table_allowed=st_allowed,
+        source_table_legacy_key_messages=SOURCE_TABLE_LEGACY_KEY_MESSAGES,
+        source_table_column_allowed=stc_allowed,
+        source_table_column_legacy_key_messages=SOURCE_TABLE_COLUMN_LEGACY_KEY_MESSAGES,
     )
     return finalize_violation_rows(
         rows,
@@ -100,7 +134,26 @@ def main(
         help=(
             "Also validate direct keys under each entry's config: mapping using the "
             "same allowlist as source-allowed-config-keys (default: true). "
+            "On each source table row, also validates table config: when --check-source-tables is on. "
             "Pass --check-config false to restore top-level-only behavior."
+        ),
+    ),
+    check_source_tables: str = typer.Option(
+        "true",
+        "--check-source-tables",
+        help=(
+            "Also validate top-level keys (and with --check-config, table config: ) "
+            "on each row under sources: … → tables: (default: true). "
+            "If false, pass --check-source-table-columns false as well (exit 2 otherwise)."
+        ),
+    ),
+    check_source_table_columns: str = typer.Option(
+        "true",
+        "--check-source-table-columns",
+        help=(
+            "When --check-source-tables is true, also validate top-level keys on each "
+            "item under each table's columns: list (default: true). No effect if "
+            "--check-source-tables is false."
         ),
     ),
     fix_legacy_yaml: str = typer.Option(
@@ -118,6 +171,8 @@ def main(
         required,
         forbidden,
         check_config=parse_bool_flag(check_config),
+        check_source_tables=parse_bool_flag(check_source_tables),
+        check_source_table_columns=parse_bool_flag(check_source_table_columns),
         fix_legacy_yaml=parse_bool_flag(fix_legacy_yaml),
     )
     raise typer.Exit(code)

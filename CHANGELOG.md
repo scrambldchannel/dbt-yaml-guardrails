@@ -8,6 +8,7 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
+- **`source-allowed-keys`:** validates each **`sources: → … → tables:`** row and, by default, each table’s **`columns:`** list using the **`SOURCE_TABLE_*`** and **`SOURCE_TABLE_COLUMN_*`** allowlists. New flags **`--check-source-tables`** and **`--check-source-table-columns`** (default **`true`** each). If **`--check-source-tables`** is **`false`**, **`--check-source-table-columns`** must be **`false`** (otherwise exit **2**). When **`--check-config`** and **`--check-source-tables`** are on, each table’s **`config:`** is checked with the same key set as **`source-allowed-config-keys`**. First implementation: **validation-only** for nested table/column vs **`--fix-legacy-yaml`** rewrites. See **`specs/hook-families/allowed-keys.md`**.
 - **`--fix-legacy-yaml`** (`true` / `false`, default `false`) on the six **`*-allowed-keys`** property-YAML CLIs (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on **`*-allowed-column-keys`**: when enabled, applies rewrites in place, then runs validation: **`tests` → `data_tests`**, and top-level **`meta` / `tags` → `config`** on resource entries (no merge if **`config.meta` / `config.tags`** already exist). **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** take this flag. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md) and [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md).
 
 ### Removed

@@ -4,7 +4,7 @@
 
 **Related:** [`yaml-handling.md`](yaml-handling.md), [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md), [`hook-families/fix-legacy-yaml.md`](hook-families/fix-legacy-yaml.md) (normative **example** layout for v2 top-level `meta` / `tags` → `config` on resource entries), [`hooks.md`](hooks.md).
 
-For **property YAML**, allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For the **dbt project file**, the allowlist targets **top-level keys of the root mapping** only (see **§ dbt project file**). For keys **inside** `config:` on resource entries, see **[`resource-config-keys.md`](resource-config-keys.md)**. For keys on **column entries** (items in each resource's `columns:` list), see **§ Column keys** under the applicable resource section below (currently: **Models**, **Seeds**, **Snapshots**). Legacy top-level `meta` / `tags` are listed per resource in **§ Legacy / deprecated** and implemented as `*_LEGACY_KEY_MESSAGES` in **`resource_keys.py`**; the **[`fix-legacy-yaml.md`](hook-families/fix-legacy-yaml.md)** spec defines matching **example YAML** conventions for the *fixed* shape (`config.meta` / `config.tags`) in **§ v2: top-level `meta` and `tags` → `config` (resource entries)**.
+For **property YAML**, allowlists target **keys on each resource entry** (e.g. each dict under `models:`), not wrapper keys like `models`. For the **dbt project file**, the allowlist targets **top-level keys of the root mapping** only (see **§ dbt project file**). For keys **inside** `config:` on resource entries, see **[`resource-config-keys.md`](resource-config-keys.md)**. For keys on **column entries** (items in each resource's `columns:` list at the **model/seed/snapshot** entry), see **§ Column keys** under those resource sections (**Models**, **Seeds**, **Snapshots**), validated by **`--check-columns`** on the corresponding **`*-allowed-keys`** hook. For **source** `tables:` rows and **source table** `columns:` items, see **§ Sources** (**Source tables** and **Source table — column keys**), validated by **`source-allowed-keys`** with **`--check-source-tables`** and **`--check-source-table-columns`**. Nested source-table column keys are covered by the **`source-allowed-keys`** **id** (with **`--check-source-table-columns`**). A separate **`source-allowed-column-keys`**-style **id** is **not** **required**; a **future** spec **may** add one for teams that want a dedicated hook, without changing the allowlist tables in this file. Legacy top-level `meta` / `tags` are listed per resource in **§ Legacy / deprecated** and implemented as `*_LEGACY_KEY_MESSAGES` in **`resource_keys.py`**; the **[`fix-legacy-yaml.md`](hook-families/fix-legacy-yaml.md)** spec defines matching **example YAML** conventions for the *fixed* shape (`config.meta` / `config.tags`) in **§ v2: top-level `meta` and `tags` → `config` (resource entries)**.
 
 **`--forbidden`** can still ban keys that appear in a default allowlist if your policy is stricter than dbt’s surface area.
 
@@ -240,9 +240,46 @@ For **property YAML**, allowlists target **keys on each resource entry** (e.g. e
 | `schema` | |
 | `tables` | table definitions; columns and `data_tests` live **under** `tables` |
 
-### Default allowlist (`source-allowed-keys`)
+### Source tables (`tables:` — each list item)
 
-**`SOURCE_ALLOWED_KEYS`** is exactly the table above. Deprecated top-level `meta` / `tags` / `overrides` and legacy `tests` are **out** of the set; see **`SOURCE_LEGACY_KEY_MESSAGES`**. **`--forbidden`** can still ban keys in the set.
+Authorable **top-level** keys on **each** dict in the `tables:` list, per [Source properties](https://docs.getdbt.com/reference/source-properties) (dbt Core **1.10+** YAML as shown there; dbt **Fusion** uses the same property-file shape for `sources` / `tables` in `schema.yml` and related files). The normative set for **`source-allowed-keys`** with **`--check-source-tables`** is **`SOURCE_TABLE_ALLOWED_KEYS`** and **`SOURCE_TABLE_LEGACY_KEY_MESSAGES`** in **`resource_keys.py`** (see **[`hook-families/allowed-keys.md`](hook-families/allowed-keys.md)**). **Nested** keys under a table’s **`config:`** block are validated when **`--check-config`** is **`true`** (same direct-key rules as **`*-allowed-config-keys`** for sources, **`SOURCE_CONFIG_ALLOWED_KEYS`**). Do **not** treat **`columns:`** or nested **`config:`** *values* as additional **top-level** table keys.
+
+| Key | Notes |
+| --- | --- |
+| `name` | Required; the table name in the source ([source properties](https://docs.getdbt.com/reference/source-properties)) |
+| `description` | [description](https://docs.getdbt.com/reference/resource-properties/description) (markdown) |
+| `identifier` | [identifier](https://docs.getdbt.com/reference/resource-properties/identifier) — logical table name in the warehouse when it differs from `name` |
+| `data_tests` | [data_tests](https://docs.getdbt.com/reference/resource-properties/data-tests) on the table |
+| `config` | [config](https://docs.getdbt.com/reference/resource-properties/config) for table-level overrides (e.g. `loaded_at_field`, `freshness`, `meta`, `tags` per the linked source-properties YAML outline) |
+| `quoting` | [quoting](https://docs.getdbt.com/reference/resource-properties/quoting) — `database` / `schema` / `identifier` booleans |
+| `external` | [external](https://docs.getdbt.com/reference/resource-properties/external) — external table options (value shape is adapter-specific) |
+| `columns` | List of [column](https://docs.getdbt.com/reference/source-properties) entries; keys on each item are in **Source table — column keys** below |
+| `tests` | Legacy alias for **`data_tests`** — **not** in **`SOURCE_TABLE_ALLOWED_KEYS`**; use **`SOURCE_TABLE_LEGACY_KEY_MESSAGES`**, same spirit as other resources (rename to `data_tests`) |
+
+#### Default allowlist — source tables (`source-allowed-keys --check-source-tables`)
+
+**`SOURCE_TABLE_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** **SHOULD** match the **Source tables** key table above **except** `tests` (legacy), same pattern as other resources. **Legacy** table top-level key **`tests`** is handled via **`SOURCE_TABLE_LEGACY_KEY_MESSAGES`**. **`--forbidden` / `--required` for table rows** (if ever needed) is **out of scope** for **`source-allowed-keys`**; a **future** spec would use **dedicated, more targeted** hooks. **`--forbidden`** for **source**-entry top-level keys remains as today.
+
+#### Source table — column keys (each item in a table’s `columns:` list)
+
+Per [Source properties](https://docs.getdbt.com/reference/source-properties) — direct keys on each column object under `sources: → … → tables: → … → columns:`.
+
+| Key | Notes |
+| --- | --- |
+| `name` | Required |
+| `description` | |
+| `quote` | [quote](https://docs.getdbt.com/reference/resource-properties/columns#quote) (boolean) |
+| `data_tests` | |
+| `config` | Typically `meta` and `tags` under column `config` (see outline on the same page) |
+| `tests` | Legacy alias for `data_tests` — **out** of **`SOURCE_TABLE_COLUMN_ALLOWED_KEYS`**; use **`SOURCE_TABLE_COLUMN_LEGACY_KEY_MESSAGES`**. |
+
+#### Default allowlist — source table columns (`source-allowed-keys --check-source-table-columns`)
+
+**`SOURCE_TABLE_COLUMN_ALLOWED_KEYS`** in **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** **SHOULD** match the **Source table — column keys** table above **except** `tests`. **Legacy** column key **`tests`**: **`SOURCE_TABLE_COLUMN_LEGACY_KEY_MESSAGES`**. This is **independent** of **`--check-columns`** on model/seed/snapshot hooks (different YAML path and constant names in **`resource_keys.py`**).
+
+### Default allowlist — source entry (`source-allowed-keys`)
+
+**`SOURCE_ALLOWED_KEYS`** matches **the first table** in **§ Sources** (top-level keys on each **source** entry only). **Nested** allowlists for **`tables:`** and for **each table’s** **`columns:`** are **`SOURCE_TABLE_*`** and **`SOURCE_TABLE_COLUMN_*`**, as above—each gated by **`--check-source-tables`** and **`--check-source-table-columns`**. Deprecated top-level `meta` / `tags` / `overrides` and legacy `tests` on the **source** entry are **out** of the set; see **`SOURCE_LEGACY_KEY_MESSAGES`**. **`--forbidden`** can still ban keys in **`SOURCE_ALLOWED_KEYS`** for the **source** row. **Nested** per-table or per-source-table-column **`--forbidden` / `--required`**, if needed, is **out of scope** for **`source-allowed-keys`**; **dedicated, more targeted** hooks in a **future** spec (see **`allowed-keys.md`**) may cover that.
 
 ### Legacy / deprecated (top-level keys)
 

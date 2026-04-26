@@ -120,6 +120,165 @@ def _nested_column_violations(
     return rows
 
 
+def _nested_source_table_violations(
+    path: Path,
+    path_posix: str,
+    entries: Iterable[tuple[str, Mapping[str, Any]]],
+    *,
+    table_allowed: frozenset[str],
+    table_legacy_key_messages: Mapping[str, str] | None,
+    check_config: bool,
+    config_allowed: frozenset[str] | None,
+    config_legacy_key_messages: Mapping[str, str] | None,
+    check_source_table_columns: bool,
+    column_allowed: frozenset[str] | None,
+    column_legacy_key_messages: Mapping[str, str] | None,
+) -> list[ViolationRow]:
+    """Validate each ``tables:`` row and optional nested ``columns:`` (source hook only)."""
+    t_legacy = table_legacy_key_messages or {}
+    c_leg = config_legacy_key_messages or {}
+    col_leg = column_legacy_key_messages or {}
+    rows: list[ViolationRow] = []
+    for source_id, source_entry in entries:
+        if "tables" not in source_entry:
+            continue
+        raw_tables = source_entry["tables"]
+        if not isinstance(raw_tables, list):
+            rows.append(
+                violation_row_parse_error(
+                    path_posix, f"source '{source_id}': tables must be a list"
+                )
+            )
+            continue
+        if not raw_tables:
+            continue
+        for j, table in enumerate(raw_tables):
+            if table is None or not isinstance(table, MutableMapping):
+                rows.append(
+                    violation_row_parse_error(
+                        path_posix,
+                        f"source '{source_id}': table at index {j} must be a mapping",
+                    )
+                )
+                continue
+            name = table.get("name")
+            if not name:
+                rows.append(
+                    violation_row_parse_error(
+                        path_posix,
+                        f"source '{source_id}': table at index {j} is missing 'name'",
+                    )
+                )
+                continue
+            table_name = str(name)
+            for key in sorted(table.keys()):
+                if key in table_allowed:
+                    continue
+                sub_detail = t_legacy.get(key) or f"disallowed key '{key}'"
+                rows.append(
+                    (
+                        (path_posix, source_id, f"table:{table_name}:{key}", 2),
+                        f"table '{table_name}': {sub_detail}",
+                    )
+                )
+            if check_config and config_allowed is not None:
+                cfg = _source_table_config_mapping(path, source_id, table_name, table)
+                if isinstance(cfg, ParseError):
+                    rows.append(violation_row_parse_error(path_posix, cfg.message))
+                else:
+                    for ck in sorted(cfg.keys()):
+                        if ck in config_allowed:
+                            continue
+                        sub = c_leg.get(ck) or f"disallowed key '{ck}'"
+                        rows.append(
+                            (
+                                (
+                                    path_posix,
+                                    source_id,
+                                    f"table:{table_name}:cfg:{ck}",
+                                    2,
+                                ),
+                                f"table '{table_name}': config: {sub}",
+                            )
+                        )
+            if (
+                check_source_table_columns
+                and column_allowed is not None
+                and "columns" in table
+            ):
+                raw_columns = table["columns"]
+                if not isinstance(raw_columns, list):
+                    rows.append(
+                        violation_row_parse_error(
+                            path_posix,
+                            f"source '{source_id}': table '{table_name}': "
+                            f"columns must be a list",
+                        )
+                    )
+                    continue
+                for i, col in enumerate(raw_columns):
+                    if col is None or not isinstance(col, Mapping):
+                        rows.append(
+                            violation_row_parse_error(
+                                path_posix,
+                                f"source '{source_id}': table '{table_name}': column at "
+                                f"index {i} must be a mapping",
+                            )
+                        )
+                        continue
+                    col_name = col.get("name")
+                    if not col_name:
+                        rows.append(
+                            violation_row_parse_error(
+                                path_posix,
+                                f"source '{source_id}': table '{table_name}': column at "
+                                f"index {i} is missing 'name'",
+                            )
+                        )
+                        continue
+                    cname = str(col_name)
+                    for ckey in sorted(col.keys()):
+                        if ckey in column_allowed:
+                            continue
+                        sub_d = col_leg.get(ckey) or f"disallowed key '{ckey}'"
+                        rows.append(
+                            (
+                                (
+                                    path_posix,
+                                    source_id,
+                                    f"table:{table_name}:col:{cname}:{ckey}",
+                                    2,
+                                ),
+                                f"table '{table_name}': column '{cname}': {sub_d}",
+                            )
+                        )
+    return rows
+
+
+def _source_table_config_mapping(
+    path: Path,
+    source_id: str,
+    table_name: str,
+    table: Mapping[str, Any],
+) -> ParseError | dict[str, Any]:
+    """``config:`` for one source table row (prefix ``source '…': table '…'`` in errors)."""
+    pfx = f"source '{source_id}': table '{table_name}'"
+    if "config" not in table:
+        return {}
+    cfg = table["config"]
+    if cfg is None:
+        return ParseError(
+            path,
+            f"{pfx}: config must be a mapping, not null",
+        )
+    if not isinstance(cfg, MutableMapping):
+        return ParseError(
+            path,
+            f"{pfx}: config must be a mapping, got {type(cfg).__name__}",
+        )
+    return dict(cfg)
+
+
 def _nested_config_violations(
     path: Path,
     path_posix: str,
@@ -327,6 +486,12 @@ def collect_violation_rows_for_property_paths(
     column_legacy_key_messages: Mapping[str, str] | None = None,
     resource_label: str = "",
     fix_legacy_yaml: bool = False,
+    check_source_tables: bool = False,
+    check_source_table_columns: bool = False,
+    source_table_allowed: frozenset[str] | None = None,
+    source_table_legacy_key_messages: Mapping[str, str] | None = None,
+    source_table_column_allowed: frozenset[str] | None = None,
+    source_table_column_legacy_key_messages: Mapping[str, str] | None = None,
 ) -> list[ViolationRow]:
     """Walk *files*, load YAML, and validate top-level keys on each resource entry.
 
@@ -339,6 +504,10 @@ def collect_violation_rows_for_property_paths(
     direct keys on each entry in the ``columns:`` list using the per-resource column
     allowlists from ``resource_keys`` (``specs/hook-families/allowed-keys.md`` §
     **Nested keys (`columns:`) and `--check-columns`**).
+
+    When *resource_label* is ``"source"``, *check_source_tables* is ``True``, and
+    *source_table_allowed* is not ``None``, also walks ``sources: → tables:`` (and
+    optionally ``columns:`` per table) per § **Nested keys** for sources.
 
     Args:
         files: Property YAML paths from the CLI.
@@ -369,6 +538,14 @@ def collect_violation_rows_for_property_paths(
             loading. Only **property-YAML** hooks that ship this
             flag (§§1–6 in ``allowed-keys.md``) should pass ``True``; **catalog** and
             **dbt-project** hooks **MUST NOT** expose the flag.
+        check_source_tables: For ``source`` only: enable table-row validation.
+        check_source_table_columns: For ``source`` only: enable column validation
+            under each table (ignored when *check_source_tables* is ``False``).
+        source_table_allowed: ``SOURCE_TABLE_ALLOWED_KEYS`` or ``None``.
+        source_table_legacy_key_messages: Optional legacy map for table keys.
+        source_table_column_allowed: ``SOURCE_TABLE_COLUMN_ALLOWED_KEYS`` or ``None``.
+        source_table_column_legacy_key_messages: Optional legacy map for
+            source-table column keys.
 
     Returns:
         Unsorted violation rows.
@@ -376,6 +553,11 @@ def collect_violation_rows_for_property_paths(
     rows: list[ViolationRow] = []
     run_config = check_config and config_allowed is not None
     run_columns = check_columns and column_allowed is not None
+    run_source_tables = (
+        resource_label == "source"
+        and check_source_tables
+        and source_table_allowed is not None
+    )
     for path in files:
         path = path.expanduser()
         if fix_legacy_yaml:
@@ -428,6 +610,22 @@ def collect_violation_rows_for_property_paths(
                     resource_label=resource_label,
                     column_allowed=column_allowed,  # type: ignore[arg-type]
                     column_legacy_key_messages=column_legacy_key_messages,
+                )
+            )
+        if run_source_tables:
+            rows.extend(
+                _nested_source_table_violations(
+                    path,
+                    path.as_posix(),
+                    iter_entries(inner),
+                    table_allowed=source_table_allowed,  # type: ignore[arg-type]
+                    table_legacy_key_messages=source_table_legacy_key_messages,
+                    check_config=run_config,
+                    config_allowed=config_allowed,
+                    config_legacy_key_messages=config_legacy_key_messages,
+                    check_source_table_columns=check_source_table_columns,
+                    column_allowed=source_table_column_allowed,
+                    column_legacy_key_messages=source_table_column_legacy_key_messages,
                 )
             )
     return rows
