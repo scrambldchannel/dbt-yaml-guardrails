@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ## [Unreleased]
 
+## [0.7.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-26
+
+### Changed
+
+- **Contributors and CI:** dev-only packages (pytest, pytest-cov, vulture) are declared in **`[dependency-groups].dev`** (PEP 735) as the single source of truth. Documentation and the GitHub workflow use **`uv sync`**, which includes that group by default. No change to hook behavior; consumers who only pin a pre-commit **`rev:`** are unaffected.
+
+- **Release metadata:** `version` in `pyproject.toml` is **0.7.0**; copy-paste `rev:` examples should use **v0.7.0**.
+
 ## [0.6.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-26
 
 ### Added

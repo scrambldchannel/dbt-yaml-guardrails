@@ -152,7 +152,7 @@ toml = [
 
 [[package]]
 name = "dbt-yaml-guardrails"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "ruamel-yaml" },
