@@ -4,7 +4,7 @@ The **dbt-yaml-guardrails** codebase is released under the **MIT License** (see 
 
 Read in this order when onboarding or implementing behavior:
 
-1. **[`project-spec.md`](project-spec.md)** — Project constitution: goal, tech stack, workflow rules, **root `README.md` / `HOOKS.md`** (hook catalog in **`HOOKS.md`**; families listed separately), and **source/test layout** (mirror **`hook-families/`**).
+1. **[`project-spec.md`](project-spec.md)** — Project constitution: goal, tech stack, workflow rules, **root `README.md` / `HOOKS.md`** (hook catalog in **`HOOKS.md`**: every shipped **`id`** must be listed per **`project-spec.md`** § **README.md and HOOKS.md**; families in separate tables), and **source/test layout** (mirror **`hook-families/`**).
 2. **[`scope.md`](scope.md)** — What is in and out of scope, and the Fusion-first product angle.
 3. **[`yaml-handling.md`](yaml-handling.md)** — Shared contract for parsing dbt property YAML, document shape, and CLI error/exit behavior for all hooks.
 4. **[`resource-keys.md`](resource-keys.md)** — Default allowlists for **`*-allowed-keys`**: top-level keys in **property YAML** (per dbt resource properties) and, for **`dbt-project-allowed-keys`**, the **`dbt_project.yml`** root (§ **dbt project file**); not manifest-only fields. **`src/dbt_yaml_guardrails/hook_families/allowed_keys/resource_keys.py`** is the implementation source; keep it in sync with dbt’s published surface.

@@ -148,6 +148,11 @@ repos:
       - id: snapshot-allowed-config-keys
       - id: exposure-allowed-config-keys
 
+      # allowed column keys (model / seed / snapshot)
+      - id: model-allowed-column-keys
+      - id: seed-allowed-column-keys
+      - id: snapshot-allowed-column-keys
+
       # allowed meta keys
       - id: model-allowed-meta-keys
         args: ["--allowed", "owner"]
