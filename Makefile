@@ -1,7 +1,7 @@
 SANDBOX_FILE  = tests/hook_sandbox/sandbox.yml
 SANDBOX_CFG   = tests/hook_sandbox/.pre-commit-sandbox.yaml
 
-.PHONY: test sandbox-hooks vulture coverage
+.PHONY: test sandbox-hooks vulture coverage check release-check
 test:
 	uv run pytest
 
@@ -14,3 +14,9 @@ coverage:
 
 vulture:
 	uv run vulture --config pyproject.toml
+
+# Pre-push: fast checks (see `project-spec.md`, `specs/testing-strategy.md`, `CONTRIBUTING.md`).
+check: test vulture
+
+# Pre-release: test + vulture + coverage (same as running those targets in order; see `project-spec.md`).
+release-check: test vulture coverage

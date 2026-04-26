@@ -11,13 +11,14 @@
 + Tests live under **`tests/`**.
 + **Family-specific** tests live under **`tests/hook_families/<family>/`** (e.g. **`tests/hook_families/allowed_keys/`** for **`*-allowed-keys`**), mirroring **`specs/hook-families/`** and **`src/dbt_yaml_guardrails/hook_families/`** (see [`project-spec.md`](project-spec.md) § **Source and test layout (mirror hook families)** and [`hooks.md`](hooks.md) § **Code layout (implementation)**). Shared parsing tests stay at **`tests/`** root (e.g. **`test_yaml_handling.py`**).
 + **YAML fixtures** **SHOULD** follow the same **hook-family** layout as **`src/`** (e.g. **`tests/fixtures/yaml/allowed_keys/`** for **`*-allowed-keys`**, **`tests/fixtures/yaml/allowed_meta_keys/`** for **`*-allowed-meta-keys`**, **`tests/fixtures/yaml/tags_accepted_values/`** for **`*-tags-accepted-values`**). **Within each family folder**, **SHOULD** place individual **`.yml`** files in a **subfolder per resource type** (e.g. **`models/`**, **`macros/`**, **`seeds/`**), matching the hooks and CLI entry points in that family. Include **good** and **bad** examples per hook; **basic edge cases** for shared parsing (invalid YAML, encoding/BOM, empty file, `version:`, multi-document streams, etc.) may live under a **`shared/`** (or similarly named) directory under that family, or under **`tests/fixtures/yaml/shared/`**, as required by [`yaml-handling.md`](yaml-handling.md) and documented by the tests that consume them.
++ **Prefer real `.yml` files over inline YAML in Python** for anything non-trivial: put scenarios under the appropriate **`tests/fixtures/yaml/...`** path (e.g. **`fix_legacy_yaml/`** for legacy-rewrite cases, per-family folders above for hook tests) so content stays readable, diff-friendly, and editor-validated. Reserve embedded strings in test code for **truly tiny** one-offs if needed; when a case grows or is reused, promote it to a file.
 + **`*-allowed-meta-keys`** CLI tests **SHOULD** use **one pytest module per shipped hook** (e.g. **`test_model_allowed_meta_keys.py`**, **`test_seed_allowed_meta_keys.py`**, … under **`tests/hook_families/allowed_meta_keys/`**), parallel to **`*-allowed-keys`**. The CLIs share **`allowed_meta_keys_core.py`**, but **separate modules** keep failures and navigation readable; avoid a single heavily parametrized file that multiplexes every resource type unless there is a strong reason.
 
 ## Assertions
 
 + **Exit code** is the default contract: tests should assert **`0`** on success and **`1`** (or other documented non-zero codes from the hook’s family spec, e.g. [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md)) when violations, parse errors, or invalid CLI usage are expected, per [`yaml-handling.md`](yaml-handling.md) § Errors
 + When testing **legacy** keys (see [`resource-keys.md`](resource-keys.md) § Legacy / deprecated for **`*-allowed-keys`** and [`resource-config-keys.md`](resource-config-keys.md) for **`*-allowed-config-keys`**, and the relevant [`hook-families/allowed-keys.md`](hook-families/allowed-keys.md) / [`hook-families/allowed-config-keys.md`](hook-families/allowed-config-keys.md) § Pattern), assert stderr includes the **Suggested violation detail** (or equivalent wording) once hooks implement that behavior.
-+ **Coverage** and **pytest markers** are out of scope for now.
++ **Coverage** is optional for day-to-day work; configuration lives in **`pyproject.toml`** (`[tool.coverage.*]`). See **[`project-spec.md`](project-spec.md)** and **`make coverage`** / **`make release-check`** in the root **`Makefile`**. **pytest markers** are not required unless we adopt a convention later.
 
 ## Local pre-commit (manual hook smoke)
 
@@ -31,9 +32,7 @@
 + **Coverage:** the sandbox should include **at least** the **`version:`** + resource sections needed to exercise the hooks you care about (e.g. **`models:`** + **`seeds:`** + **`snapshots:`** + **`exposures:`** + **`macros:`** in one file when the parser loads a single document with multiple top-level keys, per **[`yaml-handling.md`](yaml-handling.md)**). Hooks whose resource section is **absent** are expected to **skip** that file, same as in production.
 + **CI:** **do not** require manual pre-commit on **`tests/hook_sandbox/`** for merge gates unless the team explicitly adds a dedicated workflow step; keep **`uv run pytest`** the automated gate in **[`ci.yml`](../.github/workflows/ci.yml)**. For running the same pre-commit config you use locally inside **GitHub Actions** (clone + `pre-commit run`), see the **GitHub Actions** section in the root **[`README.md`](../README.md)**.
 + **This repository:** sandbox hooks are defined in **`tests/hook_sandbox/.pre-commit-sandbox.yaml`** (ids prefixed **`dbtg-sandbox-`**) with args aligned with **[`HOOKS.md`](../HOOKS.md)**. If **`make sandbox-hooks`** reports **(no files to check)**, the sandbox file may be untracked—run **`git add tests/hook_sandbox/sandbox.yml`** first.
-+ **Makefile:** the repository includes a **`Makefile`** at the root with two targets:
-  + **`make test`** → **`uv run pytest`** (automated regression suite)
-  + **`make sandbox-hooks`** → runs all sandbox hooks via the dedicated config:
++ **Makefile:** the repository includes a **`Makefile`** at the root (convenience only, not a build system). Typical targets: **`test`**, **`vulture`**, **`coverage`**, **`check`** (test + vulture), **`release-check`** (test + vulture + coverage), **`sandbox-hooks`**. See the file for exact commands. **`make sandbox-hooks`** runs all sandbox hooks via the dedicated config:
   ```makefile
   SANDBOX_FILE  = tests/hook_sandbox/sandbox.yml
   SANDBOX_CFG   = tests/hook_sandbox/.pre-commit-sandbox.yaml
@@ -41,7 +40,7 @@
   sandbox-hooks:
   	pre-commit run --config $(SANDBOX_CFG) --files $(SANDBOX_FILE)
   ```
-  Keep the Makefile minimal—it is a convenience wrapper, not a build system. When new sandbox hooks are added to **`.pre-commit-sandbox.yaml`**, they are picked up automatically by **`make sandbox-hooks`**.
+  When new sandbox hooks are added to **`.pre-commit-sandbox.yaml`**, they are picked up automatically by **`make sandbox-hooks`**. For **`CHANGELOG`**, Vulture, and coverage in release workflow, see **[`project-spec.md`](project-spec.md)** and **[`CONTRIBUTING.md`](../CONTRIBUTING.md)**.
 
 ## CI
 

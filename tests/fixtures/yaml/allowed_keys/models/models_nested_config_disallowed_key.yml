@@ -1,0 +1,6 @@
+version: 2
+
+models:
+  - name: n
+    config:
+      disallowed_config_key: 1

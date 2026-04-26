@@ -95,17 +95,9 @@ def test_collect_property_yaml_models_top_level_disallowed() -> None:
     assert any("disallowed" in r[1] for r in rows)
 
 
-def test_collect_property_yaml_models_nested_config_disallowed(tmp_path: Path) -> None:
-    f = tmp_path / "m.yml"
-    f.write_text(
-        "version: 2\n"
-        "models:\n"
-        "  - name: n\n"
-        "    config:\n"
-        "      disallowed_config_key: 1\n",
-        encoding="utf-8",
-    )
-    rows = _collect_models([f])
+def test_collect_property_yaml_models_nested_config_disallowed() -> None:
+    p = _FIXTURES / "models" / "models_nested_config_disallowed_key.yml"
+    rows = _collect_models([p])
     assert any("disallowed_config_key" in r[1] for r in rows)
 
 
