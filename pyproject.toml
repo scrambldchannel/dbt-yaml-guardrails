@@ -91,6 +91,11 @@ macro-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_va
 [tool.hatch.build.targets.wheel]
 packages = ["src/dbt_yaml_guardrails"]
 
+[tool.vulture]
+# 60% is noisy (e.g. dataclass field names like ``reason`` in Skip classes).
+min_confidence = 80
+paths = ["src", "tests"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
