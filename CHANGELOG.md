@@ -6,6 +6,14 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ## [Unreleased]
 
+## [0.7.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-26
+
+### Added
+
+- **`source-allowed-keys` and `--fix-legacy-yaml`:** v1 rewrites **`tests` → `data_tests`** on **table** rows under **`sources: → … → tables:`** and, when both nested checks are enabled, on each **column** dict under a table’s **`columns:`** list. Nested rewrites run **only** when the same flags that control validation are on: **`--check-source-tables`** for tables, and **`--check-source-table-columns`** for those columns (so turning off a nested check also skips the fix there). See **`fix-legacy-yaml.md`** and **`allowed-keys.md`**.
+
+- **Release metadata:** `version` in `pyproject.toml` is **0.7.1**; copy-paste `rev:` examples should use **v0.7.1**.
+
 ## [0.7.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-26
 
 ### Changed
