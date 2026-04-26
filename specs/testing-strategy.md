@@ -4,7 +4,7 @@
 
 ## Runner
 
-+ Use **pytest** (`uv run pytest`, aligned with [`project-spec.md`](project-spec.md)).
++ Use **pytest** (`uv run pytest`, aligned with [`project-spec.md`](project-spec.md)). Install the environment with **`uv sync`**, which (with this repo’s **uv** defaults) includes **`[dependency-groups].dev`** — pytest, coverage tools, and vulture — per **[`project-spec.md`](project-spec.md)** and **`CONTRIBUTING.md`**. Do not rely on **`[project.optional-dependencies]`** for dev tools here; that table is for **optional extras** (user-facing features), not internal tooling; see the constitution’s **Development dependencies** bullet.
 
 ## Layout
 

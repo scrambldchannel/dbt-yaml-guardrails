@@ -7,6 +7,7 @@ Build a set of pre-commit hooks that apply configurable standards to dbt yaml th
 ## 2. Tech Stack & Standards
 - **Language:** Python 3.10+
 - **Tooling:** uv, pytest, github
+- **Development dependencies (lockstep with `pyproject.toml`):** **pytest**, **pytest-cov**, and **vulture** are listed under **`[dependency-groups].dev`** (PEP 735) — they are for **contributors and CI** only, not part of published wheel install requirements. The **`dev`** group is the single source of truth; do **not** duplicate the same tools under **`[project.optional-dependencies]`** unless we intentionally add a *user-facing* **extra** (optional runtime feature) in the future. **uv** includes the **`dev`** group by default on **`uv sync`**. Add dev tools with **`uv add --dev <package>`**; see **`CONTRIBUTING.md`**.
 - **Libraries:** ruamel.yaml, typer
 - **License:** MIT — see **`LICENSE`**, **`pyproject.toml`** (`authors`, `[project.urls]` for the GitHub repo and Issues)
 - **Distribution:** The **primary** way to use these hooks is **[pre-commit](https://pre-commit.com/)** with this repository as the **`repo:`** source (see **`.pre-commit-hooks.yaml`**, **`hooks.md`**). **PyPI publication is not** a project goal; **`keywords`**, **`classifiers`**, and other **`[project]`** metadata exist for documentation, IDE tooling, and consistency—not for publishing a package to the index.

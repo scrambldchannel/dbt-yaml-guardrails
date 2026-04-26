@@ -10,14 +10,16 @@ Behavior lives in **`specs/`**. Start from **[`specs/README.md`](specs/README.md
 
 Requires **Python 3.10+** and **[uv](https://docs.astral.sh/uv/)**.
 
-Install dev dependencies and run the suite:
+Install dependencies and run the suite:
 
 ```bash
-uv sync --extra dev
+uv sync
 uv run pytest
 ```
 
-**`--extra dev`** uses **`[project.optional-dependencies]`** in **`pyproject.toml`** (pytest, pytest-cov, vulture). That is what **CI** uses (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+**How dev tools are declared:** the repo follows **PEP 735** — development-only packages live in **`[dependency-groups].dev`** in **`pyproject.toml`** (pytest, pytest-cov, vulture), not in **`[project.optional-dependencies]`**. Extras in **`[project.optional-dependencies]`** are for *optional runtime features* users install with **`pip install package[extra]`** and are listed in published package metadata; this project is **not** published to PyPI, and we do not use extras. With **uv**, the **`dev`** group is **included by default** on plain **`uv sync`**, so local setup and **CI** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)) stay aligned. Add a dev dep with **`uv add --dev <name>`** (it updates `[dependency-groups].dev`).
+
+**Other installers:** a plain **`pip install -e .`** does not apply PEP 735 **dependency-groups**; use **uv** for this repo. We would only document **`pip install -e .[some_extra]`** if **`[project.optional-dependencies]`** gains a *runtime* extra in the future.
 
 **Makefile** (repo root) wraps common commands:
 
