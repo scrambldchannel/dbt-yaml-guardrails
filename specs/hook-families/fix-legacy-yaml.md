@@ -2,7 +2,7 @@
 
 **Purpose:** This spec defines the **normative** mechanical rewrites for legacy keys in dbt **property YAML** — **v1:** **`tests` → `data_tests`**; **v2:** top-level **`meta` / `tags` → `config.meta` / `config.tags`** on resource entries — aligned with **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` / `*_COLUMN_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**. It does **not** replace validation: teams still use **`*-allowed-keys`**, **`*-allowed-column-keys`**, and other families for policy and allowlists.
 
-**Delivery:** Rewrites are invoked only through the **opt-in** **`--fix-legacy-yaml`** flag (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**, as specified in **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**. When **`true`**, the implementation runs **v1** then **v2** (see below). There is no separate console script or pre-commit hook id for rewrites. **Future:** other transforms (e.g. top-level **`tags` / `meta`** on **column** rows) are not specified here yet. A **future** update **may** add **`tests` → `data_tests`** (and related) rewrites for **`sources: → … → tables:`** and **nested** column dicts; that work is **not** part of the **first** **`source-allowed-keys`** nested validation implementation (see **`allowed-keys.md`** **§ Nested keys (`sources:` → `tables:` and `columns:`)** — those paths stay **validation-only** until a later version of this spec).
+**Delivery:** Rewrites are invoked only through the **opt-in** **`--fix-legacy-yaml`** flag (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**, as specified in **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**. When **`true`**, the implementation runs **v1** then **v2** (see below). There is no separate console script or pre-commit hook id for rewrites. For **`source-allowed-keys`**, v1 rewrites on **`tables:`** and nested **`columns:`** are **gated** by the same **`--check-source-tables`** / **`--check-source-table-columns`** flags as validation (see **`allowed-keys.md`** **§ Nested keys (`sources:` → `tables:` and `columns:`)**). **Future:** v2-style moves for **`meta` / `tags`** on **table** or **column** rows under **sources**; other column-level transforms.
 
 Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
@@ -32,12 +32,13 @@ Rationale: **ruamel.yaml** is chosen in part so ordered mappings round-trip; vio
 
 **Target key spelling (required):** The output key is always exactly **`data_tests`**: all **lowercase** ASCII, one underscore between `data` and `tests` (not camelCase `dataTests`, not `Data_Tests`, not any other casing). The legacy key matched for replacement is exactly **`tests`** with the same spelling rules.
 
-**Only these uses of `tests` / `data_tests` are in scope for v1:** In dbt **property YAML**, the **only** places this family treats as the real data-test declaration fields are:
+**Only these uses of `tests` / `data_tests` are in scope for v1:** In dbt **property YAML**, the places this family treats as the real data-test declaration fields for rename are:
 
 1. **On the resource entry** — a direct key on each dict under **`models:`**, **`seeds:`**, **`snapshots:`**, **`macros:`**, **`exposures:`**, or **`sources:`** (alongside `name`, `config`, `columns`, …), and
 2. **On each column object** — a direct key on each item in that entry’s **`columns:`** list, for **model, seed, and snapshot** only (the resource types that expose `columns:` at this level in the references this project follows).
+3. **Under `sources:`** — a direct key on each **table** dict under **`sources: → (each source) → tables:`** and (when enabled) on each **column** dict under **`… → columns:`** for a **source table** — **only** when using **`source-allowed-keys`** and the **nested rewrites** are not suppressed by the CLI: **`--check-source-tables` true** is required to rewrite (and check) table rows; **both** that and **`--check-source-table-columns` true** are required to rewrite (and check) those column dicts. When a flag is **false**, the implementation does **not** treat **`tests`** on that nested level as the v1 rename target (it does not rename there).
 
-There is **no third** in-scope location in v1. A key named `tests` elsewhere (e.g. under **`config:`**, under **`catalogs:`**, under source **`tables:` → column dicts**, **`dbt_project.yml`**, or an odd indentation path) is **not** treated as the same semantic field and is **out of scope** for rename here (see **Keys left unchanged** and the table).
+A key named `tests` elsewhere (e.g. under **`config:`**, under **`catalogs:`**, in **`dbt_project.yml`**, or an odd indentation path) is **not** treated as the same semantic field and is **out of scope** for rename here unless it is one of the sites above (see **Keys left unchanged** and the table).
 
 ### Where the rewrite applies (v1)
 
@@ -48,10 +49,10 @@ There is **no third** in-scope location in v1. A key named `tests` elsewhere (e.
 | `snapshots:` | yes | yes |
 | `macros:` | yes | n/a (no `columns:` on macro entries) |
 | `exposures:` | yes | n/a |
-| `sources:` | yes | **out of scope in v1** (column tests live under `tables: → [table] → columns:`; defer to a later spec version) |
+| `sources:` | yes (resource row) | **yes** for **table** rows when **`--check-source-tables` true**; for **source-table column** dicts when **both** nested flags are **true** (see (3) above). Otherwise the nested level is not rewritten by v1. |
 
-- **In scope in v1:** the two declaration sites in the **Only these uses** block above — resource-entry **`tests`**, and column-level **`tests`** for **model, seed, snapshot** where the table says “yes.”
-- **Out of scope in v1 (non-exhaustive):** `sources: … → tables: … → columns: … → tests`; **`dbt_project.yml`**; any **`tests`** key that is not at one of the two in-scope sites above.
+- **In scope in v1:** the declaration sites in the **Only these uses** block above — resource-entry **`tests`** on all six property list types, column-level **`tests`** for **model, seed, snapshot** where the table says “yes,” and (with **`source-allowed-keys`**) nested **table** / **source-table column** sites when the corresponding **CLI flags** enable both validation and the fix for that level.
+- **Out of scope in v1 (non-exhaustive):** **`tests`** on nested source paths when the **`source-allowed-keys`** flag for that level is **false**; **`dbt_project.yml`**; any **`tests`** key that is not at one of the in-scope sites above; **`model-allowed-keys`**, **`macro-allowed-keys`**, etc. (non-**`source`**) do **not** run nested **sources** rewrites on mixed property files.
 
 ### Conflict policy (v1)
 

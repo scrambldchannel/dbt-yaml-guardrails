@@ -161,7 +161,9 @@ def main(
         "--fix-legacy-yaml",
         help=(
             "If true, apply v1 tests→data_tests rewrites in place before validation "
-            "(default: false). See specs/hook-families/fix-legacy-yaml.md."
+            "(default: false). Nested source table/column rewrites only when "
+            "--check-source-tables / --check-source-table-columns enable those paths. "
+            "See specs/hook-families/fix-legacy-yaml.md."
         ),
     ),
 ) -> None:

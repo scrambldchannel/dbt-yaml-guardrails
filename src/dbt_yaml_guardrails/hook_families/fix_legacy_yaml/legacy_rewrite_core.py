@@ -23,8 +23,9 @@ from dbt_yaml_guardrails.yaml_handling import (
     _yaml_loader,
 )
 
-# Resource list keys (resource entries) for rewrites. ``sources`` has no column ``tests`` rewrites
-# in v1; top-level source rows still get ``meta`` / ``tags`` → ``config``.
+# Resource list keys (resource entries) for rewrites. Nested ``sources`` → ``tables`` / ``columns``
+# ``tests`` → ``data_tests`` runs only when integration passes the ``check_source_tables`` /
+# ``check_source_table_columns`` flags (see ``rewrite_tests_to_data_tests_v1``).
 _RESOURCE_LIST_KEYS: tuple[str, ...] = (
     "models",
     "seeds",
@@ -108,9 +109,19 @@ def _context_label(section: str, item: MutableMapping[str, Any]) -> str:
     return section
 
 
+def _source_table_label(trow: MutableMapping[str, Any], index: int) -> str:
+    tname = trow.get("name")
+    if isinstance(tname, str) and tname:
+        return f"table '{tname}'"
+    return f"table at index {index}"
+
+
 def rewrite_tests_to_data_tests_v1(
     root: Any,
     path: Path,
+    *,
+    check_source_tables: bool = False,
+    check_source_table_columns: bool = False,
 ) -> tuple[int, list[str]]:
     """Apply v1 rewrites. Returns ``(rename_count, conflict_messages)``."""
     renames = 0
@@ -160,6 +171,44 @@ def rewrite_tests_to_data_tests_v1(
                             f"{path_s}: {ctx}: {ctag}: 'tests' and 'data_tests' both present, "
                             f"skipping this column"
                         )
+            if section == "sources" and check_source_tables:
+                tables = item.get("tables")
+                if not isinstance(tables, list):
+                    continue
+                for ti, trow in enumerate(tables):
+                    if not isinstance(trow, MutableMapping):
+                        continue
+                    tlab = _source_table_label(trow, ti)
+                    tres = _rename_tests_key(trow)
+                    if tres == "renamed":
+                        renames += 1
+                    elif tres == "conflict":
+                        conflicts.append(
+                            f"{path_s}: {ctx}: {tlab}: 'tests' and 'data_tests' both present, "
+                            f"skipping this entry"
+                        )
+                    if not check_source_table_columns:
+                        continue
+                    tcols = trow.get("columns")
+                    if not isinstance(tcols, list):
+                        continue
+                    for ci, col in enumerate(tcols):
+                        if not isinstance(col, MutableMapping):
+                            continue
+                        cres = _rename_tests_key(col)
+                        if cres == "renamed":
+                            renames += 1
+                        elif cres == "conflict":
+                            cname = col.get("name")
+                            ctag = (
+                                f"column {cname!r}"
+                                if isinstance(cname, str)
+                                else f"column at index {ci}"
+                            )
+                            conflicts.append(
+                                f"{path_s}: {ctx}: {tlab}: {ctag}: 'tests' and 'data_tests' both present, "
+                                f"skipping this column"
+                            )
     return renames, conflicts
 
 

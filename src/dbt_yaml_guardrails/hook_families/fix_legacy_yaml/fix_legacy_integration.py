@@ -26,9 +26,16 @@ def _detail_without_path_prefix(path: Path, line: str) -> str:
 
 def apply_fix_legacy_yaml(
     path: Path,
+    *,
+    check_source_tables: bool = False,
+    check_source_table_columns: bool = False,
 ) -> tuple[Literal["ok", "skip"], None] | tuple[Literal["fail"], tuple[str, ...]]:
     """Apply all ``--fix-legacy-yaml`` rewrites in place (ruamel round-trip): ``tests`` → ``data_tests``;
     top-level ``meta`` / ``tags`` → ``config`` on each resource entry.
+
+    For ``sources:`` nested ``tables:`` / ``columns:`` dicts, ``tests`` → ``data_tests`` runs only
+    when the corresponding flags are true (``source-allowed-keys`` passes its CLI values; other
+    callers default to false so mixed property files are unchanged).
 
     Returns:
         ``("ok", None)`` or ``("skip", None)`` — proceed or skip file (no validation), same as
@@ -44,7 +51,12 @@ def apply_fix_legacy_yaml(
         return ("fail", (loaded.message,))
 
     root = loaded
-    t_renames, t_conf = rewrite_tests_to_data_tests_v1(root, path)
+    t_renames, t_conf = rewrite_tests_to_data_tests_v1(
+        root,
+        path,
+        check_source_tables=check_source_tables,
+        check_source_table_columns=check_source_table_columns,
+    )
     if t_conf:
         return (
             "fail",

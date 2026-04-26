@@ -49,6 +49,47 @@ def test_v1_column_conflict_both_keys_from_file() -> None:
     assert any("column 'id'" in m and "both present" in m for m in c)
 
 
+def test_v1_renames_source_table_tests_with_nested_flags() -> None:
+    p = _FIX / "source_v1_table_tests_only.yml"
+    n, c = lrc.rewrite_tests_to_data_tests_v1(
+        _rt_load(p), p, check_source_tables=True, check_source_table_columns=True
+    )
+    assert n == 1 and c == []
+
+
+def test_v1_source_nested_skipped_without_table_flag() -> None:
+    p = _FIX / "source_v1_table_tests_only.yml"
+    n, c = lrc.rewrite_tests_to_data_tests_v1(
+        _rt_load(p), p, check_source_tables=False, check_source_table_columns=False
+    )
+    assert n == 0 and c == []
+
+
+def test_v1_renames_source_column_tests_when_column_flag() -> None:
+    p = _FIX / "source_v1_column_tests_only.yml"
+    n, c = lrc.rewrite_tests_to_data_tests_v1(
+        _rt_load(p), p, check_source_tables=True, check_source_table_columns=True
+    )
+    assert n == 1 and c == []
+
+
+def test_v1_source_column_untouched_without_column_flag() -> None:
+    p = _FIX / "source_v1_column_tests_only.yml"
+    n, c = lrc.rewrite_tests_to_data_tests_v1(
+        _rt_load(p), p, check_source_tables=True, check_source_table_columns=False
+    )
+    assert n == 0 and c == []
+
+
+def test_v1_source_table_both_keys_conflict() -> None:
+    p = _FIX / "source_v1_table_both_keys.yml"
+    n, c = lrc.rewrite_tests_to_data_tests_v1(
+        _rt_load(p), p, check_source_tables=True, check_source_table_columns=True
+    )
+    assert n == 0
+    assert c and "both present" in c[0] and "table" in c[0]
+
+
 # --- v2: top-level ``meta`` / ``tags`` → ``config`` ---
 
 

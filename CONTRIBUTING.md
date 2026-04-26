@@ -32,7 +32,7 @@ uv run pytest
 | **`make release-check`** | **`test`**, then **`vulture`**, then **`coverage`** (pre-ship bundle)
 | **`make sandbox-hooks`** | Manual pre-commit on the ringfenced sandbox (see below)
 
-**Before a release** (or when you want the full maintainer pass), also follow **[`project-spec.md`](specs/project-spec.md)** § **Test coverage** and **Dead code (Vulture)**—same commands as **`make release-check`**, with notes there on **`CHANGELOG`**, version bumps, and **`rev:`** pins.
+**Before a release** (or when you want the full maintainer pass), also follow **[`project-spec.md`](specs/project-spec.md)** § **Test coverage** and **Dead code (Vulture)**—same commands as **`make release-check`**, with notes there on **`CHANGELOG`**, version bumps, and **`rev:`** pins. For **who** confirms the version number and **when** it is OK to push to **`origin`**, see the same file’s **Release process: confirm version; never auto-push**.
 
 Details on layout, fixtures, and optional sandbox runs: **[`specs/testing-strategy.md`](specs/testing-strategy.md)**.
 

@@ -561,7 +561,15 @@ def collect_violation_rows_for_property_paths(
     for path in files:
         path = path.expanduser()
         if fix_legacy_yaml:
-            fix_out = apply_fix_legacy_yaml(path)
+            fix_out = apply_fix_legacy_yaml(
+                path,
+                check_source_tables=check_source_tables
+                if resource_label == "source"
+                else False,
+                check_source_table_columns=check_source_table_columns
+                if resource_label == "source"
+                else False,
+            )
             if fix_out[0] == "skip":
                 continue
             if fix_out[0] == "fail":

@@ -11,6 +11,7 @@ _YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml"
 _ALLOWED = _YAML / "allowed_keys"
 _ALLOWED_CFG = _YAML / "allowed_config_keys"
 _SHARED = _YAML / "shared"
+_FIX_LEGACY = _YAML / "fix_legacy_yaml"
 
 
 def _f(name: str) -> str:
@@ -194,3 +195,76 @@ def test_cli_table_tests_legacy_message() -> None:
     assert r.returncode == 1
     assert "table 't1'" in r.stderr
     assert "Rename to `data_tests`" in r.stderr
+
+
+# --- --fix-legacy-yaml: nested source tables / columns (v1, flag-gated) ---
+
+
+def _copy_fixture(name: str, tmp_path: Path) -> Path:
+    src = _FIX_LEGACY / name
+    p = tmp_path / name
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    return p
+
+
+def test_cli_fix_legacy_rewrites_table_tests_then_passes(tmp_path: Path) -> None:
+    p = _copy_fixture("source_v1_table_tests_only.yml", tmp_path)
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "data_tests:" in out
+    assert "        tests:" not in out  # under table, legacy key removed
+
+
+def test_cli_fix_legacy_rewrites_column_tests_then_passes(tmp_path: Path) -> None:
+    p = _copy_fixture("source_v1_column_tests_only.yml", tmp_path)
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "            data_tests:" in out or "            data_tests" in out
+    assert "            tests:" not in out
+
+
+def test_cli_fix_legacy_nested_untouched_when_check_source_tables_false(
+    tmp_path: Path,
+) -> None:
+    p = _copy_fixture("source_v1_table_tests_only.yml", tmp_path)
+    r = _invoke(
+        "--fix-legacy-yaml",
+        "true",
+        "--check-source-tables",
+        "false",
+        "--check-source-table-columns",
+        "false",
+        str(p),
+    )
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "        tests:" in out
+    assert "data_tests" not in out
+
+
+def test_cli_fix_legacy_column_untouched_when_check_source_table_columns_false(
+    tmp_path: Path,
+) -> None:
+    p = _copy_fixture("source_v1_column_tests_only.yml", tmp_path)
+    r = _invoke(
+        "--fix-legacy-yaml",
+        "true",
+        "--check-source-tables",
+        "true",
+        "--check-source-table-columns",
+        "false",
+        str(p),
+    )
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "            tests:" in out
+    assert "data_tests" not in out
+
+
+def test_cli_fix_legacy_table_conflict_both_keys() -> None:
+    p = str(_FIX_LEGACY / "source_v1_table_both_keys.yml")
+    r = _invoke("--fix-legacy-yaml", "true", p)
+    assert r.returncode == 1
+    assert "both present" in r.stderr or "skipping" in r.stderr
