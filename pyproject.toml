@@ -43,6 +43,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
+    "vulture>=2",
 ]
 
 [project.urls]
@@ -93,3 +94,8 @@ packages = ["src/dbt_yaml_guardrails"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[dependency-groups]
+dev = [
+    "vulture>=2.16",
+]
