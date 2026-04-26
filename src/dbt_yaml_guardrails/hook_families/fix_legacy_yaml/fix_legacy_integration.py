@@ -64,7 +64,3 @@ def apply_fix_legacy_yaml(
             return ("fail", (err,))
 
     return ("ok", None)
-
-
-# Backwards-compatible name (same as :func:`apply_fix_legacy_yaml`).
-apply_tests_to_data_tests_fix = apply_fix_legacy_yaml
