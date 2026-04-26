@@ -13,7 +13,7 @@ Here is a short example of how the hooks might be configured on a project. Read 
 ```yaml
 repos:
   - repo: https://github.com/scrambldchannel/dbt-yaml-guardrails
-    rev: v0.5.1
+    rev: v0.6.0
     hooks:
       # Check top-level keys only; config and column key validation delegated to hooks below
       - id: model-allowed-keys

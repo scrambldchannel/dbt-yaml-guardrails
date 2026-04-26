@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ## [Unreleased]
 
+## [0.6.0](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-26
+
 ### Added
 
 - **`source-allowed-keys`:** validates each **`sources: → … → tables:`** row and, by default, each table’s **`columns:`** list using the **`SOURCE_TABLE_*`** and **`SOURCE_TABLE_COLUMN_*`** allowlists. New flags **`--check-source-tables`** and **`--check-source-table-columns`** (default **`true`** each). If **`--check-source-tables`** is **`false`**, **`--check-source-table-columns`** must be **`false`** (otherwise exit **2**). When **`--check-config`** and **`--check-source-tables`** are on, each table’s **`config:`** is checked with the same key set as **`source-allowed-config-keys`**. First implementation: **validation-only** for nested table/column vs **`--fix-legacy-yaml`** rewrites. See **`specs/hook-families/allowed-keys.md`**.
@@ -14,6 +16,10 @@ All notable changes to this project are documented here. Versions match **git ta
 ### Removed
 
 - **Standalone** **`fix-legacy-yaml`** console entry point and pre-commit **hook** **`id: fix-legacy-yaml`**. Use **`--fix-legacy-yaml` `true`** on a suitable **`*-allowed-keys`** or **`*-allowed-column-keys`** hook instead.
+
+### Changed
+
+- **Release metadata:** `version` in `pyproject.toml` is **0.6.0**; copy-paste `rev:` examples should use **v0.6.0**.
 
 ## [0.5.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
 
