@@ -8,7 +8,11 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
-- **`fix-legacy-yaml`**: rewrites legacy **`tests`** to **`data_tests`** in dbt property YAML (resource entries and `columns:` items for model, seed, snapshot, plus resource-level macro, exposure, source). **Check by default** (exit 1 if anything would change or if both keys are present on the same object); use **`--write`** to update files. Uses **ruamel** round-trip to preserve key order. See [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md). Not yet in a versioned **git tag**; `rev:` in examples stays **v0.5.1** until the next release.
+- **`--fix-legacy-yaml`** (`true` / `false`, default `false`) on the six **`*-allowed-keys`** property-YAML CLIs (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on **`*-allowed-column-keys`**: when enabled, applies the v1 **`tests` → `data_tests`** rewrite in place, then runs validation. **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** take this flag. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md) and [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md).
+
+### Removed
+
+- **Standalone** **`fix-legacy-yaml`** console entry point and pre-commit **hook** **`id: fix-legacy-yaml`**. Use **`--fix-legacy-yaml` `true`** on a suitable **`*-allowed-keys`** or **`*-allowed-column-keys`** hook instead.
 
 ## [0.5.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
 

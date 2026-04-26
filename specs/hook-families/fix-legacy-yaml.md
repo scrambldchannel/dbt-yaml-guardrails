@@ -1,13 +1,8 @@
 # Hook family: `fix-legacy-yaml` (mechanical rewrites for deprecated YAML)
 
-**Purpose:** A **separate** tool from the **validation** families (`*-allowed-keys`, `*-allowed-config-keys`, …). It **rewrites** dbt **property YAML** to replace patterns that the validator flags as **legacy** (see **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**) with the **supported** spelling or location.
+**Purpose:** This spec defines the **normative** mechanical rewrites for legacy keys in dbt **property YAML** (v1: **`tests` → `data_tests`**) that align with **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` / `*_COLUMN_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**. It does **not** replace validation: teams still use **`*-allowed-keys`**, **`*-allowed-column-keys`**, and other families for policy and allowlists.
 
-**Status:** **`fix-legacy-yaml`** is **shipped** as a single console script and pre-commit hook (**`id: fix-legacy-yaml`**). **v1** renames **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. Future transforms (`tags` / `meta`) are not implemented yet.
-
-**Operational notes (not a scope bug):**
-
-+ **Check vs. write:** The default is **check** — the tool does **not** change files. It only exits **non-zero** (or, with `--write`, rewrites) when it finds a rename opportunity or a conflict. To apply renames: **`fix-legacy-yaml --write <files>`** or, in pre-commit, add **`args: ['--write']`**. A hook with no args still performs a useful “fail if legacy keys remain” check; it is **not** an auto-fixer.
-+ **Which `rev:` has the tool:** The **`fix-legacy-yaml`** entry point only exists in **git commits that add it** (and in tags cut **after** that). Pinning an older pre-commit **`rev:`** (e.g. a tag that predates the hook) will **not** install the script, so the hook can appear to “do nothing” or be missing. Until you tag a release that includes the hook, use a **commit SHA**, **`main`**, a path override, or a local/editable run (**`uv run fix-legacy-yaml`**) when exercising the rewriter.
+**Delivery:** Rewrites are invoked only through the **opt-in** **`--fix-legacy-yaml`** flag (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**, as specified in **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**. **v1** implements **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. There is no separate console script or pre-commit hook id for rewrites. Future transforms (`tags` / `meta`) are not implemented yet.
 
 Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
@@ -15,7 +10,7 @@ Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
 ## Design principles
 
-+ **Complement validators, do not replace them.** The **`fix-legacy-yaml`** process applies **mechanical, syntax-level** rewrites. Teams still use **`model-allowed-keys`**, **`seed-allowed-keys`**, and related hooks to enforce allowlists, **`--required`**, and policy.
++ **Complement validators, do not replace them.** The rewrite applies **mechanical, syntax-level** edits **before** validation when **`--fix-legacy-yaml` is** **`true`**. Allowlists, **`--required`**, and policy remain the job of **`*-allowed-keys`** and related hooks.
 + **Deterministic and idempotent** where possible: running the fixer twice on the same file should not change the file a second time (or should be a no-op after the first run).
 + **Property YAML only in v1** (same file scope and loader expectations as **[`yaml-handling.md`](../yaml-handling.md)** § **dbt property YAML** and **`load_property_yaml`**). Do **not** target **`dbt_project.yml`**, **`catalogs.yml`**, or manifest-only files in the first version unless a later spec explicitly extends scope.
 + **Round-trip** should preserve **comments and formatting** as far as a mature YAML library allows. The implementation **SHOULD** use **ruamel.yaml** (already a project dependency) for any load → edit → write cycle; document the exact APIs in this spec or **`project-spec.md`** when the feature lands.
@@ -60,7 +55,7 @@ There is **no third** in-scope location in v1. A key named `tests` elsewhere (e.
 
 ### Conflict policy (v1)
 
-If an entry (resource row or column row) already contains **`data_tests`**, the rewrite **must not** silently merge an existing **`tests`** block with **`data_tests`** in v1. **Recommended behavior:** report a **shape / policy** error to stderr and **skip** rewriting that node (or exit non-zero in **check** mode; see **Exit codes**), with a message that both keys are present. Exact wording is left to the implementation; the spec only requires “no blind merge in v1.”
+If an entry (resource row or column row) already contains **`data_tests`**, the rewrite **must not** silently merge an existing **`tests`** block with **`data_tests`** in v1. **Recommended behavior:** report a **shape / policy** error to stderr and **skip** rewriting that node, with a message that both keys are present. Exact wording is left to the implementation; the spec only requires “no blind merge in v1.”
 
 ### Keys left unchanged in v1
 
@@ -83,46 +78,36 @@ A future version of this family’s spec **SHOULD** name **exact merge rules** a
 
 ---
 
-## Proposed CLI contract (v1, summary)
+## CLI contract (v1)
 
-+ **Name:** e.g. **`fix-legacy-yaml`** (console script; single entry for all rewrites in this family, with optional **`--only tests`**-style scoping in a later spec if more transforms ship).
-+ **Positional / file list:** one or more paths; typically YAML files. Behavior for directories (recursive glob) is **implementation-defined** but **SHOULD** match team expectations documented in **[`HOOKS.md`](../../HOOKS.md)** when the hook is shipped.
-+ **Modes (choose one set of names in implementation; this spec is agnostic to exact flags):**
-  - **Check / dry-run:** do not write; print planned changes or a summary; exit **`1`** if any file **would** change, **`0`** if no changes needed (for CI and pre-commit “fail if not fixed” workflows).
-  - **Write / in-place:** apply **`tests` → `data_tests`** in place; exit **`0`** on success, **`1`** on unrecoverable parse error or on conflict cases as defined above.
-+ **No `--required` / `--forbidden`**; this is not a validator family.
+**Flag:** **`--fix-legacy-yaml`** with an explicit boolean; default **`false`**. Exposed **only** on the six **`*-allowed-keys`** property-YAML console scripts (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on shipped **`*-allowed-column-keys`** hooks (**`model`**, **`seed`**, **`snapshot`**). Not on **`catalog-allowed-keys`** or **`dbt-project-allowed-keys`** (see **[`allowed-keys.md`](allowed-keys.md)**). **When `true`:** perform the v1 rewrites (this spec), **write** the file when renames apply, then run the **hook’s** normal validation. **When `false`:** do **not** rewrite; only validate. Full detail: **[`allowed-keys.md`](allowed-keys.md)** § **Pattern**, **[`allowed-column-keys.md`](allowed-column-keys.md)** § **Pattern**.
 
-**Pre-commit:** The shared **`.pre-commit-hooks.yaml`** entry uses **`types: [yaml]`**; optional per-repo **`files:`** patterns can narrow paths like other property-YAML hooks.
+**Pre-commit:** add **`args: ['--fix-legacy-yaml', 'true']`** (or the project’s spelling for boolean flags) to the relevant **`id`** stanzas for **`model-allowed-keys`**, **`seed-allowed-keys`**, etc.
 
 ---
 
-## Exit codes (v1, target)
+## Exit codes (v1)
 
-| Code | Meaning |
-| --- | --- |
-| **`0`** | Check mode: no rewrites needed. Write mode: all targeted files written successfully, or no applicable keys found. |
-| **`1`** | At least one file would be changed (check mode) or failed to parse / failed to write / unhandled conflict (write mode) — see implementation notes. |
-| **`2`** | Invalid CLI usage (e.g. mutually exclusive flags), reserved for the Typer/CLI layer. |
-
-(Exact **check-mode** “would change = exit 1” convention **SHOULD** match **`HOOKS.md`** examples and **`testing-strategy.md`** once implemented.)
+Use the **`*-allowed-keys`** and **`*-allowed-column-keys`** exit code tables; failures in the fix phase are **`1`**. See **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**.
 
 ---
 
-## Relationship to `*-allowed-keys`
+## Relationship to `*-allowed-keys` and `*-allowed-column-keys`
 
-+ After a successful run of the **`tests` → `data_tests`** rewrite, **`data_tests`** is on the allowlist; **`tests` should** no longer appear in those positions, so **`*-allowed-keys`** and column checks should stop emitting legacy **tests** messages for the rewritten nodes.
-+ This family **does not** emit the same **stderr** lines as **`*-allowed-keys`**; it either **modifies** files (write mode) or **reports** that changes are needed (check mode). **MUST NOT** attempt to duplicate the validator’s “Suggested violation detail” text byte-for-byte; the validator remains the **source of truth** for *whether* a key is allowed.
++ After a **successful** rewrite, **`data_tests`** is allowlisted; **`tests` should** no longer appear in those positions, so validators should stop emitting legacy **tests** messages for the rewritten nodes on the next run.
++ The **rewrite** (this spec) **does not** print the same **stderr** lines as the validators. When **`--fix-legacy-yaml` is** **`true`**, the hook first **edits** the file (when applicable) **then** runs validation; the validator remains the **source of truth** for *whether* a key is allowed **after** the file state is updated. **MUST NOT** attempt to duplicate the validator’s “Suggested violation detail” text byte-for-byte in the **rewrite** layer; reuse **`resource_keys.py`** messaging only in **validation** code paths.
 
 ---
 
 ## Tests (when implemented)
 
-+ Mirror **`tests/hook_families/`** under a package such as **`hook_families/fix_legacy_yaml/`** (exact name to align with **[`project-spec.md`](../project-spec.md)**).
-+ **Fixtures:** before/after YAML for **models** (top-level and `columns:`), **seeds**, **snapshots**; a case with **both** `tests` and `data_tests` must assert the **conflict** behavior; idempotence (second run is a no-op).
++ **Shared** rewrite logic (e.g. under **`hook_families/fix_legacy_yaml/`** per **[`project-spec.md`](../project-spec.md)**) **SHOULD** be covered by unit tests: before/after YAML for **models** (top-level and `columns:`), **seeds**, **snapshots**; a case with **both** `tests` and `data_tests` must assert **conflict** behavior; idempotence (second **`true` run** is a no-op).
++ **Integration:** **`*-allowed-keys`** and **`*-allowed-column-keys`** with **`--fix-legacy-yaml` true** **SHOULD** assert the same rewrite outcomes on disk **then** validation (no legacy **`tests`** left where in scope) **when** the file is otherwise valid.
 
 ---
 
 ## Changelog of this spec
 
 + **Initial** — v1 `tests` → `data_tests` only; **Future** `tags` / `meta` section reserved.
-+ **Rename** — The hook family, console script, and pre-commit **`id`** were renamed from **`dbt-yaml-legacy`** to **`fix-legacy-yaml`**; the spec file is **`fix-legacy-yaml.md`**. Code lives under **`hook_families/fix_legacy_yaml/`** in the repository.
++ **Rename** — The family and spec file were named **`fix-legacy-yaml`**; code lives under **`hook_families/fix_legacy_yaml/`** in the repository.
++ **Integrated-only delivery** — **`--fix-legacy-yaml`** (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**; the standalone `fix-legacy-yaml` console entry point and pre-commit hook were **removed** in favor of the integrated flag only.

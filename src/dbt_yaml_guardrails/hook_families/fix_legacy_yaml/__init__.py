@@ -1,1 +1,1 @@
-"""Mechanical legacy rewrites for dbt property YAML (``fix-legacy-yaml`` hook)."""
+"""Shared legacy YAML rewrite helpers (v1 ``tests`` → ``data_tests``; see ``fix-legacy-yaml.md``)."""

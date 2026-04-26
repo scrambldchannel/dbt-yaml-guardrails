@@ -20,6 +20,7 @@ from .allowed_keys_core import (
     collect_violation_rows_for_property_paths,
     finalize_violation_rows,
     message_name_in_required,
+    parse_bool_flag,
     parse_csv_keys,
 )
 from dbt_yaml_guardrails.hook_families.allowed_config_keys.resource_config_keys import (
@@ -52,6 +53,7 @@ def _run(
     forbidden_csv: str,
     check_config: bool = True,
     check_columns: bool = True,
+    fix_legacy_yaml: bool = False,
 ) -> int:
     required = parse_csv_keys(required_csv)
     forbidden = parse_csv_keys(forbidden_csv)
@@ -78,6 +80,7 @@ def _run(
         column_allowed=SEED_COLUMN_ALLOWED_KEYS,
         column_legacy_key_messages=SEED_COLUMN_LEGACY_KEY_MESSAGES,
         resource_label="seed",
+        fix_legacy_yaml=fix_legacy_yaml,
     )
     return finalize_violation_rows(
         rows,
@@ -115,14 +118,23 @@ def main(
             "Pass --check-columns false to skip column key checks."
         ),
     ),
+    fix_legacy_yaml: str = typer.Option(
+        "false",
+        "--fix-legacy-yaml",
+        help=(
+            "If true, apply v1 tests→data_tests rewrites in place before validation "
+            "(default: false). See specs/hook-families/fix-legacy-yaml.md."
+        ),
+    ),
 ) -> None:
     """Validate top-level keys on each seed entry."""
     code = _run(
         files,
         required,
         forbidden,
-        check_config=check_config.lower() not in ("false", "0", "no", "f", "off"),
-        check_columns=check_columns.lower() not in ("false", "0", "no", "f", "off"),
+        check_config=parse_bool_flag(check_config),
+        check_columns=parse_bool_flag(check_columns),
+        fix_legacy_yaml=parse_bool_flag(fix_legacy_yaml),
     )
     raise typer.Exit(code)
 

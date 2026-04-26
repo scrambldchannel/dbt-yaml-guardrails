@@ -11,6 +11,9 @@ import typer
 from dbt_yaml_guardrails.hook_families.allowed_column_keys.allowed_column_keys_core import (
     run_allowed_column_keys_cli,
 )
+from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
+    parse_bool_flag,
+)
 from dbt_yaml_guardrails.hook_families.allowed_keys.resource_keys import (
     SEED_COLUMN_ALLOWED_KEYS,
     SEED_COLUMN_LEGACY_KEY_MESSAGES,
@@ -39,6 +42,7 @@ def _run(
     files: list[Path],
     required_csv: str,
     forbidden_csv: str,
+    fix_legacy_yaml: bool = False,
 ) -> int:
     return run_allowed_column_keys_cli(
         files,
@@ -51,6 +55,7 @@ def _run(
         extract_by_name=_extract_seed_by_name,
         iter_entries=iter_seed_entries,
         emit=lambda m: typer.echo(m, err=True),
+        fix_legacy_yaml=fix_legacy_yaml,
     )
 
 
@@ -65,9 +70,19 @@ def main(
             "(stricter than the fixed allowlist in specs/resource-keys.md § Seeds — Column keys)."
         ),
     ),
+    fix_legacy_yaml: str = typer.Option(
+        "false",
+        "--fix-legacy-yaml",
+        help=(
+            "If true, apply v1 tests→data_tests rewrites in place before validation "
+            "(default: false). See specs/hook-families/fix-legacy-yaml.md."
+        ),
+    ),
 ) -> None:
     """Validate direct keys on each column entry for seed entries."""
-    code = _run(files, required, forbidden)
+    code = _run(
+        files, required, forbidden, fix_legacy_yaml=parse_bool_flag(fix_legacy_yaml)
+    )
     raise typer.Exit(code)
 
 

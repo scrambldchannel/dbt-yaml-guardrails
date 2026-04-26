@@ -175,3 +175,111 @@ def test_cli_check_columns_nameless_column_is_shape_error() -> None:
     r = _invoke(_f("models_nameless_column.yml"))
     assert r.returncode == 1
     assert "column at index 0 is missing 'name'" in r.stderr
+
+
+def test_cli_fix_legacy_yaml_rewrites_tests_then_passes(tmp_path: Path) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "fix_legacy_yaml"
+        / "model_tests_top.yml"
+    )
+    p = tmp_path / "m.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "data_tests:" in out
+    assert "    tests:" not in out
+
+
+def test_cli_fix_legacy_yaml_default_false_still_reports_legacy_tests(
+    tmp_path: Path,
+) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "fix_legacy_yaml"
+        / "model_tests_top.yml"
+    )
+    p = tmp_path / "m.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r = _invoke(str(p))
+    assert r.returncode == 1
+    assert "Rename to `data_tests`" in r.stderr
+
+
+def test_cli_fix_legacy_yaml_second_run_idempotent(tmp_path: Path) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "fix_legacy_yaml"
+        / "model_tests_top.yml"
+    )
+    p = tmp_path / "m.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r1 = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r1.returncode == 0, r1.stderr
+    r2 = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r2.returncode == 0
+    assert r2.stderr == ""
+
+
+def test_cli_fix_legacy_yaml_rewrites_column_level(tmp_path: Path) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "fix_legacy_yaml"
+        / "model_column_tests.yml"
+    )
+    p = tmp_path / "c.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "data_tests" in out
+    assert "        tests:" not in out
+
+
+def test_cli_fix_legacy_yaml_conflict_both_keys_fails() -> None:
+    p = str(
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "fix_legacy_yaml"
+        / "model_both_keys.yml"
+    )
+    r = _invoke("--fix-legacy-yaml", "true", p)
+    assert r.returncode == 1
+    assert "both present" in r.stderr or "skipping" in r.stderr
+
+
+def test_cli_fix_legacy_yaml_preserves_key_order_among_siblings(tmp_path: Path) -> None:
+    p = tmp_path / "k.yml"
+    p.write_text(
+        "version: 2\n"
+        "models:\n"
+        "  - name: a\n"
+        "    config: {}\n"
+        "    description: d\n"
+        "    tests: []\n",
+        encoding="utf-8",
+    )
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    i_c, i_desc, i_dt = (
+        out.index("config:"),
+        out.index("description:"),
+        out.index("data_tests"),
+    )
+    assert i_c < i_desc < i_dt

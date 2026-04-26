@@ -6,6 +6,9 @@ from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequenc
 from pathlib import Path
 from typing import Any, TypeAlias
 
+from dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_integration import (
+    apply_tests_to_data_tests_fix,
+)
 from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
     ParseSkip,
@@ -160,6 +163,11 @@ def _nested_config_violations(
             sub_detail = legacy.get(key) or f"disallowed key '{key}'"
             rows.append(((path_posix, resource_id, key, 2), f"config: {sub_detail}"))
     return rows
+
+
+def parse_bool_flag(raw: str) -> bool:
+    """Parse Typer string booleans (``--check-config`` / ``--fix-legacy-yaml`` style)."""
+    return raw.lower() not in ("false", "0", "no", "f", "off")
 
 
 def parse_csv_keys(raw: str) -> set[str]:
@@ -318,6 +326,7 @@ def collect_violation_rows_for_property_paths(
     column_allowed: frozenset[str] | None = None,
     column_legacy_key_messages: Mapping[str, str] | None = None,
     resource_label: str = "",
+    fix_legacy_yaml: bool = False,
 ) -> list[ViolationRow]:
     """Walk *files*, load YAML, and validate top-level keys on each resource entry.
 
@@ -355,6 +364,10 @@ def collect_violation_rows_for_property_paths(
         column_legacy_key_messages: Optional legacy-key detail map for column keys.
         resource_label: Singular resource noun (e.g. ``\"model\"``); used in ``config``
             and column shape-error messages when nested checking is active.
+        fix_legacy_yaml: When ``True``, run the v1 ``tests`` → ``data_tests`` rewrite
+            (``fix-legacy-yaml.md``) before loading. Only **property-YAML** hooks that ship this
+            flag (§§1–6 in ``allowed-keys.md``) should pass ``True``; **catalog** and
+            **dbt-project** hooks **MUST NOT** expose the flag.
 
     Returns:
         Unsorted violation rows.
@@ -364,6 +377,15 @@ def collect_violation_rows_for_property_paths(
     run_columns = check_columns and column_allowed is not None
     for path in files:
         path = path.expanduser()
+        if fix_legacy_yaml:
+            fix_out = apply_tests_to_data_tests_fix(path)
+            if fix_out[0] == "skip":
+                continue
+            if fix_out[0] == "fail":
+                _, err_msgs = fix_out
+                for msg in err_msgs:
+                    rows.append(violation_row_parse_error(path.as_posix(), msg))
+                continue
         loaded = load_property_yaml(path)
         if isinstance(loaded, ParseSkip):
             continue

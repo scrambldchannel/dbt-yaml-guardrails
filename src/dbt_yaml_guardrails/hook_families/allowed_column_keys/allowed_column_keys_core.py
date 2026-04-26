@@ -13,6 +13,9 @@ from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
     parse_csv_keys,
     violation_row_parse_error,
 )
+from dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_integration import (
+    apply_tests_to_data_tests_fix,
+)
 from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
     ParseSkip,
@@ -122,6 +125,7 @@ def collect_violation_rows_for_column_paths(
         [Mapping[str, Mapping[str, Any]]],
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
+    fix_legacy_yaml: bool = False,
 ) -> list[ViolationRow]:
     """Walk *files* and validate keys on each column entry for the resource type.
 
@@ -135,6 +139,8 @@ def collect_violation_rows_for_column_paths(
         extract_by_name: Returns ``None`` (skip), :class:`ParseError`, or
             a ``name -> entry`` map from a :class:`ParseSuccess`.
         iter_entries: Stable iteration over that map.
+        fix_legacy_yaml: When ``True``, run v1 ``tests`` → ``data_tests`` rewrites
+            (``fix-legacy-yaml.md``) on each property file before column validation.
 
     Returns:
         Unsorted violation rows.
@@ -142,6 +148,15 @@ def collect_violation_rows_for_column_paths(
     rows: list[ViolationRow] = []
     for path in files:
         path = path.expanduser()
+        if fix_legacy_yaml:
+            fix_out = apply_tests_to_data_tests_fix(path)
+            if fix_out[0] == "skip":
+                continue
+            if fix_out[0] == "fail":
+                _, err_msgs = fix_out
+                for msg in err_msgs:
+                    rows.append(violation_row_parse_error(path.as_posix(), msg))
+                continue
         loaded = load_property_yaml(path)
         if isinstance(loaded, ParseSkip):
             continue
@@ -186,6 +201,7 @@ def run_allowed_column_keys_cli(
         Iterable[tuple[str, Mapping[str, Any]]],
     ],
     emit: Callable[[str], None],
+    fix_legacy_yaml: bool = False,
 ) -> int:
     """Run a ``*-allowed-column-keys`` hook: parse flags, validate, print.
 
@@ -208,5 +224,6 @@ def run_allowed_column_keys_cli(
         resource_label=resource_label,
         extract_by_name=extract_by_name,
         iter_entries=iter_entries,
+        fix_legacy_yaml=fix_legacy_yaml,
     )
     return finalize_violation_rows(rows, resource_label=resource_label, emit=emit)

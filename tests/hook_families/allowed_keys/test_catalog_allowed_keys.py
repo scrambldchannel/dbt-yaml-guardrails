@@ -74,3 +74,10 @@ def test_cli_forbidden_removes_otherwise_allowed_key() -> None:
     assert r.returncode == 1
     assert "forbidden key 'write_integrations'" in r.stderr
     assert "catalog 'with_write'" in r.stderr
+
+
+def test_cli_does_not_accept_fix_legacy_yaml() -> None:
+    r = _invoke("--fix-legacy-yaml", "true", _f("catalogs_two.yml"))
+    assert r.returncode == 2
+    combined = r.stdout + r.stderr
+    assert "No such option" in combined or "fix-legacy-yaml" in combined

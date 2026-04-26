@@ -86,7 +86,6 @@ snapshot-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted
 exposure-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.exposure_tags_accepted_values:cli_main"
 source-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.source_tags_accepted_values:cli_main"
 macro-tags-accepted-values = "dbt_yaml_guardrails.hook_families.tags_accepted_values.macro_tags_accepted_values:cli_main"
-fix-legacy-yaml = "dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_yaml:cli_main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dbt_yaml_guardrails"]

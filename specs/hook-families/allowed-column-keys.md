@@ -34,7 +34,7 @@ Projects want to enforce which **direct keys** may appear on each column entry, 
 | Code | Meaning |
 | --- | --- |
 | **`0`** | Every processed file passed. Files with no target section, or with `columns:` absent or an empty list, are skipped (no violation). |
-| **`1`** | At least one column key violation (disallowed / required / forbidden / legacy), or a parse / shape error (see **Shape errors** below). |
+| **`1`** | At least one column key violation (disallowed / required / forbidden / legacy), a parse / shape error (see **Shape errors** below), or a failure in the **`--fix-legacy-yaml`** phase (conflict, write error, or parse error from the round-trip pass — see **`fix-legacy-yaml.md`** and **`allowed-keys.md`** § **Pattern**). |
 | **`2`** | Invalid CLI usage. Do **not** list **`name`** in **`--required`**: `name` is always required on every real column entry; listing it is redundant and SHOULD be rejected with exit `2`, analogous to `name` in `*-allowed-keys --required`. |
 
 ---
@@ -46,6 +46,7 @@ Projects want to enforce which **direct keys** may appear on each column entry, 
 + **`--required`** — comma-separated column keys that **must** appear on every column entry. Default: none. Do **not** list `name` in `--required` (see **Exit codes §2** above). If `columns:` is absent on a resource entry there are no column entries to check — no missing-key violation is reported for that entry.
 + **Allowed keys are fixed** per resource: only the documented default set in **`resource-keys.md`** § **Column keys** for that resource type, implemented as `*_COLUMN_ALLOWED_KEYS` in `resource_keys.py`. These **MUST** mirror the spec tables.
 + **`--forbidden`** — comma-separated column keys that **must not** appear on any column entry, even when otherwise allowlisted (stricter team policy; e.g. `--forbidden tests` to actively reject the legacy alias rather than rely on the allowlist alone).
++ **`--fix-legacy-yaml`** — **one** boolean option; default **`false`**. **Opt-in** mechanical rewrite of legacy property-YAML keys **before** column-key validation, as defined in **[`fix-legacy-yaml.md`](fix-legacy-yaml.md)** (v1: **`tests` → `data_tests`**, including on **column entries** for **model, seed, snapshot** where in scope in that spec). When **`true`**, behavior matches **`--fix-legacy-yaml`** on **`*-allowed-keys`**: **ruamel** round-trip load, **apply** v1 rewrites **in place** (write when renames occur), **re-read**, then run the usual **`*-allowed-column-keys`** checks. When **`false`**, **validation only**. **Document-wide:** the rewrite applies to the **entire** property YAML file, not only `columns:` rows, so a column-only hook with **`--fix-legacy-yaml` true** may also rename **resource-level** `tests` in the same file (same rationale as **`*-allowed-keys`**). Shipped hooks **§ Shipped CLIs** (**`model-`**, **`seed-`**, **`snapshot-allowed-column-keys`**) are **in scope** for the non–no-op rewrite; the same **conflict and exit** rules as **`fix-legacy-yaml.md`** and **`hook-families/allowed-keys.md`** apply.
 
 **Parsing rules:**
 
@@ -106,6 +107,7 @@ When the dbt column-property surface evolves, update both the `resource-keys.md`
 
 ## Related
 
++ **[`fix-legacy-yaml.md`](fix-legacy-yaml.md)** — mechanical **`tests` → `data_tests`** rewrites; **`--fix-legacy-yaml`** on this family and on **`*-allowed-keys`** (see each spec’s **Pattern**).
 + **[`allowed-keys.md`](allowed-keys.md)** — top-level resource keys and `--check-columns` (default column key check without `--required`/`--forbidden`).
 + **[`allowed-config-keys.md`](allowed-config-keys.md)** — keys under the resource-level `config:` mapping.
 + **[`allowed-meta-keys.md`](allowed-meta-keys.md)** — key names under `config.meta`.

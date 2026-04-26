@@ -106,3 +106,14 @@ def test_cli_skips_no_models_section() -> None:
 def test_cli_skips_empty_file() -> None:
     r = _invoke(_shared("empty.yml"))
     assert r.returncode == 0
+
+
+def test_cli_fix_legacy_yaml_rewrites_column_tests(tmp_path: Path) -> None:
+    src = _COL / "models" / "columns_legacy_tests.yml"
+    p = tmp_path / "c.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "data_tests" in out
+    assert "        tests:" not in out

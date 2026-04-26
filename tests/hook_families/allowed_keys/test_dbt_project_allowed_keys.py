@@ -68,3 +68,10 @@ def test_cli_forbidden_vars() -> None:
     r = _invoke("--forbidden", "vars", _f("dbt_project_with_vars.yml"))
     assert r.returncode == 1
     assert "project: forbidden key 'vars'" in r.stderr
+
+
+def test_cli_does_not_accept_fix_legacy_yaml() -> None:
+    r = _invoke("--fix-legacy-yaml", "true", _f("dbt_project_clean.yml"))
+    assert r.returncode == 2
+    combined = r.stdout + r.stderr
+    assert "No such option" in combined or "fix-legacy-yaml" in combined
