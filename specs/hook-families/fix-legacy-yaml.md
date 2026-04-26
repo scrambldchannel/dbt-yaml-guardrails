@@ -1,13 +1,13 @@
-# Hook family: `dbt-yaml-legacy` (mechanical rewrites for deprecated YAML)
+# Hook family: `fix-legacy-yaml` (mechanical rewrites for deprecated YAML)
 
 **Purpose:** A **separate** tool from the **validation** families (`*-allowed-keys`, `*-allowed-config-keys`, …). It **rewrites** dbt **property YAML** to replace patterns that the validator flags as **legacy** (see **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**) with the **supported** spelling or location.
 
-**Status:** **`dbt-yaml-legacy`** is **shipped** as a single console script and pre-commit hook (**`id: dbt-yaml-legacy`**). **v1** renames **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. Future transforms (`tags` / `meta`) are not implemented yet.
+**Status:** **`fix-legacy-yaml`** is **shipped** as a single console script and pre-commit hook (**`id: fix-legacy-yaml`**). **v1** renames **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. Future transforms (`tags` / `meta`) are not implemented yet.
 
 **Operational notes (not a scope bug):**
 
-+ **Check vs. write:** The default is **check** — the tool does **not** change files. It only exits **non-zero** (or, with `--write`, rewrites) when it finds a rename opportunity or a conflict. To apply renames: **`dbt-yaml-legacy --write <files>`** or, in pre-commit, add **`args: ['--write']`**. A hook with no args still performs a useful “fail if legacy keys remain” check; it is **not** an auto-fixer.
-+ **Which `rev:` has the tool:** The **`dbt-yaml-legacy`** entry point only exists in **git commits that add it** (and in tags cut **after** that). Pinning an older pre-commit **`rev:`** (e.g. a tag that predates the hook) will **not** install the script, so the hook can appear to “do nothing” or be missing. Until you tag a release that includes the hook, use a **commit SHA**, **`main`**, a path override, or a local/editable run (**`uv run dbt-yaml-legacy`**) when exercising the rewriter.
++ **Check vs. write:** The default is **check** — the tool does **not** change files. It only exits **non-zero** (or, with `--write`, rewrites) when it finds a rename opportunity or a conflict. To apply renames: **`fix-legacy-yaml --write <files>`** or, in pre-commit, add **`args: ['--write']`**. A hook with no args still performs a useful “fail if legacy keys remain” check; it is **not** an auto-fixer.
++ **Which `rev:` has the tool:** The **`fix-legacy-yaml`** entry point only exists in **git commits that add it** (and in tags cut **after** that). Pinning an older pre-commit **`rev:`** (e.g. a tag that predates the hook) will **not** install the script, so the hook can appear to “do nothing” or be missing. Until you tag a release that includes the hook, use a **commit SHA**, **`main`**, a path override, or a local/editable run (**`uv run fix-legacy-yaml`**) when exercising the rewriter.
 
 Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
@@ -15,7 +15,7 @@ Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
 ## Design principles
 
-+ **Complement validators, do not replace them.** The **`dbt-yaml-legacy`** process applies **mechanical, syntax-level** rewrites. Teams still use **`model-allowed-keys`**, **`seed-allowed-keys`**, and related hooks to enforce allowlists, **`--required`**, and policy.
++ **Complement validators, do not replace them.** The **`fix-legacy-yaml`** process applies **mechanical, syntax-level** rewrites. Teams still use **`model-allowed-keys`**, **`seed-allowed-keys`**, and related hooks to enforce allowlists, **`--required`**, and policy.
 + **Deterministic and idempotent** where possible: running the fixer twice on the same file should not change the file a second time (or should be a no-op after the first run).
 + **Property YAML only in v1** (same file scope and loader expectations as **[`yaml-handling.md`](../yaml-handling.md)** § **dbt property YAML** and **`load_property_yaml`**). Do **not** target **`dbt_project.yml`**, **`catalogs.yml`**, or manifest-only files in the first version unless a later spec explicitly extends scope.
 + **Round-trip** should preserve **comments and formatting** as far as a mature YAML library allows. The implementation **SHOULD** use **ruamel.yaml** (already a project dependency) for any load → edit → write cycle; document the exact APIs in this spec or **`project-spec.md`** when the feature lands.
@@ -79,13 +79,13 @@ These are **not** in v1 because they require **nesting** under `config:`, not a 
 | Top-level `tags` on a resource entry | `config.tags` | Must **create** or **merge** into a `config` mapping. If `config` already has `tags`, define merge (replace, union, or fail). |
 | Top-level `meta` on a resource entry | `config.meta` | If `config.meta` already exists, need **deep merge** of mapping values or a defined conflict policy; if both sides set the same sub-key, do not guess silently. |
 
-A future version of this family’s spec **SHOULD** name **exact merge rules** and add fixtures before implementation. The **`dbt-yaml-legacy`** v1 **must** document that **`tags` / `meta` moves** are out of scope so users do not expect them from the first release.
+A future version of this family’s spec **SHOULD** name **exact merge rules** and add fixtures before implementation. The **`fix-legacy-yaml`** v1 **must** document that **`tags` / `meta` moves** are out of scope so users do not expect them from the first release.
 
 ---
 
 ## Proposed CLI contract (v1, summary)
 
-+ **Name:** e.g. **`dbt-yaml-legacy`** (console script; single entry for all rewrites in this family, with optional **`--only tests`**-style scoping in a later spec if more transforms ship).
++ **Name:** e.g. **`fix-legacy-yaml`** (console script; single entry for all rewrites in this family, with optional **`--only tests`**-style scoping in a later spec if more transforms ship).
 + **Positional / file list:** one or more paths; typically YAML files. Behavior for directories (recursive glob) is **implementation-defined** but **SHOULD** match team expectations documented in **[`HOOKS.md`](../../HOOKS.md)** when the hook is shipped.
 + **Modes (choose one set of names in implementation; this spec is agnostic to exact flags):**
   - **Check / dry-run:** do not write; print planned changes or a summary; exit **`1`** if any file **would** change, **`0`** if no changes needed (for CI and pre-commit “fail if not fixed” workflows).
@@ -117,7 +117,7 @@ A future version of this family’s spec **SHOULD** name **exact merge rules** a
 
 ## Tests (when implemented)
 
-+ Mirror **`tests/hook_families/`** under a package such as **`hook_families/dbt_yaml_legacy/`** (exact name to align with **[`project-spec.md`](../project-spec.md)**).
++ Mirror **`tests/hook_families/`** under a package such as **`hook_families/fix_legacy_yaml/`** (exact name to align with **[`project-spec.md`](../project-spec.md)**).
 + **Fixtures:** before/after YAML for **models** (top-level and `columns:`), **seeds**, **snapshots**; a case with **both** `tests` and `data_tests` must assert the **conflict** behavior; idempotence (second run is a no-op).
 
 ---
@@ -125,3 +125,4 @@ A future version of this family’s spec **SHOULD** name **exact merge rules** a
 ## Changelog of this spec
 
 + **Initial** — v1 `tests` → `data_tests` only; **Future** `tags` / `meta` section reserved.
++ **Rename** — The hook family, console script, and pre-commit **`id`** were renamed from **`dbt-yaml-legacy`** to **`fix-legacy-yaml`**; the spec file is **`fix-legacy-yaml.md`**. Code lives under **`hook_families/fix_legacy_yaml/`** in the repository.

@@ -112,13 +112,13 @@ The value at a **dot path** under **`config.meta`** must be a **string** or **li
 | `source-tags-accepted-values` | `config.tags` on each `sources:` entry |
 | `macro-tags-accepted-values` | `config.tags` on each `macros:` entry |
 
-## `dbt-yaml-legacy`
+## `fix-legacy-yaml`
 
-Mechanical **rewrite** (not validation): renames legacy **`tests`** to **`data_tests`** at the declaration sites described in [`specs/hook-families/dbt-yaml-legacy.md`](specs/hook-families/dbt-yaml-legacy.md) (v1: resource entry and, for model/seed/snapshot, each item in `columns:`). Complements the **`tests`** / **`data_tests`** rules in `*-allowed-keys`; it does not print the same messages as the validators.
+Mechanical **rewrite** (not validation): renames legacy **`tests`** to **`data_tests`** at the declaration sites described in [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md) (v1: resource entry and, for model/seed/snapshot, each item in `columns:`). Complements the **`tests`** / **`data_tests`** rules in `*-allowed-keys`; it does not print the same messages as the validators.
 
 | ID | Behavior |
 | --- | --- |
-| `dbt-yaml-legacy` | Default: **check** (exit 1 if a file would change, or if both `tests` and `data_tests` are present on the same object). Use **`--write`** to update files in place. |
+| `fix-legacy-yaml` | Default: **check** (exit 1 if a file would change, or if both `tests` and `data_tests` are present on the same object). Use **`--write`** to update files in place. |
 
 ## pre-commit
 
@@ -192,7 +192,7 @@ repos:
         args: ["--values", "nightly,finance,raw"]
 
       # optional: rewrite tests -> data_tests (add --write to apply)
-      - id: dbt-yaml-legacy
+      - id: fix-legacy-yaml
 ```
 
 The **`rev:`** above tracks the **latest release**; bump it when you release (see **`specs/project-spec.md`** § **Release notes**). For reproducible installs you can also pin a [specific tag](https://github.com/scrambldchannel/dbt-yaml-guardrails/tags) or commit SHA. Use **`main`** only if you intentionally want the tip of the default branch.

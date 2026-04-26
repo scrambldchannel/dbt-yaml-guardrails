@@ -1,4 +1,4 @@
-"""CLI: ``dbt-yaml-legacy`` — ``specs/hook-families/dbt-yaml-legacy.md``."""
+"""CLI: ``fix-legacy-yaml`` — ``specs/hook-families/fix-legacy-yaml.md``."""
 
 from __future__ import annotations
 

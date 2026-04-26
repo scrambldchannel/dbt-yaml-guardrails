@@ -1,6 +1,6 @@
 """Round-trip property YAML and rewrite legacy ``tests`` to ``data_tests``.
 
-``specs/hook-families/dbt-yaml-legacy.md`` (v1).
+``specs/hook-families/fix-legacy-yaml.md`` (v1).
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from dbt_yaml_guardrails.yaml_handling import (
     _yaml_loader,
 )
 
-# Resource list keys from ``dbt-yaml-legacy.md`` v1; ``sources`` has no column rewrites in v1.
+# Resource list keys from ``fix-legacy-yaml.md`` v1; ``sources`` has no column rewrites in v1.
 _RESOURCE_LIST_KEYS: tuple[str, ...] = (
     "models",
     "seeds",

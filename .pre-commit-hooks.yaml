@@ -247,9 +247,9 @@
   language: python
   types: [yaml]
 
-- id: dbt-yaml-legacy
-  name: dbt legacy YAML rewrites
+- id: fix-legacy-yaml
+  name: fix legacy dbt property YAML
   description: Rewrite legacy tests key to data_tests in dbt property YAML (use --write to apply)
-  entry: dbt-yaml-legacy
+  entry: fix-legacy-yaml
   language: python
   types: [yaml]

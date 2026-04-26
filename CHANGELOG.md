@@ -8,7 +8,7 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
-- **`dbt-yaml-legacy`**: rewrites legacy **`tests`** to **`data_tests`** in dbt property YAML (resource entries and `columns:` items for model, seed, snapshot, plus resource-level macro, exposure, source). **Check by default** (exit 1 if anything would change or if both keys are present on the same object); use **`--write`** to update files. Uses **ruamel** round-trip to preserve key order. See [`specs/hook-families/dbt-yaml-legacy.md`](specs/hook-families/dbt-yaml-legacy.md). Not yet in a versioned **git tag**; `rev:` in examples stays **v0.5.1** until the next release.
+- **`fix-legacy-yaml`**: rewrites legacy **`tests`** to **`data_tests`** in dbt property YAML (resource entries and `columns:` items for model, seed, snapshot, plus resource-level macro, exposure, source). **Check by default** (exit 1 if anything would change or if both keys are present on the same object); use **`--write`** to update files. Uses **ruamel** round-trip to preserve key order. See [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md). Not yet in a versioned **git tag**; `rev:` in examples stays **v0.5.1** until the next release.
 
 ## [0.5.1](https://github.com/scrambldchannel/dbt-yaml-guardrails/releases) — 2026-04-25
 

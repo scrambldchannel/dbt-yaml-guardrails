@@ -1,4 +1,4 @@
-"""Tests for ``dbt-yaml-legacy`` (``specs/hook-families/dbt-yaml-legacy.md``)."""
+"""Tests for ``fix-legacy-yaml`` (``specs/hook-families/fix-legacy-yaml.md``)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import sys
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml" / "dbt_yaml_legacy"
-_MODULE = "dbt_yaml_guardrails.hook_families.dbt_yaml_legacy.dbt_yaml_legacy"
+_YAML = _REPO_ROOT / "tests" / "fixtures" / "yaml" / "fix_legacy_yaml"
+_MODULE = "dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_yaml"
 
 
 def _f(name: str) -> str:

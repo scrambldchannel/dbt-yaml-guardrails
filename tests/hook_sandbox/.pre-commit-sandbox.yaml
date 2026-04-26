@@ -4,9 +4,9 @@ repos:
       # Run first with --write so legacy ``tests`` renames apply before *-allowed-keys runs on the
       # same file; check-only would only fail without fixing. Pre-commit may exit non-zero the first
       # time this hook modifies the file ("files were modified"); run ``make sandbox-hooks`` again.
-      - id: dbtg-sandbox-dbt-yaml-legacy
-        name: (sandbox) dbt-yaml-legacy
-        entry: uv run dbt-yaml-legacy
+      - id: dbtg-sandbox-fix-legacy-yaml
+        name: (sandbox) fix-legacy-yaml
+        entry: uv run fix-legacy-yaml
         language: system
         pass_filenames: true
         args: ['--write']
