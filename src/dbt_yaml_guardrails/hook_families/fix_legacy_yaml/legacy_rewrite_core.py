@@ -1,6 +1,7 @@
-"""Round-trip property YAML and rewrite legacy ``tests`` to ``data_tests``.
+"""Round-trip property YAML and rewrite legacy property keys.
 
-``specs/hook-families/fix-legacy-yaml.md`` (v1).
+``specs/hook-families/fix-legacy-yaml.md`` — v1 ``tests`` → ``data_tests``; v2 top-level
+``meta`` / ``tags`` → ``config``.
 """
 
 from __future__ import annotations
@@ -22,7 +23,8 @@ from dbt_yaml_guardrails.yaml_handling import (
     _yaml_loader,
 )
 
-# Resource list keys from ``fix-legacy-yaml.md`` v1; ``sources`` has no column rewrites in v1.
+# Resource list keys (resource entries) for rewrites. ``sources`` has no column ``tests`` rewrites
+# in v1; top-level source rows still get ``meta`` / ``tags`` → ``config``.
 _RESOURCE_LIST_KEYS: tuple[str, ...] = (
     "models",
     "seeds",
@@ -159,6 +161,122 @@ def rewrite_tests_to_data_tests_v1(
                             f"skipping this column"
                         )
     return renames, conflicts
+
+
+def _mapping_insert(
+    m: MutableMapping[str, Any],
+    key: str,
+    value: Any,
+) -> None:
+    """Set *key* on *m*; use ``CommentedMap.insert`` at end when available."""
+    if isinstance(m, CommentedMap) and key not in m:
+        m.insert(len(m), key, value)  # type: ignore[call-arg]
+    else:
+        m[key] = value
+
+
+def _conflicts_for_top_level_meta_and_tags(
+    item: MutableMapping[str, Any],
+    path_s: str,
+    ctx: str,
+) -> list[str]:
+    """Read-only: whether moving top-level ``meta`` / ``tags`` would fail (no mutation)."""
+    to_move: list[str] = [k for k in ("meta", "tags") if k in item]
+    if not to_move:
+        return []
+    if "config" in item:
+        raw_cfg = item["config"]
+        if raw_cfg is None or not isinstance(raw_cfg, MutableMapping):
+            return [
+                f"{path_s}: {ctx}: `config` is not a mapping, cannot move top-level `meta`/`tags`"
+            ]
+        cfg = raw_cfg
+        for key in to_move:
+            if key in cfg:
+                return [
+                    f"{path_s}: {ctx}: top-level '{key}' and `config.{key}` both present, "
+                    f"skipping this entry"
+                ]
+    return []
+
+
+def _apply_top_level_meta_and_tags_for_entry(
+    item: MutableMapping[str, Any],
+) -> int:
+    """Move top-level ``meta`` / ``tags`` into ``config``. Call only if preflight is clean for *item*.
+
+    Returns change count.
+    """
+    to_move: list[str] = [k for k in ("meta", "tags") if k in item]
+    if not to_move:
+        return 0
+    if "config" in item:
+        raw_cfg = item["config"]
+        if raw_cfg is None or not isinstance(raw_cfg, MutableMapping):
+            return 0
+        cfg: MutableMapping[str, Any] = raw_cfg
+        ch = 0
+        for key in to_move:
+            value = item.pop(key)
+            _mapping_insert(cfg, key, value)
+            ch += 1
+        return ch
+
+    old_keys = list(item.keys()) if isinstance(item, CommentedMap) else list(item)
+    ins_at = min(old_keys.index(k) for k in to_move)
+    to_pop = sorted(
+        to_move,
+        key=lambda k: -old_keys.index(k),
+    )
+    vals: dict[str, Any] = {}
+    for k in to_pop:
+        vals[k] = item.pop(k)
+    new_cfg = CommentedMap()
+    for k in ("meta", "tags"):
+        if k in vals:
+            new_cfg[k] = vals[k]
+    if isinstance(item, CommentedMap):
+        item.insert(ins_at, "config", new_cfg)  # type: ignore[call-arg]
+    else:
+        item["config"] = new_cfg
+    return len(to_move)
+
+
+def rewrite_top_level_meta_tags_to_config(
+    root: Any,
+    path: Path,
+) -> tuple[int, list[str]]:
+    """Move top-level resource ``meta`` / ``tags`` into ``config`` (see fix-legacy-yaml v2)."""
+    if not isinstance(root, MutableMapping):
+        return 0, []
+
+    path_s = str(path).replace("\\", "/")
+    all_conflicts: list[str] = []
+    to_apply: list[MutableMapping[str, Any]] = []
+
+    for section in _RESOURCE_LIST_KEYS:
+        if section not in root:
+            continue
+        block = root[section]
+        if block is None or not isinstance(block, list):
+            continue
+        for item in block:
+            if not isinstance(item, MutableMapping):
+                continue
+            ctx = _context_label(section, item)
+            c = _conflicts_for_top_level_meta_and_tags(item, path_s, ctx)
+            if c:
+                all_conflicts.extend(c)
+            else:
+                if any(k in item for k in ("meta", "tags")):
+                    to_apply.append(item)
+    if all_conflicts:
+        return 0, all_conflicts
+
+    renames = 0
+    for item in to_apply:
+        renames += _apply_top_level_meta_and_tags_for_entry(item)
+    return renames, []
 
 
 def write_roundtrip(path: Path, root: Any) -> str | None:

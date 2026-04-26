@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, TypeAlias
 
 from dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_integration import (
-    apply_tests_to_data_tests_fix,
+    apply_fix_legacy_yaml,
 )
 from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
@@ -364,8 +364,9 @@ def collect_violation_rows_for_property_paths(
         column_legacy_key_messages: Optional legacy-key detail map for column keys.
         resource_label: Singular resource noun (e.g. ``\"model\"``); used in ``config``
             and column shape-error messages when nested checking is active.
-        fix_legacy_yaml: When ``True``, run the v1 ``tests`` → ``data_tests`` rewrite
-            (``fix-legacy-yaml.md``) before loading. Only **property-YAML** hooks that ship this
+        fix_legacy_yaml: When ``True``, run the ``--fix-legacy-yaml`` rewrites
+            (``fix-legacy-yaml.md``: ``tests`` → ``data_tests``, top-level ``meta`` / ``tags`` → ``config``) before
+            loading. Only **property-YAML** hooks that ship this
             flag (§§1–6 in ``allowed-keys.md``) should pass ``True``; **catalog** and
             **dbt-project** hooks **MUST NOT** expose the flag.
 
@@ -378,7 +379,7 @@ def collect_violation_rows_for_property_paths(
     for path in files:
         path = path.expanduser()
         if fix_legacy_yaml:
-            fix_out = apply_tests_to_data_tests_fix(path)
+            fix_out = apply_fix_legacy_yaml(path)
             if fix_out[0] == "skip":
                 continue
             if fix_out[0] == "fail":

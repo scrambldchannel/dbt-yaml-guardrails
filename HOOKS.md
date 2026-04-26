@@ -24,7 +24,7 @@ These hooks use a **fixed allowlist** from [`specs/resource-keys.md`](specs/reso
 - **`--required`** — comma-separated keys that **must** appear on every entry (e.g. enforce `description` everywhere). For list-shaped resources, do not list `name` in `--required` (exit code 2). **`dbt-project-allowed-keys`** may use **`--required name`** (or **`config-version`**, **`profile`**, etc.) to enforce the project file. Does **not** apply to keys under `config:` — use `*-allowed-config-keys` for that.
 - **`--forbidden`** — comma-separated keys that **must not** appear on an entry, even when they would otherwise be allowed—use this for stricter team rules (e.g. forbid `config` on models so configuration lives only in `dbt_project.yml`). Does **not** apply to keys under `config:`.
 - **`--check-config`** — (`true` / `false`, default `true`) — when `true`, the six property-YAML hooks also validate **direct keys under each entry's `config:`** against the same default allowlists as `*-allowed-config-keys`. Pass `--check-config false` to restore the historical top-level-only behavior. Not applicable to `catalog-allowed-keys` or `dbt-project-allowed-keys`.
-- **`--fix-legacy-yaml`** — (`true` / `false`, default `false`) — **only** on the six property-YAML `*-allowed-keys` hooks: **`model-`**, **`macro-`**, **`seed-`**, **`source-`**, **`snapshot-`**, **`exposure-allowed-keys`**. When `true`, runs the v1 **`tests` → `data_tests`** mechanical rewrite in place (ruamel round-trip) **before** validation, for the whole file. **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** define this option. To fix legacy key names, enable **`--fix-legacy-yaml` true** on a hook that applies to your files. See [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md) and [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md).
+- **`--fix-legacy-yaml`** — (`true` / `false`, default `false`) — **only** on the six property-YAML `*-allowed-keys` hooks: **`model-`**, **`macro-`**, **`seed-`**, **`source-`**, **`snapshot-`**, **`exposure-allowed-keys`**. When `true`, runs mechanical rewrites in place (ruamel round-trip) **before** validation, for the whole file: **`tests` → `data_tests`**, and top-level **`meta` / `tags` → `config`** on each resource entry (see [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md)). **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** define this option. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md).
 
 > **Heads-up — duplicate violations:** if you run both a `*-allowed-keys` hook (with the default `--check-config true`) **and** the matching `*-allowed-config-keys` hook on the same files, an unknown `config:` key will produce **two** stderr lines—one from each hook. To avoid this, either drop the `*-allowed-config-keys` hooks you no longer need, or pass `--check-config false` to the `*-allowed-keys` hooks and keep running `*-allowed-config-keys` separately (useful when you need `--required`/`--forbidden` on `config` keys, which `*-allowed-keys` does not support).
 
@@ -42,7 +42,7 @@ Allowlists are in [`specs/resource-keys.md`](specs/resource-keys.md) § **Column
 
 - **`--required`** — comma-separated column keys that **must** appear on every column entry (e.g. `--required description` to enforce documented columns). Do **not** list `name` (always required; exit code 2 if specified).
 - **`--forbidden`** — comma-separated column keys that **must not** appear on any column entry, even when otherwise allowlisted.
-- **`--fix-legacy-yaml`** — (`true` / `false`, default `false`) — when `true`, run the same v1 **`tests` → `data_tests`** rewrite on the file before column-key validation (see [`specs/hook-families/allowed-column-keys.md`](specs/hook-families/allowed-column-keys.md)).
+- **`--fix-legacy-yaml`** — (`true` / `false`, default `false`) — when `true`, run the same **fix-legacy-yaml** rewrites on the file before column-key validation (see [`specs/hook-families/allowed-column-keys.md`](specs/hook-families/allowed-column-keys.md) and [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md)).
 
 If a resource entry has no `columns:` key, or `columns:` is an empty list, it is skipped silently — `--required` does not trigger violations for entries without a `columns:` block.
 
@@ -185,7 +185,7 @@ repos:
       - id: macro-tags-accepted-values
         args: ["--values", "nightly,finance,raw"]
 
-      # optional: e.g. model-allowed-keys with --fix-legacy-yaml true rewrites tests -> data_tests then validates
+      # optional: e.g. model-allowed-keys with --fix-legacy-yaml true rewrites legacy keys then validates
       # - id: model-allowed-keys
       #   args: ["--fix-legacy-yaml", "true", "--required", "description"]
 ```

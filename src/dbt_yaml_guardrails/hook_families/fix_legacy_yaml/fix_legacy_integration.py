@@ -10,6 +10,7 @@ from dbt_yaml_guardrails.yaml_handling import ParseError, ParseSkip
 from .legacy_rewrite_core import (
     load_property_yaml_roundtrip,
     rewrite_tests_to_data_tests_v1,
+    rewrite_top_level_meta_tags_to_config,
     write_roundtrip,
 )
 
@@ -23,10 +24,11 @@ def _detail_without_path_prefix(path: Path, line: str) -> str:
     return line
 
 
-def apply_tests_to_data_tests_fix(
+def apply_fix_legacy_yaml(
     path: Path,
 ) -> tuple[Literal["ok", "skip"], None] | tuple[Literal["fail"], tuple[str, ...]]:
-    """Apply v1 ``tests`` → ``data_tests`` rewrites in place (ruamel round-trip).
+    """Apply all ``--fix-legacy-yaml`` rewrites in place (ruamel round-trip): ``tests`` → ``data_tests``;
+    top-level ``meta`` / ``tags`` → ``config`` on each resource entry.
 
     Returns:
         ``("ok", None)`` or ``("skip", None)`` — proceed or skip file (no validation), same as
@@ -42,16 +44,27 @@ def apply_tests_to_data_tests_fix(
         return ("fail", (loaded.message,))
 
     root = loaded
-    renames, conflicts = rewrite_tests_to_data_tests_v1(root, path)
-    if conflicts:
+    t_renames, t_conf = rewrite_tests_to_data_tests_v1(root, path)
+    if t_conf:
         return (
             "fail",
-            tuple(_detail_without_path_prefix(path, c) for c in conflicts),
+            tuple(_detail_without_path_prefix(path, c) for c in t_conf),
         )
 
-    if renames > 0:
+    m_renames, m_conf = rewrite_top_level_meta_tags_to_config(root, path)
+    if m_conf:
+        return (
+            "fail",
+            tuple(_detail_without_path_prefix(path, c) for c in m_conf),
+        )
+
+    if t_renames + m_renames > 0:
         err = write_roundtrip(path, root)
         if err is not None:
             return ("fail", (err,))
 
     return ("ok", None)
+
+
+# Backwards-compatible name (same as :func:`apply_fix_legacy_yaml`).
+apply_tests_to_data_tests_fix = apply_fix_legacy_yaml

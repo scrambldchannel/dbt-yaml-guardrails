@@ -14,7 +14,7 @@ from dbt_yaml_guardrails.hook_families.allowed_keys.allowed_keys_core import (
     violation_row_parse_error,
 )
 from dbt_yaml_guardrails.hook_families.fix_legacy_yaml.fix_legacy_integration import (
-    apply_tests_to_data_tests_fix,
+    apply_fix_legacy_yaml,
 )
 from dbt_yaml_guardrails.yaml_handling import (
     ParseError,
@@ -139,7 +139,7 @@ def collect_violation_rows_for_column_paths(
         extract_by_name: Returns ``None`` (skip), :class:`ParseError`, or
             a ``name -> entry`` map from a :class:`ParseSuccess`.
         iter_entries: Stable iteration over that map.
-        fix_legacy_yaml: When ``True``, run v1 ``tests`` → ``data_tests`` rewrites
+        fix_legacy_yaml: When ``True``, run ``--fix-legacy-yaml`` rewrites
             (``fix-legacy-yaml.md``) on each property file before column validation.
 
     Returns:
@@ -149,7 +149,7 @@ def collect_violation_rows_for_column_paths(
     for path in files:
         path = path.expanduser()
         if fix_legacy_yaml:
-            fix_out = apply_tests_to_data_tests_fix(path)
+            fix_out = apply_fix_legacy_yaml(path)
             if fix_out[0] == "skip":
                 continue
             if fix_out[0] == "fail":

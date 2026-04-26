@@ -1,8 +1,8 @@
 # Hook family: `fix-legacy-yaml` (mechanical rewrites for deprecated YAML)
 
-**Purpose:** This spec defines the **normative** mechanical rewrites for legacy keys in dbt **property YAML** (v1: **`tests` → `data_tests`**) that align with **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` / `*_COLUMN_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**. It does **not** replace validation: teams still use **`*-allowed-keys`**, **`*-allowed-column-keys`**, and other families for policy and allowlists.
+**Purpose:** This spec defines the **normative** mechanical rewrites for legacy keys in dbt **property YAML** — **v1:** **`tests` → `data_tests`**; **v2:** top-level **`meta` / `tags` → `config.meta` / `config.tags`** on resource entries — aligned with **`resource-keys.md`** § **Legacy / deprecated** and the `*_LEGACY_KEY_MESSAGES` / `*_COLUMN_LEGACY_KEY_MESSAGES` maps in **`resource_keys.py`**. It does **not** replace validation: teams still use **`*-allowed-keys`**, **`*-allowed-column-keys`**, and other families for policy and allowlists.
 
-**Delivery:** Rewrites are invoked only through the **opt-in** **`--fix-legacy-yaml`** flag (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**, as specified in **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**. **v1** implements **`tests` → `data_tests`** only, at the declaration sites in **§ v1** below. There is no separate console script or pre-commit hook id for rewrites. Future transforms (`tags` / `meta`) are not implemented yet.
+**Delivery:** Rewrites are invoked only through the **opt-in** **`--fix-legacy-yaml`** flag (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**, as specified in **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**. When **`true`**, the implementation runs **v1** then **v2** (see below). There is no separate console script or pre-commit hook id for rewrites. **Future:** other transforms (e.g. top-level **`tags` / `meta`** on **column** rows) are not specified here yet.
 
 Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
@@ -12,7 +12,7 @@ Umbrella packaging and the family list live in **[`../hooks.md`](../hooks.md)**.
 
 + **Complement validators, do not replace them.** The rewrite applies **mechanical, syntax-level** edits **before** validation when **`--fix-legacy-yaml` is** **`true`**. Allowlists, **`--required`**, and policy remain the job of **`*-allowed-keys`** and related hooks.
 + **Deterministic and idempotent** where possible: running the fixer twice on the same file should not change the file a second time (or should be a no-op after the first run).
-+ **Property YAML only in v1** (same file scope and loader expectations as **[`yaml-handling.md`](../yaml-handling.md)** § **dbt property YAML** and **`load_property_yaml`**). Do **not** target **`dbt_project.yml`**, **`catalogs.yml`**, or manifest-only files in the first version unless a later spec explicitly extends scope.
++ **Property YAML** for these rewrites (same file scope and loader expectations as **[`yaml-handling.md`](../yaml-handling.md)** § **dbt property YAML** and **`load_property_yaml`**). Do **not** target **`dbt_project.yml`**, **`catalogs.yml`**, or manifest-only files unless a later spec explicitly extends scope.
 + **Round-trip** should preserve **comments and formatting** as far as a mature YAML library allows. The implementation **SHOULD** use **ruamel.yaml** (already a project dependency) for any load → edit → write cycle; document the exact APIs in this spec or **`project-spec.md`** when the feature lands.
 
 ### Key order (non-negotiable unless explicitly excepted)
@@ -65,28 +65,53 @@ If an entry (resource row or column row) already contains **`data_tests`**, the 
 
 ---
 
-## Future: top-level `tags` and `meta` (not v1)
+## v2: top-level `meta` and `tags` → `config` (resource entries)
 
-These are **not** in v1 because they require **nesting** under `config:`, not a simple key rename.
+**Goal:** Move top-level **`meta`** and **`tags`** on each **resource entry** into **`config.meta`** and **`config.tags`**, matching the legacy messages in **`resource_keys.py`** for **model, macro, seed, snapshot, exposure, source**.
 
-| Legacy pattern | Target | Notes for a future spec / release |
-| --- | --- | --- |
-| Top-level `tags` on a resource entry | `config.tags` | Must **create** or **merge** into a `config` mapping. If `config` already has `tags`, define merge (replace, union, or fail). |
-| Top-level `meta` on a resource entry | `config.meta` | If `config.meta` already exists, need **deep merge** of mapping values or a defined conflict policy; if both sides set the same sub-key, do not guess silently. |
+**Where:** Each list item under **`models:`**, **`macros:`**, **`seeds:`**, **`snapshots:`**, **`exposures:`**, and **`sources:`**. **Not** column dicts, **`tables:`** / nested source columns, **`catalogs:`**, or **`dbt_project.yml`**.
 
-A future version of this family’s spec **SHOULD** name **exact merge rules** and add fixtures before implementation. The **`fix-legacy-yaml`** v1 **must** document that **`tags` / `meta` moves** are out of scope so users do not expect them from the first release.
+**Merge and conflict (v2):**
+
++ If **`config`** is **absent:** create a **`config`** mapping whose first keys are **`meta`** and/or **`tags`** (in that order if both are moved), inserted at the **original** position of the leftmost of **`meta`** / **`tags`** among top-level siblings (key order preserved among remaining top-level keys).
++ If **`config`** **exists** and is a **mapping:** **append** **`meta`** / **`tags`** into it (new keys at the end of **`config`**) when the top-level keys are present.
++ If **`config`** is present but **not** a mapping (e.g. **`config: null`**): **fail** for that entry (no move).
++ If top-level **`meta`** (or **`tags`**) is present **and** **`config.meta`** (or **`config.tags`**) already exists: **conflict** — do **not** merge; report an error for that entry and **do not write** the file if any entry in the document conflicts (atomicity: preflight all resource rows before applying any move).
+
+**Order of operations when `true`:** Run **v1** (`tests` → `data_tests`) first, then **v2** (`meta` / `tags`). If **v1** reports conflicts, fail before **v2**. If **v2** preflight finds any conflict, fail without writing (in-memory **v1** edits are not persisted).
+
+### Hooks in scope (v2)
+
+The **six** property **`*-allowed-keys`** CLIs that ship **`--fix-legacy-yaml`**, and the **document-wide** rewrite on the same property YAML files when using **`*-allowed-column-keys`**. **Not** **`catalog-allowed-keys`** or **`dbt-project-allowed-keys`**.
+
+### Spec examples (target shape for `meta` and `tags`)
+
+**Normative for this file:** Examples that depict the **fixed** shape **MUST** show **`meta` and `tags` under `config`**. Before/after pairs **MAY** show legacy top-level keys only in the “before” half.
+
+```yaml
+# After v2 rewrite, resource entries for in-scope types match:
+models:
+  - name: my_model
+    description: "…"
+    config:
+      meta: { owner: analytics }
+      tags: [ nightly ]
+    # … other allowed keys, e.g. data_tests, columns, …
+```
+
+Column-level **`meta` / `tags`** (directly on a column or under column **`config:`**) are **unchanged** by v2; a later spec may extend moves for column rows.
 
 ---
 
-## CLI contract (v1)
+## CLI contract
 
-**Flag:** **`--fix-legacy-yaml`** with an explicit boolean; default **`false`**. Exposed **only** on the six **`*-allowed-keys`** property-YAML console scripts (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on shipped **`*-allowed-column-keys`** hooks (**`model`**, **`seed`**, **`snapshot`**). Not on **`catalog-allowed-keys`** or **`dbt-project-allowed-keys`** (see **[`allowed-keys.md`](allowed-keys.md)**). **When `true`:** perform the v1 rewrites (this spec), **write** the file when renames apply, then run the **hook’s** normal validation. **When `false`:** do **not** rewrite; only validate. Full detail: **[`allowed-keys.md`](allowed-keys.md)** § **Pattern**, **[`allowed-column-keys.md`](allowed-column-keys.md)** § **Pattern**.
+**Flag:** **`--fix-legacy-yaml`** with an explicit boolean; default **`false`**. Exposed **only** on the six **`*-allowed-keys`** property-YAML console scripts (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on shipped **`*-allowed-column-keys`** hooks (**`model`**, **`seed`**, **`snapshot`**). Not on **`catalog-allowed-keys`** or **`dbt-project-allowed-keys`** (see **[`allowed-keys.md`](allowed-keys.md)**). **When `true`:** perform **v1** and **v2** rewrites (this spec), **write** the file when at least one change applies and there are no conflicts, then run the **hook’s** normal validation. **When `false`:** do **not** rewrite; only validate. Full detail: **[`allowed-keys.md`](allowed-keys.md)** § **Pattern**, **[`allowed-column-keys.md`](allowed-column-keys.md)** § **Pattern**.
 
 **Pre-commit:** add **`args: ['--fix-legacy-yaml', 'true']`** (or the project’s spelling for boolean flags) to the relevant **`id`** stanzas for **`model-allowed-keys`**, **`seed-allowed-keys`**, etc.
 
 ---
 
-## Exit codes (v1)
+## Exit codes
 
 Use the **`*-allowed-keys`** and **`*-allowed-column-keys`** exit code tables; failures in the fix phase are **`1`**. See **[`allowed-keys.md`](allowed-keys.md)** and **[`allowed-column-keys.md`](allowed-column-keys.md)**.
 
@@ -94,15 +119,15 @@ Use the **`*-allowed-keys`** and **`*-allowed-column-keys`** exit code tables; f
 
 ## Relationship to `*-allowed-keys` and `*-allowed-column-keys`
 
-+ After a **successful** rewrite, **`data_tests`** is allowlisted; **`tests` should** no longer appear in those positions, so validators should stop emitting legacy **tests** messages for the rewritten nodes on the next run.
++ After a **successful** rewrite, **`data_tests`** is allowlisted; **`tests` should** no longer appear in those positions, so validators should stop emitting legacy **tests** messages for the rewritten nodes on the next run. Likewise, top-level **`meta` / `tags`** on resource entries should only appear under **`config`**, so legacy messages for those top-level keys should not fire on the next run.
 + The **rewrite** (this spec) **does not** print the same **stderr** lines as the validators. When **`--fix-legacy-yaml` is** **`true`**, the hook first **edits** the file (when applicable) **then** runs validation; the validator remains the **source of truth** for *whether* a key is allowed **after** the file state is updated. **MUST NOT** attempt to duplicate the validator’s “Suggested violation detail” text byte-for-byte in the **rewrite** layer; reuse **`resource_keys.py`** messaging only in **validation** code paths.
 
 ---
 
-## Tests (when implemented)
+## Tests
 
-+ **Shared** rewrite logic (e.g. under **`hook_families/fix_legacy_yaml/`** per **[`project-spec.md`](../project-spec.md)**) **SHOULD** be covered by unit tests: before/after YAML for **models** (top-level and `columns:`), **seeds**, **snapshots**; a case with **both** `tests` and `data_tests` must assert **conflict** behavior; idempotence (second **`true` run** is a no-op).
-+ **Integration:** **`*-allowed-keys`** and **`*-allowed-column-keys`** with **`--fix-legacy-yaml` true** **SHOULD** assert the same rewrite outcomes on disk **then** validation (no legacy **`tests`** left where in scope) **when** the file is otherwise valid.
++ **Shared** rewrite logic under **`hook_families/fix_legacy_yaml/`** per **[`project-spec.md`](../project-spec.md)**: v1 and v2 behaviors; **both** `tests` and `data_tests` (conflict); v2 **meta** + existing **`config.meta`** (conflict); idempotence (second **`true` run** is a no-op) for `tests` and for `meta` / `tags`.
++ **Integration:** **`*-allowed-keys`** and **`*-allowed-column-keys`** with **`--fix-legacy-yaml` true** assert rewrite outcomes on disk **then** validation when the file is otherwise valid.
 
 ---
 
@@ -111,3 +136,5 @@ Use the **`*-allowed-keys`** and **`*-allowed-column-keys`** exit code tables; f
 + **Initial** — v1 `tests` → `data_tests` only; **Future** `tags` / `meta` section reserved.
 + **Rename** — The family and spec file were named **`fix-legacy-yaml`**; code lives under **`hook_families/fix_legacy_yaml/`** in the repository.
 + **Integrated-only delivery** — **`--fix-legacy-yaml`** (default **`false`**) on **`*-allowed-keys`** and **`*-allowed-column-keys`**; the standalone `fix-legacy-yaml` console entry point and pre-commit hook were **removed** in favor of the integrated flag only.
++ **Examples for v2 `meta` / `tags`** — spec YAML that depicts the post-rewrite shape **MUST** show **`meta` and `tags` under `config`** (see **§ v2**).
++ **v2** — top-level **`meta` / `tags`** → **`config`** on resource entries; conflict if **`config.meta` / `config.tags`** already set; `config` must be a mapping; apply after v1; atomic preflight.

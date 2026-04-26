@@ -8,7 +8,7 @@ All notable changes to this project are documented here. Versions match **git ta
 
 ### Added
 
-- **`--fix-legacy-yaml`** (`true` / `false`, default `false`) on the six **`*-allowed-keys`** property-YAML CLIs (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on **`*-allowed-column-keys`**: when enabled, applies the v1 **`tests` → `data_tests`** rewrite in place, then runs validation. **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** take this flag. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md) and [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md).
+- **`--fix-legacy-yaml`** (`true` / `false`, default `false`) on the six **`*-allowed-keys`** property-YAML CLIs (**`model`**, **`macro`**, **`seed`**, **`snapshot`**, **`exposure`**, **`source`**) and on **`*-allowed-column-keys`**: when enabled, applies rewrites in place, then runs validation: **`tests` → `data_tests`**, and top-level **`meta` / `tags` → `config`** on resource entries (no merge if **`config.meta` / `config.tags`** already exist). **`catalog-allowed-keys`** and **`dbt-project-allowed-keys`** do **not** take this flag. See [`specs/hook-families/allowed-keys.md`](specs/hook-families/allowed-keys.md) and [`specs/hook-families/fix-legacy-yaml.md`](specs/hook-families/fix-legacy-yaml.md).
 
 ### Removed
 

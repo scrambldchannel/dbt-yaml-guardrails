@@ -283,3 +283,105 @@ def test_cli_fix_legacy_yaml_preserves_key_order_among_siblings(tmp_path: Path) 
         out.index("data_tests"),
     )
     assert i_c < i_desc < i_dt
+
+
+def test_cli_fix_legacy_yaml_moves_top_level_tags_into_config(tmp_path: Path) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "allowed_keys"
+        / "models"
+        / "models_with_tags.yml"
+    )
+    p = tmp_path / "t.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "config:" in out
+    assert "tags:" in out
+    # No top-level ``tags:`` on the model row (not at 4 spaces after ``- name``).
+    assert "\n    tags:\n" not in out
+
+
+def test_cli_fix_legacy_yaml_merges_tags_into_existing_config(tmp_path: Path) -> None:
+    p = tmp_path / "m.yml"
+    p.write_text(
+        "version: 2\n"
+        "models:\n"
+        "  - name: m\n"
+        "    config:\n"
+        "      materialized: view\n"
+        "    tags:\n"
+        "      - nightly\n",
+        encoding="utf-8",
+    )
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "materialized: view" in out
+    assert "nightly" in out
+    assert "\n    tags:\n" not in out
+
+
+def test_cli_fix_legacy_yaml_creates_config_with_meta_and_tags(tmp_path: Path) -> None:
+    p = tmp_path / "m.yml"
+    p.write_text(
+        "version: 2\n"
+        "models:\n"
+        "  - name: m\n"
+        "    description: x\n"
+        "    meta:\n"
+        "      owner: team\n"
+        "    tags:\n"
+        "      - raw\n",
+        encoding="utf-8",
+    )
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 0, r.stderr
+    out = p.read_text(encoding="utf-8")
+    assert "owner: team" in out
+    assert "raw" in out
+    assert "\n    meta:\n" not in out
+    assert "\n    tags:\n" not in out
+
+
+def test_cli_fix_legacy_yaml_conflict_top_level_meta_and_config_meta(
+    tmp_path: Path,
+) -> None:
+    p = tmp_path / "m.yml"
+    p.write_text(
+        "version: 2\n"
+        "models:\n"
+        "  - name: m\n"
+        "    meta:\n"
+        "      a: 1\n"
+        "    config:\n"
+        "      meta:\n"
+        "        b: 2\n",
+        encoding="utf-8",
+    )
+    r = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r.returncode == 1
+    assert "both present" in r.stderr or "config.meta" in r.stderr
+
+
+def test_cli_fix_legacy_yaml_tags_second_run_idempotent(tmp_path: Path) -> None:
+    src = (
+        _REPO_ROOT
+        / "tests"
+        / "fixtures"
+        / "yaml"
+        / "allowed_keys"
+        / "models"
+        / "models_with_tags.yml"
+    )
+    p = tmp_path / "t.yml"
+    p.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    r1 = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r1.returncode == 0, r1.stderr
+    r2 = _invoke("--fix-legacy-yaml", "true", str(p))
+    assert r2.returncode == 0
+    assert r2.stderr == ""
